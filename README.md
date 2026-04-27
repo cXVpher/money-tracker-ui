@@ -1,24 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Budget Tracker UI
 
-## Getting Started
+Frontend for a budget tracking app built with Next.js, TypeScript, Tailwind CSS, and `pnpm`.
 
-First, run the development server:
+## How To Run
+
+Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Start the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Other Commands
+
+Run lint:
+
+```bash
+pnpm lint
+```
+
+Create a production build:
+
+```bash
+pnpm build
+```
+
+Run the production server after building:
+
+```bash
+pnpm start
+```
+
+## Notes
+
+- Main app code lives in `src/app`.
+- The main landing page is `src/app/page.tsx`.
+- This project loads fonts through `next/font/google`, so `pnpm build` needs network access to fetch those fonts unless they are vendored locally.
 
 ## Learn More
 
