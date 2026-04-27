@@ -12,8 +12,6 @@ import type {
 
 export type { Account, Bill, Budget, Debt, Goal, Transaction };
 
-// --- Mock Data ---
-
 export const mockAccounts: Account[] = [
   { id: "1", name: "BCA", type: "bank", balance: 15_450_000, icon: "🏦", color: "#0060af" },
   { id: "2", name: "GoPay", type: "ewallet", balance: 1_250_000, icon: "📱", color: "#00aed6" },
@@ -64,7 +62,6 @@ export const mockDebts: Debt[] = [
   { id: "d3", type: "owed", personName: "Dimas", amount: 1_000_000, remainingAmount: 0, dueDate: "2026-04-01", description: "Bayar kos", status: "paid" },
 ];
 
-// Cashflow data for charts
 export const mockMonthlyCashflow = [
   { month: "Nov", income: 15_000_000, expense: 11_200_000 },
   { month: "Des", income: 17_500_000, expense: 14_800_000 },
@@ -83,15 +80,20 @@ export const mockExpenseByCategory = [
   { name: "Hiburan", value: 480_000, icon: "🎮", color: "#8b5cf6" },
 ];
 
-// Dashboard summary stats
 export function getMockDashboardSummary() {
-  const totalBalance = mockAccounts.reduce((sum, account) => sum + account.balance, 0);
+  const totalBalance = mockAccounts.reduce(
+    (accountBalanceTotal, account) => accountBalanceTotal + account.balance,
+    0
+  );
   const monthlyIncome = mockTransactions
     .filter((transaction) => transaction.type === "income")
-    .reduce((sum, transaction) => sum + transaction.amount, 0);
+    .reduce((incomeTotal, transaction) => incomeTotal + transaction.amount, 0);
   const monthlyExpense = mockTransactions
     .filter((transaction) => transaction.type === "expense")
-    .reduce((sum, transaction) => sum + transaction.amount, 0);
+    .reduce(
+      (expenseTotal, transaction) => expenseTotal + transaction.amount,
+      0
+    );
 
   return {
     totalBalance,
@@ -99,8 +101,14 @@ export function getMockDashboardSummary() {
     monthlyExpense,
     cashflow: monthlyIncome - monthlyExpense,
     cashflowStatus: monthlyIncome > monthlyExpense ? "surplus" : "deficit",
-    totalBudgetUsed: mockBudgets.reduce((sum, budget) => sum + budget.spent, 0),
-    totalBudgetLimit: mockBudgets.reduce((sum, budget) => sum + budget.limit, 0),
+    totalBudgetUsed: mockBudgets.reduce(
+      (budgetSpentTotal, budget) => budgetSpentTotal + budget.spent,
+      0
+    ),
+    totalBudgetLimit: mockBudgets.reduce(
+      (budgetLimitTotal, budget) => budgetLimitTotal + budget.limit,
+      0
+    ),
     emergencyRunway: 5.3,
     accountCount: mockAccounts.length,
   };

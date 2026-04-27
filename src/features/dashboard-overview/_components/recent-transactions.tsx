@@ -1,16 +1,24 @@
+"use client";
+
+import { useMemo } from "react";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { formatRelativeDate, formatRupiah } from "@/shared/_utils/formatters";
-import { mockTransactions } from "@/shared/_constants/mock-data";
+import { getAppTransactions } from "@/shared/_utils/mock-client-store";
 
 export function RecentTransactions() {
+  const recentTransactions = useMemo(
+    () => getAppTransactions().slice(0, 5),
+    []
+  );
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Transaksi Terakhir</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {mockTransactions.slice(0, 5).map((transaction) => (
+        {recentTransactions.map((transaction) => (
           <div key={transaction.id} className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-lg">
               {transaction.categoryIcon}

@@ -1,16 +1,21 @@
+"use client";
+
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { formatRupiahShort } from "@/shared/_utils/formatters";
-import { mockBudgets } from "@/shared/_constants/mock-data";
+import { getAppBudgets } from "@/shared/_utils/mock-client-store";
 
 export function BudgetOverview() {
+  const budgets = useMemo(() => getAppBudgets().slice(0, 5), []);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Budget Bulanan</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {mockBudgets.slice(0, 5).map((budget) => {
+        {budgets.map((budget) => {
           const percent = Math.round((budget.spent / budget.limit) * 100);
           return (
             <div key={budget.id} className="space-y-2">

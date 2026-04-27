@@ -1,13 +1,16 @@
 "use client";
 
+import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatRupiah, formatRupiahShort } from "@/features/analytics/_utils/chart-formatters";
-import { mockMonthlyCashflow } from "@/shared/_constants/mock-data";
+import { getMonthlyCashflowSeries } from "@/shared/_utils/mock-client-store";
 
 export function CashflowTrendChart() {
+  const cashflowSeries = useMemo(() => getMonthlyCashflowSeries(), []);
+
   return (
     <ResponsiveContainer width="100%" height={280} minWidth={0}>
-      <AreaChart data={mockMonthlyCashflow}>
+      <AreaChart data={cashflowSeries}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
         <XAxis dataKey="month" tickLine={false} axisLine={false} />
         <YAxis tickFormatter={(value) => formatRupiahShort(Number(value))} tickLine={false} axisLine={false} />

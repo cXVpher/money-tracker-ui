@@ -1,10 +1,23 @@
-import { mockTransactions } from "@/shared/_constants/mock-data";
+"use client";
+
+import { useMemo, useState } from "react";
+import { getAppTransactions } from "@/shared/_utils/mock-client-store";
 import { CalendarGrid } from "./calendar-grid";
 import { SelectedDayTransactions } from "./selected-day-transactions";
-import { getCashflowCalendarDays } from "../_utils/calendar-day-summaries";
+import { buildCalendarDaySummaries } from "../_utils/calendar-day-summaries";
+import type { CalendarDaySummary } from "../_types/calendar";
 
 export function CalendarPageContent() {
-  const calendarDaySummaries = getCashflowCalendarDays();
+  const calendarDaySummaries = useMemo(
+    () => buildCalendarDaySummaries(getAppTransactions()),
+    []
+  );
+  const initialSelectedDay =
+    calendarDaySummaries.find((day) => day.transactions.length > 0) ??
+    calendarDaySummaries[0];
+  const [selectedDay, setSelectedDay] = useState<CalendarDaySummary>(
+    initialSelectedDay
+  );
 
   return (
     <div className="space-y-6">
@@ -15,8 +28,12 @@ export function CalendarPageContent() {
         </h1>
       </div>
 
-      <CalendarGrid days={calendarDaySummaries} />
-      <SelectedDayTransactions transactions={mockTransactions.slice(0, 4)} />
+      <CalendarGrid
+        days={calendarDaySummaries}
+        selectedDate={selectedDay.date}
+        onSelectDay={setSelectedDay}
+      />
+      <SelectedDayTransactions selectedDay={selectedDay} />
     </div>
   );
 }

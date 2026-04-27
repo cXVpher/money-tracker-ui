@@ -15,14 +15,26 @@ import { Badge } from "@/shared/_components/ui/badge";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent } from "@/shared/_components/ui/card";
 import { Input } from "@/shared/_components/ui/input";
+import type { Account, Transaction } from "@/shared/_types/finance";
 import { formatDate, formatRupiah } from "@/shared/_utils/formatters";
-import { mockAccounts, mockTransactions, type Transaction } from "@/shared/_constants/mock-data";
 
-const categoryOptions = Array.from(
-  new Set(mockTransactions.map((transaction) => transaction.categoryName))
-);
+type TransactionTableProps = {
+  accounts: Account[];
+  transactions: Transaction[];
+};
 
-export function TransactionTable() {
+export function TransactionTable({
+  accounts,
+  transactions,
+}: TransactionTableProps) {
+  const categoryOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(transactions.map((transaction) => transaction.categoryName))
+      ),
+    [transactions]
+  );
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedAccount, setSelectedAccount] = useState("all");
@@ -33,7 +45,7 @@ export function TransactionTable() {
 
   const filteredTransactions = useMemo(() => {
     const normalizedSearchQuery = searchQuery.trim().toLowerCase();
-    return mockTransactions.filter((transaction) => {
+    return transactions.filter((transaction) => {
       const matchesQuery =
         !normalizedSearchQuery ||
         transaction.description.toLowerCase().includes(normalizedSearchQuery) ||
@@ -49,7 +61,7 @@ export function TransactionTable() {
 
       return matchesQuery && matchesCategory && matchesAccount && matchesType;
     });
-  }, [searchQuery, selectedCategory, selectedAccount, selectedTransactionType]);
+  }, [searchQuery, selectedCategory, selectedAccount, selectedTransactionType, transactions]);
 
   const columns = useMemo<ColumnDef<Transaction>[]>(
     () => [
@@ -129,7 +141,7 @@ export function TransactionTable() {
           </FilterSelect>
           <FilterSelect value={selectedAccount} onChange={setSelectedAccount}>
             <option value="all">Semua akun</option>
-            {mockAccounts.map((account) => (
+            {accounts.map((account) => (
               <option key={account.id} value={account.name}>
                 {account.name}
               </option>

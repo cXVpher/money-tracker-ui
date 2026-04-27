@@ -1,4 +1,6 @@
-export const DEFAULT_CATEGORIES = {
+import type { CategoryConfig, CategoryGroup } from "@/features/settings/_types/settings";
+
+export const DEFAULT_CATEGORIES: Record<CategoryGroup, CategoryConfig[]> = {
   expense: [
     { name: "Makanan & Minuman", icon: "🍜", color: "#f97316" },
     { name: "Transportasi", icon: "🚗", color: "#3b82f6" },
@@ -17,4 +19,4 @@ export const DEFAULT_CATEGORIES = {
     { name: "Bonus", icon: "🎁", color: "#f97316" },
     { name: "Lainnya", icon: "📌", color: "#a3a3a3" },
   ],
-} as const;
+};

@@ -1,13 +1,21 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { Button } from "@/shared/_components/ui/button";
-import { mockAccounts } from "@/shared/_constants/mock-data";
+import type { Account } from "@/shared/_types/finance";
+import { getAppAccounts } from "@/shared/_utils/mock-client-store";
 import { AccountCard } from "./account-card";
 import { AccountDialog } from "./account-dialog";
 import { AccountTotalCard } from "./account-total-card";
 import { getAccountsTotalBalance } from "../_utils/account-summary";
 
 export function AccountsPageContent() {
-  const totalBalance = getAccountsTotalBalance(mockAccounts);
+  const [accounts, setAccounts] = useState<Account[]>(getAppAccounts);
+  const totalBalance = useMemo(
+    () => getAccountsTotalBalance(accounts),
+    [accounts]
+  );
 
   return (
     <div className="space-y-6">
@@ -23,14 +31,18 @@ export function AccountsPageContent() {
             <ArrowLeftRight className="h-4 w-4" />
             Transfer
           </Button>
-          <AccountDialog />
+          <AccountDialog
+            onAccountCreated={(account) =>
+              setAccounts((currentAccounts) => [...currentAccounts, account])
+            }
+          />
         </div>
       </div>
 
-      <AccountTotalCard accountCount={mockAccounts.length} totalBalance={totalBalance} />
+      <AccountTotalCard accountCount={accounts.length} totalBalance={totalBalance} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {mockAccounts.map((account) => (
+        {accounts.map((account) => (
           <AccountCard key={account.id} account={account} />
         ))}
       </div>

@@ -1,11 +1,19 @@
-import { mockDebts } from "@/shared/_constants/mock-data";
+"use client";
+
+import { useMemo, useState } from "react";
+import type { Debt } from "@/shared/_types/finance";
 import { DebtCard } from "./debt-card";
 import { DebtDialog } from "./debt-dialog";
 import { DebtBalanceSummaryCard } from "./debt-balance-summary-card";
 import { getDebtBalanceSummaries } from "../_utils/debt-balance-summary";
+import { getAppDebts } from "@/shared/_utils/mock-client-store";
 
 export function DebtsPageContent() {
-  const debtBalanceSummaries = getDebtBalanceSummaries(mockDebts);
+  const [debts, setDebts] = useState<Debt[]>(getAppDebts);
+  const debtBalanceSummaries = useMemo(
+    () => getDebtBalanceSummaries(debts),
+    [debts]
+  );
 
   return (
     <div className="space-y-6">
@@ -16,7 +24,11 @@ export function DebtsPageContent() {
             Hutang
           </h1>
         </div>
-        <DebtDialog />
+        <DebtDialog
+          onDebtCreated={(debt) =>
+            setDebts((currentDebts) => [...currentDebts, debt])
+          }
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -29,7 +41,7 @@ export function DebtsPageContent() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {mockDebts.map((debt) => (
+        {debts.map((debt) => (
           <DebtCard key={debt.id} debt={debt} />
         ))}
       </div>

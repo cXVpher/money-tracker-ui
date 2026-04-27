@@ -1,16 +1,21 @@
+"use client";
+
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { formatDate, formatRupiahShort } from "@/shared/_utils/formatters";
-import { mockGoals } from "@/shared/_constants/mock-data";
+import { getAppGoals } from "@/shared/_utils/mock-client-store";
 
 export function GoalsOverview() {
+  const goals = useMemo(() => getAppGoals().slice(0, 4), []);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Target Tabungan</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">
-        {mockGoals.slice(0, 4).map((goal) => {
+        {goals.map((goal) => {
           const percent = Math.round(
             (goal.currentAmount / goal.targetAmount) * 100
           );

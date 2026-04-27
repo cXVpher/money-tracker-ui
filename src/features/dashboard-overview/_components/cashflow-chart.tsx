@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import {
   Bar,
   BarChart,
@@ -12,13 +12,14 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { formatRupiahShort } from "@/shared/_utils/formatters";
-import { mockMonthlyCashflow } from "@/shared/_constants/mock-data";
+import { getMonthlyCashflowSeries } from "@/shared/_utils/mock-client-store";
 
 const subscribeToMountState = () => () => {};
 const getMountedClientSnapshot = () => true;
 const getUnmountedServerSnapshot = () => false;
 
 export function CashflowChart() {
+  const cashflowSeries = useMemo(() => getMonthlyCashflowSeries(), []);
   const isMounted = useSyncExternalStore(
     subscribeToMountState,
     getMountedClientSnapshot,
@@ -36,7 +37,7 @@ export function CashflowChart() {
       <CardContent className="h-[260px]">
         {isMounted ? (
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <BarChart data={mockMonthlyCashflow} barGap={8}>
+            <BarChart data={cashflowSeries} barGap={8}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="month" tickLine={false} axisLine={false} />
               <YAxis

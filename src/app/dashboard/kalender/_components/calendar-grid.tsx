@@ -7,9 +7,15 @@ const weekDays = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 
 interface CalendarGridProps {
   days: CalendarDaySummary[];
+  selectedDate: string;
+  onSelectDay: (day: CalendarDaySummary) => void;
 }
 
-export function CalendarGrid({ days }: CalendarGridProps) {
+export function CalendarGrid({
+  days,
+  selectedDate,
+  onSelectDay,
+}: CalendarGridProps) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
@@ -27,7 +33,12 @@ export function CalendarGrid({ days }: CalendarGridProps) {
         </div>
         <div className="grid grid-cols-7 gap-2">
           {days.map((day) => (
-            <CalendarDayCard key={day.date} day={day} />
+            <CalendarDayCard
+              key={day.date}
+              day={day}
+              isSelected={day.date === selectedDate}
+              onSelect={onSelectDay}
+            />
           ))}
         </div>
       </CardContent>

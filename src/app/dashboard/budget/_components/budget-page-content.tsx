@@ -1,12 +1,21 @@
-import { mockBudgets } from "@/shared/_constants/mock-data";
+"use client";
+
+import { useMemo, useState } from "react";
+import type { Budget } from "@/shared/_types/finance";
 import { BudgetCard } from "./budget-card";
 import { BudgetDialog } from "./budget-dialog";
 import { BudgetHistory } from "./budget-history";
 import { BudgetSpendingSummaryCard } from "./budget-spending-summary-card";
 import { getBudgetSpendingSummary } from "../_utils/budget-spending-summary";
+import { getAppBudgets, getCategoryOptions } from "@/shared/_utils/mock-client-store";
 
 export function BudgetPageContent() {
-  const budgetSpendingSummary = getBudgetSpendingSummary(mockBudgets);
+  const [budgets, setBudgets] = useState<Budget[]>(getAppBudgets);
+  const categoryOptions = useMemo(() => getCategoryOptions(), []);
+  const budgetSpendingSummary = useMemo(
+    () => getBudgetSpendingSummary(budgets),
+    [budgets]
+  );
 
   return (
     <div className="space-y-6">
@@ -17,13 +26,18 @@ export function BudgetPageContent() {
             Budget
           </h1>
         </div>
-        <BudgetDialog />
+        <BudgetDialog
+          categoryOptions={categoryOptions}
+          onBudgetCreated={(budget) =>
+            setBudgets((currentBudgets) => [...currentBudgets, budget])
+          }
+        />
       </div>
 
       <BudgetSpendingSummaryCard budgetSpendingSummary={budgetSpendingSummary} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {mockBudgets.map((budget) => (
+        {budgets.map((budget) => (
           <BudgetCard key={budget.id} budget={budget} />
         ))}
       </div>

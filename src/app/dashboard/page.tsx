@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo } from "react";
 import { Banknote, PiggyBank, TrendingDown, TrendingUp } from "lucide-react";
 import { BudgetOverview } from "@/features/dashboard-overview/_components/budget-overview";
 import { CashflowChart } from "@/features/dashboard-overview/_components/cashflow-chart";
@@ -6,10 +9,10 @@ import { RecentTransactions } from "@/features/dashboard-overview/_components/re
 import { StatCard } from "@/features/dashboard-overview/_components/stat-card";
 import { UpcomingBills } from "@/features/dashboard-overview/_components/upcoming-bills";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
-import { getMockDashboardSummary } from "@/shared/_constants/mock-data";
+import { getAppDashboardSummary } from "@/shared/_utils/mock-client-store";
 
 export default function DashboardPage() {
-  const dashboardSummary = getMockDashboardSummary();
+  const dashboardSummary = useMemo(() => getAppDashboardSummary(), []);
 
   return (
     <div className="space-y-6">

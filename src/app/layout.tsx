@@ -21,7 +21,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DuitKu — Kelola Keuangan Pribadimu",
+  title: "DuitKu - Kelola Keuangan Pribadimu",
   description:
     "Aplikasi pencatatan keuangan pribadi. Catat pemasukan & pengeluaran, lacak budget, pantau investasi, dan capai tujuan finansialmu.",
   keywords: [
@@ -52,9 +52,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
+          <TooltipProvider>{children}</TooltipProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

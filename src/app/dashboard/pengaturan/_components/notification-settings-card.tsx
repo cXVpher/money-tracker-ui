@@ -1,14 +1,42 @@
+"use client";
+
+import { useState } from "react";
 import { Bell } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Switch } from "@/shared/_components/ui/switch";
+import {
+  getNotificationSettings,
+  saveNotificationSettings,
+  type NotificationSettings,
+} from "@/shared/_utils/mock-client-store";
 
-const notifications = [
-  "Reminder tagihan",
-  "Budget hampir habis",
-  "Ringkasan mingguan",
+const notificationItems: Array<{
+  key: keyof NotificationSettings;
+  label: string;
+}> = [
+  { key: "billReminders", label: "Reminder tagihan" },
+  { key: "budgetAlerts", label: "Budget hampir habis" },
+  { key: "weeklySummary", label: "Ringkasan mingguan" },
 ];
 
 export function NotificationSettingsCard() {
+  const [notificationSettings, setNotificationSettings] = useState(
+    getNotificationSettings
+  );
+
+  function handleToggleNotification(
+    key: keyof NotificationSettings,
+    checked: boolean
+  ) {
+    const nextNotificationSettings = {
+      ...notificationSettings,
+      [key]: checked,
+    };
+
+    setNotificationSettings(nextNotificationSettings);
+    saveNotificationSettings(nextNotificationSettings);
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -18,10 +46,15 @@ export function NotificationSettingsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {notifications.map((item) => (
-          <div key={item} className="flex items-center justify-between">
-            <span className="text-sm">{item}</span>
-            <Switch defaultChecked />
+        {notificationItems.map((item) => (
+          <div key={item.key} className="flex items-center justify-between">
+            <span className="text-sm">{item.label}</span>
+            <Switch
+              checked={notificationSettings[item.key]}
+              onCheckedChange={(checked) =>
+                handleToggleNotification(item.key, checked)
+              }
+            />
           </div>
         ))}
       </CardContent>
