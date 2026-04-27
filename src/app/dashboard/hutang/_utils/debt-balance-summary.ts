@@ -1,17 +1,25 @@
 import type { Debt } from "@/shared/_types/finance";
-import type { DebtSummary } from "../_types/debt";
+import type { DebtBalanceSummary } from "../_types/debt";
 
-export function getDebtSummaries(debts: Debt[]): DebtSummary[] {
-  const owed = debts
+export function getDebtBalanceSummaries(debts: Debt[]): DebtBalanceSummary[] {
+  const totalOwedAmount = debts
     .filter((debt) => debt.type === "owed")
     .reduce((sum, debt) => sum + debt.remainingAmount, 0);
-  const receivable = debts
+  const totalReceivableAmount = debts
     .filter((debt) => debt.type === "receivable")
     .reduce((sum, debt) => sum + debt.remainingAmount, 0);
 
   return [
-    { title: "Yang Harus Dibayar", tone: "text-destructive", value: owed },
-    { title: "Piutang Masuk", tone: "text-success", value: receivable },
+    {
+      title: "Yang Harus Dibayar",
+      toneClass: "text-destructive",
+      totalRemainingAmount: totalOwedAmount,
+    },
+    {
+      title: "Piutang Masuk",
+      toneClass: "text-success",
+      totalRemainingAmount: totalReceivableAmount,
+    },
   ];
 }
 

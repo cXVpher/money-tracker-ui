@@ -3,7 +3,7 @@ import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { formatDate, formatRupiah } from "@/shared/_utils/formatters";
-import { getDebtPaidPercent } from "../_utils/debt-summary";
+import { getDebtPaidPercent } from "../_utils/debt-balance-summary";
 
 interface DebtCardProps {
   debt: Debt;

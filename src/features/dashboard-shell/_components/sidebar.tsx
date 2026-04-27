@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, Wallet } from "lucide-react";
 import { Button } from "@/shared/_components/ui/button";
-import { APP_NAME } from "@/shared/_constants/app";
+import { APP_NAME } from "@/shared/_constants/brand";
 import { DASHBOARD_NAV } from "@/features/dashboard-shell/_utils/navigation";
 import { cn } from "@/shared/_utils/cn";
 import {

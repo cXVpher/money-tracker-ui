@@ -6,29 +6,29 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon, Wallet } from "lucide-react";
 import { Button } from "@/shared/_components/ui/button";
-import { APP_NAME } from "@/shared/_constants/app";
-import { NAV_ITEMS } from "@/features/landing/_utils/landing-sections";
+import { APP_NAME } from "@/shared/_constants/brand";
+import { NAV_ITEMS } from "@/features/landing/_utils/landing-navigation";
 
-const subscribe = () => () => {};
-const getClientSnapshot = () => true;
-const getServerSnapshot = () => false;
+const subscribeToMountState = () => () => {};
+const getMountedClientSnapshot = () => true;
+const getUnmountedServerSnapshot = () => false;
 
 function useIsMounted() {
   return useSyncExternalStore(
-    subscribe,
-    getClientSnapshot,
-    getServerSnapshot
+    subscribeToMountState,
+    getMountedClientSnapshot,
+    getUnmountedServerSnapshot
   );
 }
 
 export function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const mounted = useIsMounted();
+  const isMounted = useIsMounted();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setHasScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -39,7 +39,7 @@ export function Navbar() {
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 200, damping: 30 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
+        hasScrolled
           ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-sm"
           : "bg-transparent"
       }`}
@@ -71,7 +71,7 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
-            {mounted && (
+            {isMounted && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -99,7 +99,7 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <div className="flex md:hidden items-center gap-2">
-            {mounted && (
+            {isMounted && (
               <Button
                 variant="ghost"
                 size="icon"

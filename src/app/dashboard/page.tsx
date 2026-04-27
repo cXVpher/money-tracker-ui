@@ -6,10 +6,10 @@ import { RecentTransactions } from "@/features/dashboard-overview/_components/re
 import { StatCard } from "@/features/dashboard-overview/_components/stat-card";
 import { UpcomingBills } from "@/features/dashboard-overview/_components/upcoming-bills";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
-import { getMockSummary } from "@/shared/_constants/mock-data";
+import { getMockDashboardSummary } from "@/shared/_constants/mock-data";
 
 export default function DashboardPage() {
-  const summary = getMockSummary();
+  const dashboardSummary = getMockDashboardSummary();
 
   return (
     <div className="space-y-6">
@@ -23,32 +23,32 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total Saldo"
-          value={formatRupiah(summary.totalBalance)}
-          helper={`${summary.accountCount} akun aktif`}
+          value={formatRupiah(dashboardSummary.totalBalance)}
+          helper={`${dashboardSummary.accountCount} akun aktif`}
           icon={Banknote}
           badge="+12.5%"
           tone="success"
         />
         <StatCard
           title="Pemasukan"
-          value={formatRupiahShort(summary.monthlyIncome)}
+          value={formatRupiahShort(dashboardSummary.monthlyIncome)}
           helper="Bulan berjalan"
           icon={TrendingUp}
           tone="success"
         />
         <StatCard
           title="Pengeluaran"
-          value={formatRupiahShort(summary.monthlyExpense)}
+          value={formatRupiahShort(dashboardSummary.monthlyExpense)}
           helper="Budget masih terkendali"
           icon={TrendingDown}
           tone="warning"
         />
         <StatCard
           title="Runway Dana Darurat"
-          value={`${summary.emergencyRunway} bulan`}
+          value={`${dashboardSummary.emergencyRunway} bulan`}
           helper="Estimasi biaya hidup"
           icon={PiggyBank}
-          badge={summary.cashflowStatus}
+          badge={dashboardSummary.cashflowStatus}
         />
       </div>
 

@@ -1,5 +1,5 @@
-export interface DebtSummary {
+export interface DebtBalanceSummary {
   title: string;
-  tone: "text-destructive" | "text-success";
-  value: number;
+  toneClass: "text-destructive" | "text-success";
+  totalRemainingAmount: number;
 }

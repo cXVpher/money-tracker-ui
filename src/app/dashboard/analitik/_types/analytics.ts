@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
-export interface AnalyticsMetric {
+export interface AnalyticsChangeMetric {
   label: string;
-  tone?: string;
-  value: string;
+  toneClass?: string;
+  changeLabel: string;
 }
 
 export interface AnalyticsSeriesPoint {
@@ -11,12 +11,12 @@ export interface AnalyticsSeriesPoint {
   balance: number;
 }
 
-export interface ChartCardProps {
+export interface ChartPanelProps {
   children: ReactNode;
   title: string;
 }
 
-export interface IncomeSourcePoint {
+export interface IncomeSourceDatum {
   name: string;
-  value: number;
+  amount: number;
 }

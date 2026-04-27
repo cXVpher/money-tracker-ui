@@ -1,5 +1,5 @@
-import { TransactionsScreen } from "./_components/transactions-screen";
+import { TransactionsPageContent } from "./_components/transactions-page-content";
 
 export default function TransactionsPage() {
-  return <TransactionsScreen />;
+  return <TransactionsPageContent />;
 }

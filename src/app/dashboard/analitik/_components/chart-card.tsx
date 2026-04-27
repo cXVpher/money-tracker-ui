@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
-import type { ChartCardProps } from "../_types/analytics";
+import type { ChartPanelProps } from "../_types/analytics";
 
-export function ChartCard({ title, children }: ChartCardProps) {
+export function ChartCard({ title, children }: ChartPanelProps) {
   return (
     <Card>
       <CardHeader>

@@ -1,5 +1,5 @@
-import { GoalsScreen } from "./_components/goals-screen";
+import { GoalsPageContent } from "./_components/goals-page-content";
 
 export default function GoalsPage() {
-  return <GoalsScreen />;
+  return <GoalsPageContent />;
 }

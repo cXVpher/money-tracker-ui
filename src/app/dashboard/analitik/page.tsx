@@ -1,5 +1,5 @@
-import { AnalyticsScreen } from "./_components/analytics-screen";
+import { AnalyticsPageContent } from "./_components/analytics-page-content";
 
 export default function AnalyticsPage() {
-  return <AnalyticsScreen />;
+  return <AnalyticsPageContent />;
 }

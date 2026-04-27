@@ -1,4 +1,4 @@
-export interface BudgetSummary {
+export interface BudgetSpendingSummary {
   totalLimit: number;
   totalSpent: number;
   utilization: number;

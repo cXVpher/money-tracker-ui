@@ -4,7 +4,7 @@ import { NotificationSettingsCard } from "./notification-settings-card";
 import { ProfileSettingsCard } from "./profile-settings-card";
 import { ThemeSettingsCard } from "./theme-settings-card";
 
-export function SettingsScreen() {
+export function SettingsPageContent() {
   return (
     <div className="space-y-6">
       <div>

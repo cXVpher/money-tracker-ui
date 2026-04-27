@@ -6,7 +6,7 @@ import { AccountDialog } from "./account-dialog";
 import { AccountTotalCard } from "./account-total-card";
 import { getAccountsTotalBalance } from "../_utils/account-summary";
 
-export function AccountsScreen() {
+export function AccountsPageContent() {
   const totalBalance = getAccountsTotalBalance(mockAccounts);
 
   return (

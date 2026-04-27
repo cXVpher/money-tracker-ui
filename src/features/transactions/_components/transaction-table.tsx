@@ -18,36 +18,38 @@ import { Input } from "@/shared/_components/ui/input";
 import { formatDate, formatRupiah } from "@/shared/_utils/formatters";
 import { mockAccounts, mockTransactions, type Transaction } from "@/shared/_constants/mock-data";
 
-const categories = Array.from(
+const categoryOptions = Array.from(
   new Set(mockTransactions.map((transaction) => transaction.categoryName))
 );
 
 export function TransactionTable() {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
-  const [account, setAccount] = useState("all");
-  const [type, setType] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedAccount, setSelectedAccount] = useState("all");
+  const [selectedTransactionType, setSelectedTransactionType] = useState("all");
   const [sorting, setSorting] = useState<SortingState>([
     { id: "date", desc: true },
   ]);
 
-  const data = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
+  const filteredTransactions = useMemo(() => {
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
     return mockTransactions.filter((transaction) => {
       const matchesQuery =
-        !normalized ||
-        transaction.description.toLowerCase().includes(normalized) ||
-        transaction.categoryName.toLowerCase().includes(normalized) ||
-        transaction.accountName.toLowerCase().includes(normalized);
+        !normalizedSearchQuery ||
+        transaction.description.toLowerCase().includes(normalizedSearchQuery) ||
+        transaction.categoryName.toLowerCase().includes(normalizedSearchQuery) ||
+        transaction.accountName.toLowerCase().includes(normalizedSearchQuery);
       const matchesCategory =
-        category === "all" || transaction.categoryName === category;
+        selectedCategory === "all" || transaction.categoryName === selectedCategory;
       const matchesAccount =
-        account === "all" || transaction.accountName === account;
-      const matchesType = type === "all" || transaction.type === type;
+        selectedAccount === "all" || transaction.accountName === selectedAccount;
+      const matchesType =
+        selectedTransactionType === "all" ||
+        transaction.type === selectedTransactionType;
 
       return matchesQuery && matchesCategory && matchesAccount && matchesType;
     });
-  }, [account, category, query, type]);
+  }, [searchQuery, selectedCategory, selectedAccount, selectedTransactionType]);
 
   const columns = useMemo<ColumnDef<Transaction>[]>(
     () => [
@@ -97,7 +99,7 @@ export function TransactionTable() {
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data,
+    data: filteredTransactions,
     columns,
     state: { sorting },
     onSortingChange: setSorting,
@@ -112,28 +114,31 @@ export function TransactionTable() {
       <CardContent className="space-y-4">
         <div className="grid gap-3 md:grid-cols-[1.3fr_repeat(3,0.7fr)]">
           <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Cari transaksi"
             className="h-10"
           />
-          <FilterSelect value={category} onChange={setCategory}>
+          <FilterSelect value={selectedCategory} onChange={setSelectedCategory}>
             <option value="all">Semua kategori</option>
-            {categories.map((item) => (
-              <option key={item} value={item}>
-                {item}
+            {categoryOptions.map((categoryName) => (
+              <option key={categoryName} value={categoryName}>
+                {categoryName}
               </option>
             ))}
           </FilterSelect>
-          <FilterSelect value={account} onChange={setAccount}>
+          <FilterSelect value={selectedAccount} onChange={setSelectedAccount}>
             <option value="all">Semua akun</option>
-            {mockAccounts.map((item) => (
-              <option key={item.id} value={item.name}>
-                {item.name}
+            {mockAccounts.map((account) => (
+              <option key={account.id} value={account.name}>
+                {account.name}
               </option>
             ))}
           </FilterSelect>
-          <FilterSelect value={type} onChange={setType}>
+          <FilterSelect
+            value={selectedTransactionType}
+            onChange={setSelectedTransactionType}
+          >
             <option value="all">Semua tipe</option>
             <option value="income">Income</option>
             <option value="expense">Expense</option>
@@ -180,7 +185,7 @@ export function TransactionTable() {
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {data.length} transaksi ditemukan
+            {filteredTransactions.length} transaksi ditemukan
           </p>
           <div className="flex items-center gap-2">
             <Button

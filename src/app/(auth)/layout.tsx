@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Wallet } from "lucide-react";
-import { APP_NAME } from "@/shared/_constants/app";
+import { APP_NAME } from "@/shared/_constants/brand";
 
 export default function AuthLayout({
   children,

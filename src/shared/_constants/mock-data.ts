@@ -83,15 +83,15 @@ export const mockExpenseByCategory = [
   { name: "Hiburan", value: 480_000, icon: "🎮", color: "#8b5cf6" },
 ];
 
-// Summary stats
-export function getMockSummary() {
-  const totalBalance = mockAccounts.reduce((sum, a) => sum + a.balance, 0);
+// Dashboard summary stats
+export function getMockDashboardSummary() {
+  const totalBalance = mockAccounts.reduce((sum, account) => sum + account.balance, 0);
   const monthlyIncome = mockTransactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter((transaction) => transaction.type === "income")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
   const monthlyExpense = mockTransactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
 
   return {
     totalBalance,
@@ -99,8 +99,8 @@ export function getMockSummary() {
     monthlyExpense,
     cashflow: monthlyIncome - monthlyExpense,
     cashflowStatus: monthlyIncome > monthlyExpense ? "surplus" : "deficit",
-    totalBudgetUsed: mockBudgets.reduce((sum, b) => sum + b.spent, 0),
-    totalBudgetLimit: mockBudgets.reduce((sum, b) => sum + b.limit, 0),
+    totalBudgetUsed: mockBudgets.reduce((sum, budget) => sum + budget.spent, 0),
+    totalBudgetLimit: mockBudgets.reduce((sum, budget) => sum + budget.limit, 0),
     emergencyRunway: 5.3,
     accountCount: mockAccounts.length,
   };

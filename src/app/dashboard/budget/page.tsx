@@ -1,5 +1,5 @@
-import { BudgetScreen } from "./_components/budget-screen";
+import { BudgetPageContent } from "./_components/budget-page-content";
 
 export default function BudgetPage() {
-  return <BudgetScreen />;
+  return <BudgetPageContent />;
 }

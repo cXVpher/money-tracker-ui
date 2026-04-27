@@ -14,15 +14,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/u
 import { formatRupiahShort } from "@/shared/_utils/formatters";
 import { mockMonthlyCashflow } from "@/shared/_constants/mock-data";
 
-const subscribe = () => () => {};
-const getClientSnapshot = () => true;
-const getServerSnapshot = () => false;
+const subscribeToMountState = () => () => {};
+const getMountedClientSnapshot = () => true;
+const getUnmountedServerSnapshot = () => false;
 
 export function CashflowChart() {
-  const mounted = useSyncExternalStore(
-    subscribe,
-    getClientSnapshot,
-    getServerSnapshot
+  const isMounted = useSyncExternalStore(
+    subscribeToMountState,
+    getMountedClientSnapshot,
+    getUnmountedServerSnapshot
   );
 
   return (
@@ -34,7 +34,7 @@ export function CashflowChart() {
         </p>
       </CardHeader>
       <CardContent className="h-[260px]">
-        {mounted ? (
+        {isMounted ? (
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart data={mockMonthlyCashflow} barGap={8}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

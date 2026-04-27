@@ -1,8 +1,12 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
-import { accountGrowth, incomeSources, monthOverMonthMetrics } from "../_utils/analytics-data";
-import { useChartMount } from "../_hooks/use-chart-mount";
+import {
+  accountBalanceSeries,
+  incomeSourceBreakdown,
+  monthOverMonthChangeMetrics,
+} from "../_utils/analytics-series";
+import { useChartClientReady } from "../_hooks/use-chart-client-ready";
 import { BalanceGrowthChart } from "./balance-growth-chart";
 import { CashflowChart } from "./cashflow-chart";
 import { ChartCard } from "./chart-card";
@@ -11,8 +15,8 @@ import { ExpenseCategoryChart } from "./expense-category-chart";
 import { IncomeSourcesChart } from "./income-sources-chart";
 import { MetricCard } from "./metric-card";
 
-export function AnalyticsScreen() {
-  const mounted = useChartMount();
+export function AnalyticsPageContent() {
+  const isChartClientReady = useChartClientReady();
 
   return (
     <div className="space-y-6">
@@ -25,19 +29,27 @@ export function AnalyticsScreen() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <ChartCard title="Tren Cashflow Bulanan">
-          {mounted ? <CashflowChart /> : <ChartFallback />}
+          {isChartClientReady ? <CashflowChart /> : <ChartFallback />}
         </ChartCard>
 
         <ChartCard title="Expense by Category">
-          {mounted ? <ExpenseCategoryChart /> : <ChartFallback />}
+          {isChartClientReady ? <ExpenseCategoryChart /> : <ChartFallback />}
         </ChartCard>
 
         <ChartCard title="Sumber Pemasukan">
-          {mounted ? <IncomeSourcesChart data={incomeSources} /> : <ChartFallback />}
+          {isChartClientReady ? (
+            <IncomeSourcesChart incomeSources={incomeSourceBreakdown} />
+          ) : (
+            <ChartFallback />
+          )}
         </ChartCard>
 
         <ChartCard title="Pertumbuhan Saldo">
-          {mounted ? <BalanceGrowthChart data={accountGrowth} /> : <ChartFallback />}
+          {isChartClientReady ? (
+            <BalanceGrowthChart balanceSeries={accountBalanceSeries} />
+          ) : (
+            <ChartFallback />
+          )}
         </ChartCard>
       </div>
 
@@ -46,7 +58,7 @@ export function AnalyticsScreen() {
           <CardTitle>Month-over-Month</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
-          {monthOverMonthMetrics.map((metric) => (
+          {monthOverMonthChangeMetrics.map((metric) => (
             <MetricCard key={metric.label} {...metric} />
           ))}
         </CardContent>

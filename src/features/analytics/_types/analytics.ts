@@ -1,4 +1,4 @@
-export type ChartDatum = {
+export type LabeledAmountDatum = {
   name: string;
   value: number;
 };

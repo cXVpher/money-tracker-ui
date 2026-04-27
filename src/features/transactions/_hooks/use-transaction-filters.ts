@@ -2,37 +2,40 @@ import { useMemo, useState } from "react";
 import type { Transaction } from "@/features/transactions/_types/transaction";
 
 export function useTransactionFilters(transactions: Transaction[]) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
-  const [account, setAccount] = useState("all");
-  const [type, setType] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedAccount, setSelectedAccount] = useState("all");
+  const [selectedTransactionType, setSelectedTransactionType] = useState("all");
 
-  const data = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
+  const filteredTransactions = useMemo(() => {
+    const normalizedSearchQuery = searchQuery.trim().toLowerCase();
     return transactions.filter((transaction) => {
       const matchesQuery =
-        !normalized ||
-        transaction.description.toLowerCase().includes(normalized) ||
-        transaction.categoryName.toLowerCase().includes(normalized) ||
-        transaction.accountName.toLowerCase().includes(normalized);
+        !normalizedSearchQuery ||
+        transaction.description.toLowerCase().includes(normalizedSearchQuery) ||
+        transaction.categoryName.toLowerCase().includes(normalizedSearchQuery) ||
+        transaction.accountName.toLowerCase().includes(normalizedSearchQuery);
       const matchesCategory =
-        category === "all" || transaction.categoryName === category;
-      const matchesAccount = account === "all" || transaction.accountName === account;
-      const matchesType = type === "all" || transaction.type === type;
+        selectedCategory === "all" || transaction.categoryName === selectedCategory;
+      const matchesAccount =
+        selectedAccount === "all" || transaction.accountName === selectedAccount;
+      const matchesType =
+        selectedTransactionType === "all" ||
+        transaction.type === selectedTransactionType;
 
       return matchesQuery && matchesCategory && matchesAccount && matchesType;
     });
-  }, [account, category, query, transactions, type]);
+  }, [searchQuery, selectedCategory, selectedAccount, selectedTransactionType, transactions]);
 
   return {
-    account,
-    category,
-    data,
-    query,
-    setAccount,
-    setCategory,
-    setQuery,
-    setType,
-    type,
+    filteredTransactions,
+    searchQuery,
+    selectedAccount,
+    selectedCategory,
+    selectedTransactionType,
+    setSearchQuery,
+    setSelectedAccount,
+    setSelectedCategory,
+    setSelectedTransactionType,
   };
 }

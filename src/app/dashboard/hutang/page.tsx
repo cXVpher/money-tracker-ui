@@ -1,5 +1,5 @@
-import { DebtsScreen } from "./_components/debts-screen";
+import { DebtsPageContent } from "./_components/debts-page-content";
 
 export default function DebtsPage() {
-  return <DebtsScreen />;
+  return <DebtsPageContent />;
 }

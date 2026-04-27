@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { AtSign, GitFork, Globe, Mail, Wallet } from "lucide-react";
-import { APP_DESCRIPTION, APP_NAME } from "@/shared/_constants/app";
+import { APP_DESCRIPTION, APP_NAME } from "@/shared/_constants/brand";
 
-const footerSections = [
+const footerLinkGroups = [
   {
     title: "Produk",
     links: [
@@ -32,7 +32,7 @@ const footerSections = [
   },
 ];
 
-const socials = [
+const socialLinks = [
   { label: "Website", href: "/", icon: Globe },
   { label: "Komunitas", href: "mailto:community@duitku.app", icon: AtSign },
   { label: "Roadmap", href: "/roadmap", icon: GitFork },
@@ -58,7 +58,7 @@ export function Footer() {
               kas pribadi dari satu dashboard yang rapi.
             </p>
             <div className="mt-6 flex items-center gap-2">
-              {socials.map((social) => (
+              {socialLinks.map((social) => (
                 <Link
                   key={social.label}
                   href={social.href}
@@ -72,7 +72,7 @@ export function Footer() {
           </div>
 
           <div className="grid gap-8 sm:grid-cols-3">
-            {footerSections.map((section) => (
+            {footerLinkGroups.map((section) => (
               <div key={section.title}>
                 <h3 className="mb-4 text-sm font-semibold">{section.title}</h3>
                 <ul className="space-y-3">

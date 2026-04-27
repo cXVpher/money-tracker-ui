@@ -1,5 +1,5 @@
-import { AccountsScreen } from "./_components/accounts-screen";
+import { AccountsPageContent } from "./_components/accounts-page-content";
 
 export default function AccountsPage() {
-  return <AccountsScreen />;
+  return <AccountsPageContent />;
 }

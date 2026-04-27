@@ -2,11 +2,11 @@ import { mockBudgets } from "@/shared/_constants/mock-data";
 import { BudgetCard } from "./budget-card";
 import { BudgetDialog } from "./budget-dialog";
 import { BudgetHistory } from "./budget-history";
-import { BudgetSummaryCard } from "./budget-summary-card";
-import { getBudgetSummary } from "../_utils/budget-summary";
+import { BudgetSpendingSummaryCard } from "./budget-spending-summary-card";
+import { getBudgetSpendingSummary } from "../_utils/budget-spending-summary";
 
-export function BudgetScreen() {
-  const summary = getBudgetSummary(mockBudgets);
+export function BudgetPageContent() {
+  const budgetSpendingSummary = getBudgetSpendingSummary(mockBudgets);
 
   return (
     <div className="space-y-6">
@@ -20,7 +20,7 @@ export function BudgetScreen() {
         <BudgetDialog />
       </div>
 
-      <BudgetSummaryCard summary={summary} />
+      <BudgetSpendingSummaryCard budgetSpendingSummary={budgetSpendingSummary} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {mockBudgets.map((budget) => (
@@ -28,7 +28,7 @@ export function BudgetScreen() {
         ))}
       </div>
 
-      <BudgetHistory totalSpent={summary.totalSpent} />
+      <BudgetHistory totalSpent={budgetSpendingSummary.totalSpent} />
     </div>
   );
 }

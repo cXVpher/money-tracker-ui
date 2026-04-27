@@ -1,11 +1,11 @@
 import { mockDebts } from "@/shared/_constants/mock-data";
 import { DebtCard } from "./debt-card";
 import { DebtDialog } from "./debt-dialog";
-import { DebtSummaryCard } from "./debt-summary-card";
-import { getDebtSummaries } from "../_utils/debt-summary";
+import { DebtBalanceSummaryCard } from "./debt-balance-summary-card";
+import { getDebtBalanceSummaries } from "../_utils/debt-balance-summary";
 
-export function DebtsScreen() {
-  const summaries = getDebtSummaries(mockDebts);
+export function DebtsPageContent() {
+  const debtBalanceSummaries = getDebtBalanceSummaries(mockDebts);
 
   return (
     <div className="space-y-6">
@@ -20,8 +20,11 @@ export function DebtsScreen() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {summaries.map((summary) => (
-          <DebtSummaryCard key={summary.title} summary={summary} />
+        {debtBalanceSummaries.map((debtBalanceSummary) => (
+          <DebtBalanceSummaryCard
+            key={debtBalanceSummary.title}
+            debtBalanceSummary={debtBalanceSummary}
+          />
         ))}
       </div>
 

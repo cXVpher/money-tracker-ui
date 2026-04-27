@@ -2,7 +2,7 @@ import { mockGoals } from "@/shared/_constants/mock-data";
 import { GoalCard } from "./goal-card";
 import { GoalDialog } from "./goal-dialog";
 
-export function GoalsScreen() {
+export function GoalsPageContent() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

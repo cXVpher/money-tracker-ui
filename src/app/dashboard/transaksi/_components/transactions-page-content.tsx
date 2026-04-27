@@ -1,7 +1,7 @@
 import { TransactionForm } from "@/features/transactions/_components/transaction-form";
 import { TransactionTable } from "@/features/transactions/_components/transaction-table";
 
-export function TransactionsScreen() {
+export function TransactionsPageContent() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

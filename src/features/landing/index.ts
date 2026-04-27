@@ -6,5 +6,5 @@ export * from "@/features/landing/_components/hero";
 export * from "@/features/landing/_components/navbar";
 export * from "@/features/landing/_components/pricing";
 export * from "@/features/landing/_components/testimonials";
-export * from "@/features/landing/_utils/landing-sections";
+export * from "@/features/landing/_utils/landing-navigation";
 export * from "@/features/landing/_types/landing";

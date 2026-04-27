@@ -49,8 +49,8 @@ export function formatDate(date: Date | string): string {
  */
 export function formatRelativeDate(date: Date | string): string {
   const now = new Date();
-  const d = new Date(date);
-  const diffMs = now.getTime() - d.getTime();
+  const targetDate = new Date(date);
+  const diffMs = now.getTime() - targetDate.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return "Hari ini";

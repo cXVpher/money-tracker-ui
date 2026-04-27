@@ -1,10 +1,10 @@
 import { mockTransactions } from "@/shared/_constants/mock-data";
 import { CalendarGrid } from "./calendar-grid";
 import { SelectedDayTransactions } from "./selected-day-transactions";
-import { getCalendarDays } from "../_utils/calendar-data";
+import { getCashflowCalendarDays } from "../_utils/calendar-day-summaries";
 
-export function CalendarScreen() {
-  const daily = getCalendarDays();
+export function CalendarPageContent() {
+  const calendarDaySummaries = getCashflowCalendarDays();
 
   return (
     <div className="space-y-6">
@@ -15,7 +15,7 @@ export function CalendarScreen() {
         </h1>
       </div>
 
-      <CalendarGrid days={daily} />
+      <CalendarGrid days={calendarDaySummaries} />
       <SelectedDayTransactions transactions={mockTransactions.slice(0, 4)} />
     </div>
   );

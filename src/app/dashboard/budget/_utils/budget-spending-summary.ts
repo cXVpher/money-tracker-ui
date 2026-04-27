@@ -1,7 +1,7 @@
 import type { Budget } from "@/shared/_types/finance";
-import type { BudgetSummary, BudgetTone } from "../_types/budget";
+import type { BudgetSpendingSummary, BudgetTone } from "../_types/budget";
 
-export function getBudgetSummary(budgets: Budget[]): BudgetSummary {
+export function getBudgetSpendingSummary(budgets: Budget[]): BudgetSpendingSummary {
   const totalLimit = budgets.reduce((sum, budget) => sum + budget.limit, 0);
   const totalSpent = budgets.reduce((sum, budget) => sum + budget.spent, 0);
 

@@ -1,13 +1,15 @@
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { formatRupiahShort } from "@/shared/_utils/formatters";
-import { getDailyCashflow } from "@/features/calendar/_utils/calendar-cashflow";
+import { getCalendarDayCashflow } from "@/features/calendar/_utils/calendar-day-cashflow";
 import type { Transaction } from "@/shared/_types/finance";
 
-const days = Array.from({ length: 30 }, (_, index) => index + 1);
+const calendarDayNumbers = Array.from({ length: 30 }, (_, index) => index + 1);
 
 export function CashflowCalendar({ transactions }: { transactions: Transaction[] }) {
-  const daily = days.map((day) => getDailyCashflow(day, transactions));
+  const dailyCashflowSummaries = calendarDayNumbers.map((day) =>
+    getCalendarDayCashflow(day, transactions)
+  );
 
   return (
     <Card>
@@ -27,25 +29,25 @@ export function CashflowCalendar({ transactions }: { transactions: Transaction[]
           ))}
         </div>
         <div className="grid grid-cols-7 gap-2">
-          {daily.map((item) => (
+          {dailyCashflowSummaries.map((daySummary) => (
             <div
-              key={item.day}
+              key={daySummary.day}
               className={
-                item.net > 0
+                daySummary.net > 0
                   ? "min-h-24 rounded-lg border border-success/30 bg-success/10 p-2"
-                  : item.net < 0
+                  : daySummary.net < 0
                     ? "min-h-24 rounded-lg border border-destructive/30 bg-destructive/10 p-2"
                     : "min-h-24 rounded-lg border border-border bg-card p-2"
               }
             >
-              <p className="text-sm font-semibold">{item.day}</p>
-              {item.transactions.length > 0 ? (
+              <p className="text-sm font-semibold">{daySummary.day}</p>
+              {daySummary.transactions.length > 0 ? (
                 <div className="mt-2 space-y-1 text-left">
                   <p className="text-xs font-medium">
-                    {formatRupiahShort(Math.abs(item.net))}
+                    {formatRupiahShort(Math.abs(daySummary.net))}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    {item.transactions.length} transaksi
+                    {daySummary.transactions.length} transaksi
                   </p>
                 </div>
               ) : null}

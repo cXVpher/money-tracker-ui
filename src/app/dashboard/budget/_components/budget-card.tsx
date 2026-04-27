@@ -2,7 +2,7 @@ import type { Budget } from "@/shared/_types/finance";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
-import { getBudgetTone } from "../_utils/budget-summary";
+import { getBudgetTone } from "../_utils/budget-spending-summary";
 
 interface BudgetCardProps {
   budget: Budget;
