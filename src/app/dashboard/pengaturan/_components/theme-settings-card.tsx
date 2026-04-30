@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useTheme } from "@/shared/_components/providers/theme-provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 
 const themes = [

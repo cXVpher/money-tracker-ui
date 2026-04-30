@@ -4,6 +4,11 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
+import {
+  type CreateTransactionInput,
+  createTransaction,
+} from "@/shared/_utils/backend-client";
 import {
   Dialog,
   DialogClose,
@@ -18,6 +23,7 @@ import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { Textarea } from "@/shared/_components/ui/textarea";
 import type { Account, Transaction } from "@/shared/_types/finance";
+import { shouldUseMockFallback } from "@/shared/_utils/api-client";
 import {
   addStoredTransaction,
   createClientId,
@@ -30,12 +36,14 @@ type TransactionFormProps = {
     icon: string;
     name: string;
   }>;
+  preferBackend?: boolean;
   onTransactionCreated?: (transaction: Transaction) => void;
 };
 
 export function TransactionForm({
   accounts,
   categoryOptions,
+  preferBackend = !USE_MOCK_DATA,
   onTransactionCreated,
 }: TransactionFormProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,6 +59,7 @@ export function TransactionForm({
   );
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
+  const isMockMode = !preferBackend;
 
   function resetForm() {
     setTransactionType("expense");
@@ -62,13 +71,10 @@ export function TransactionForm({
     setTags("");
   }
 
-  function handleSaveTransaction(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSaveTransaction(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const parsedAmount = Number(amount);
-    const selectedAccount = accounts.find(
-      (account) => account.name === selectedAccountName
-    );
     const selectedCategory = categoryOptions.find(
       (category) => category.name === selectedCategoryName
     );
@@ -78,7 +84,7 @@ export function TransactionForm({
       return;
     }
 
-    if (!date) {
+    if (isMockMode && !date) {
       toast.error("Tanggal transaksi wajib diisi.");
       return;
     }
@@ -88,31 +94,72 @@ export function TransactionForm({
       return;
     }
 
-    if (!selectedAccount || !selectedCategory) {
+    if (!selectedCategory) {
       toast.error("Akun atau kategori transaksi tidak valid.");
       return;
     }
 
-    const transaction: Transaction = {
-      id: createClientId("transaction"),
-      accountId: selectedAccount.id,
-      categoryId: createClientId("category"),
-      type: transactionType,
-      amount: parsedAmount,
-      description: tags.trim()
-        ? `${description.trim()} [${tags.trim()}]`
-        : description.trim(),
-      date,
-      categoryName: selectedCategory.name,
-      categoryIcon: selectedCategory.icon,
-      accountName: selectedAccount.name,
-    };
+    try {
+      if (isMockMode) {
+        const transaction = createMockTransaction({
+          accounts,
+          amount: parsedAmount,
+          category: selectedCategory,
+          date,
+          description,
+          selectedAccountName,
+          tags,
+          transactionType,
+        });
+        addStoredTransaction(transaction);
+        onTransactionCreated?.(transaction);
+        toast.success("Transaksi mock berhasil ditambahkan.");
+      } else {
+        if (transactionType === "transfer") {
+          toast.error("Mode backend belum mendukung transaksi transfer.");
+          return;
+        }
 
-    addStoredTransaction(transaction);
-    onTransactionCreated?.(transaction);
-    toast.success("Transaksi mock berhasil ditambahkan.");
-    resetForm();
-    setIsOpen(false);
+        const transaction = await createTransaction({
+          amount: parsedAmount,
+          categoryName: selectedCategory.name,
+          description: description.trim(),
+          transactionType: transactionType as CreateTransactionInput["transactionType"],
+        });
+        onTransactionCreated?.(transaction);
+        toast.success("Transaksi berhasil ditambahkan.");
+      }
+
+      resetForm();
+      setIsOpen(false);
+    } catch (error) {
+      if (preferBackend && shouldUseMockFallback(error)) {
+        const fallbackTransaction = createMockTransaction({
+          accounts,
+          amount: parsedAmount,
+          category: selectedCategory,
+          date: date || new Date().toISOString().slice(0, 10),
+          description,
+          selectedAccountName,
+          tags,
+          transactionType,
+        });
+        addStoredTransaction(fallbackTransaction);
+        onTransactionCreated?.(fallbackTransaction);
+        toast.warning(
+          "API transaksi belum aktif. Transaksi disimpan sebagai data mock."
+        );
+        resetForm();
+        setIsOpen(false);
+        return;
+      }
+
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Transaksi belum bisa disimpan."
+      );
+    }
   }
 
   return (
@@ -133,13 +180,18 @@ export function TransactionForm({
         <DialogHeader>
           <DialogTitle>Tambah Transaksi</DialogTitle>
           <DialogDescription>
-            Transaksi baru disimpan lokal sebagai mock sampai API transaksi siap.
+            {preferBackend
+              ? "Akan mencoba menyimpan ke API, lalu fallback ke mock bila endpoint belum aktif."
+              : "Transaksi baru disimpan lokal sebagai mock sampai API transaksi siap."}
           </DialogDescription>
         </DialogHeader>
 
         <form className="grid gap-4" onSubmit={handleSaveTransaction}>
           <div className="grid grid-cols-3 gap-2">
-            {["expense", "income", "transfer"].map((type) => (
+            {(isMockMode
+              ? ["expense", "income", "transfer"]
+              : ["expense", "income"]
+            ).map((type) => (
               <Button
                 key={type}
                 type="button"
@@ -167,16 +219,18 @@ export function TransactionForm({
                 onChange={(event) => setAmount(event.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Tanggal</Label>
-              <Input
-                id="date"
-                type="date"
-                className="h-10"
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
-              />
-            </div>
+            {isMockMode ? (
+              <div className="space-y-2">
+                <Label htmlFor="date">Tanggal</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  className="h-10"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                />
+              </div>
+            ) : null}
             <div className="space-y-2">
               <Label htmlFor="category">Kategori</Label>
               <select
@@ -192,21 +246,23 @@ export function TransactionForm({
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="account">Akun</Label>
-              <select
-                id="account"
-                value={selectedAccountName}
-                onChange={(event) => setSelectedAccountName(event.target.value)}
-                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                {accounts.map((account) => (
-                  <option key={account.id} value={account.name}>
-                    {account.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {isMockMode ? (
+              <div className="space-y-2">
+                <Label htmlFor="account">Akun</Label>
+                <select
+                  id="account"
+                  value={selectedAccountName}
+                  onChange={(event) => setSelectedAccountName(event.target.value)}
+                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.name}>
+                      {account.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -218,15 +274,17 @@ export function TransactionForm({
               onChange={(event) => setDescription(event.target.value)}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              placeholder="kerja, reimbursable"
-              value={tags}
-              onChange={(event) => setTags(event.target.value)}
-            />
-          </div>
+          {isMockMode ? (
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <Input
+                id="tags"
+                placeholder="kerja, reimbursable"
+                value={tags}
+                onChange={(event) => setTags(event.target.value)}
+              />
+            </div>
+          ) : null}
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline" type="button" />}>
@@ -238,4 +296,48 @@ export function TransactionForm({
       </DialogContent>
     </Dialog>
   );
+}
+
+function createMockTransaction({
+  accounts,
+  amount,
+  category,
+  date,
+  description,
+  selectedAccountName,
+  tags,
+  transactionType,
+}: {
+  accounts: Account[];
+  amount: number;
+  category: {
+    color: string;
+    icon: string;
+    name: string;
+  };
+  date: string;
+  description: string;
+  selectedAccountName: string;
+  tags: string;
+  transactionType: Transaction["type"];
+}) {
+  const selectedAccount =
+    accounts.find((account) => account.name === selectedAccountName) ?? null;
+  const accountName = selectedAccount?.name ?? "DuitKu";
+  const accountId = selectedAccount?.id ?? "mock-backend";
+
+  return {
+    id: createClientId("transaction"),
+    accountId,
+    categoryId: createClientId("category"),
+    type: transactionType,
+    amount,
+    description: tags.trim()
+      ? `${description.trim()} [${tags.trim()}]`
+      : description.trim(),
+    date,
+    categoryName: category.name,
+    categoryIcon: category.icon,
+    accountName,
+  } satisfies Transaction;
 }

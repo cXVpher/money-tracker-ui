@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
+import { ApiClientError, shouldUseMockFallback } from "@/shared/_utils/api-client";
+import { getProfile, updateProfile } from "@/shared/_utils/backend-client";
 import {
   getProfileSettings,
   saveProfileSettings,
@@ -14,15 +17,84 @@ import {
 
 export function ProfileSettingsCard() {
   const [profileSettings, setProfileSettings] = useState(getProfileSettings);
+  const [isLoading, setIsLoading] = useState(!USE_MOCK_DATA);
+  const [isSaving, setIsSaving] = useState(false);
 
-  function handleSaveProfile() {
+  useEffect(() => {
+    if (USE_MOCK_DATA) {
+      return;
+    }
+
+    let isActive = true;
+
+    async function loadProfile() {
+      try {
+        const profile = await getProfile();
+        if (isActive) {
+          setProfileSettings({
+            email: profile.user.email ?? "",
+            name: profile.user.name,
+          });
+        }
+      } catch (error) {
+        if (isActive) {
+          if (shouldUseMockFallback(error)) {
+            toast.warning("API profil belum aktif. Menampilkan profil mock.");
+            return;
+          }
+
+          const message =
+            error instanceof ApiClientError
+              ? error.message
+              : "Gagal memuat profil.";
+          toast.error(message);
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadProfile();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  async function handleSaveProfile() {
     if (!profileSettings.name.trim() || !profileSettings.email.trim()) {
       toast.error("Nama dan email wajib diisi.");
       return;
     }
 
-    saveProfileSettings(profileSettings);
-    toast.success("Profil tersimpan di perangkat ini.");
+    setIsSaving(true);
+
+    try {
+      if (USE_MOCK_DATA) {
+        saveProfileSettings(profileSettings);
+        toast.success("Profil tersimpan di perangkat ini.");
+        return;
+      }
+
+      await updateProfile(profileSettings);
+      toast.success("Profil berhasil diperbarui.");
+    } catch (error) {
+      if (!USE_MOCK_DATA && shouldUseMockFallback(error)) {
+        saveProfileSettings(profileSettings);
+        toast.warning("API profil belum aktif. Profil disimpan lokal dulu.");
+        return;
+      }
+
+      const message =
+        error instanceof ApiClientError
+          ? error.message
+          : "Gagal menyimpan profil.";
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -39,6 +111,7 @@ export function ProfileSettingsCard() {
           <Input
             id="name"
             value={profileSettings.name}
+            disabled={isLoading || isSaving}
             onChange={(event) =>
               setProfileSettings((current) => ({
                 ...current,
@@ -53,6 +126,7 @@ export function ProfileSettingsCard() {
             id="email"
             type="email"
             value={profileSettings.email}
+            disabled={isLoading || isSaving}
             onChange={(event) =>
               setProfileSettings((current) => ({
                 ...current,
@@ -62,7 +136,9 @@ export function ProfileSettingsCard() {
           />
         </div>
         <div className="sm:col-span-2">
-          <Button onClick={handleSaveProfile}>Simpan Profil</Button>
+          <Button onClick={handleSaveProfile} disabled={isLoading || isSaving}>
+            {isSaving ? "Menyimpan..." : "Simpan Profil"}
+          </Button>
         </div>
       </CardContent>
     </Card>

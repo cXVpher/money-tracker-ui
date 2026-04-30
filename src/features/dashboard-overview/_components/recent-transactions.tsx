@@ -3,13 +3,18 @@
 import { useMemo } from "react";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
+import type { Transaction } from "@/shared/_types/finance";
 import { formatRelativeDate, formatRupiah } from "@/shared/_utils/formatters";
 import { getAppTransactions } from "@/shared/_utils/mock-client-store";
 
-export function RecentTransactions() {
+type RecentTransactionsProps = {
+  transactions?: Transaction[];
+};
+
+export function RecentTransactions({ transactions: providedTransactions }: RecentTransactionsProps) {
   const recentTransactions = useMemo(
-    () => getAppTransactions().slice(0, 5),
-    []
+    () => providedTransactions ?? getAppTransactions().slice(0, 5),
+    [providedTransactions]
   );
 
   return (
@@ -18,7 +23,7 @@ export function RecentTransactions() {
         <CardTitle>Transaksi Terakhir</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {recentTransactions.map((transaction) => (
+        {recentTransactions.length ? recentTransactions.map((transaction) => (
           <div key={transaction.id} className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-lg">
               {transaction.categoryIcon}
@@ -47,7 +52,11 @@ export function RecentTransactions() {
               </Badge>
             </div>
           </div>
-        ))}
+        )) : (
+          <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+            Belum ada transaksi untuk ditampilkan.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

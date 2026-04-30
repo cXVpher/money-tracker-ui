@@ -16,6 +16,19 @@ Start the development server:
 pnpm dev
 ```
 
+## Environment
+
+This app can run in mock mode or use the Go backend.
+
+```bash
+NEXT_PUBLIC_MOCK_DATA=true
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+```
+
+- Set `NEXT_PUBLIC_MOCK_DATA=true` to keep the current local mock experience.
+- Set `NEXT_PUBLIC_MOCK_DATA=false` to use the checked backend-backed frontend flows.
+- `NEXT_PUBLIC_API_BASE_URL` should point to the Go API server.
+
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Other Commands

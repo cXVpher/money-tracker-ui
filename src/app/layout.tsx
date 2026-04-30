@@ -1,23 +1,59 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeProvider } from "@/shared/_components/providers/theme-provider";
 import { TooltipProvider } from "@/shared/_components/ui/tooltip";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({
+const geistSans = localFont({
+  src: [
+    {
+      path: "./fonts/geist-sans.woff2",
+      style: "normal",
+      weight: "400",
+    },
+    {
+      path: "./fonts/geist-sans-ext.woff2",
+      style: "normal",
+      weight: "400",
+    },
+  ],
   variable: "--font-sans",
-  subsets: ["latin"],
+  display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const geistHeading = localFont({
+  src: [
+    {
+      path: "./fonts/geist-sans.woff2",
+      style: "normal",
+      weight: "600",
+    },
+    {
+      path: "./fonts/geist-sans-ext.woff2",
+      style: "normal",
+      weight: "600",
+    },
+  ],
   variable: "--font-heading",
-  subsets: ["latin"],
+  display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = localFont({
+  src: [
+    {
+      path: "./fonts/geist-mono.woff2",
+      style: "normal",
+      weight: "400",
+    },
+    {
+      path: "./fonts/geist-mono-ext.woff2",
+      style: "normal",
+      weight: "400",
+    },
+  ],
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -42,7 +78,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistHeading.variable} ${geistMono.variable} dark h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

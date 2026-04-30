@@ -16,6 +16,8 @@ import {
   type Goal,
   type Transaction,
 } from "@/shared/_constants/mock-data";
+import { MOCK_ACCOUNT } from "@/shared/_constants/mock-auth";
+import { getMockSession, updateMockSessionProfile } from "@/shared/_utils/mock-auth";
 
 const STORAGE_KEYS = {
   accounts: "duitku:mock:accounts",
@@ -54,16 +56,20 @@ export type ExpenseCategorySeriesPoint = {
   value: number;
 };
 
-const defaultProfileSettings: ProfileSettings = {
-  name: "Bagas Pratama",
-  email: "bagas@email.com",
-};
-
 const defaultNotificationSettings: NotificationSettings = {
   billReminders: true,
   budgetAlerts: true,
   weeklySummary: true,
 };
+
+function getDefaultProfileSettings(): ProfileSettings {
+  const session = getMockSession();
+
+  return {
+    email: session?.email ?? MOCK_ACCOUNT.email,
+    name: session?.name ?? MOCK_ACCOUNT.name,
+  };
+}
 
 function getDefaultCategorySettings(): CategorySettings {
   return {
@@ -106,11 +112,12 @@ export function createClientId(prefix: string) {
 }
 
 export function getProfileSettings() {
-  return readStoredValue(STORAGE_KEYS.profile, defaultProfileSettings);
+  return readStoredValue(STORAGE_KEYS.profile, getDefaultProfileSettings());
 }
 
 export function saveProfileSettings(profileSettings: ProfileSettings) {
   writeStoredValue(STORAGE_KEYS.profile, profileSettings);
+  updateMockSessionProfile(profileSettings);
 }
 
 export function getNotificationSettings() {

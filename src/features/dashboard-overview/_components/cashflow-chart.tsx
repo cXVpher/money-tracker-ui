@@ -18,8 +18,19 @@ const subscribeToMountState = () => () => {};
 const getMountedClientSnapshot = () => true;
 const getUnmountedServerSnapshot = () => false;
 
-export function CashflowChart() {
-  const cashflowSeries = useMemo(() => getMonthlyCashflowSeries(), []);
+type CashflowChartProps = {
+  cashflowSeries?: Array<{
+    expense: number;
+    income: number;
+    month: string;
+  }>;
+};
+
+export function CashflowChart({ cashflowSeries: providedSeries }: CashflowChartProps) {
+  const cashflowSeries = useMemo(
+    () => providedSeries ?? getMonthlyCashflowSeries(),
+    [providedSeries]
+  );
   const isMounted = useSyncExternalStore(
     subscribeToMountState,
     getMountedClientSnapshot,
@@ -35,7 +46,11 @@ export function CashflowChart() {
         </p>
       </CardHeader>
       <CardContent className="h-[260px]">
-        {isMounted ? (
+        {!cashflowSeries.length ? (
+          <div className="flex h-full items-center justify-center rounded-lg bg-muted/40 text-sm text-muted-foreground">
+            Belum ada data cashflow untuk ditampilkan.
+          </div>
+        ) : isMounted ? (
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart data={cashflowSeries} barGap={8}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />

@@ -3,11 +3,11 @@
 import { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "next-themes";
 import { Menu, X, Sun, Moon, Wallet } from "lucide-react";
 import { Button } from "@/shared/_components/ui/button";
 import { APP_NAME } from "@/shared/_constants/brand";
 import { NAV_ITEMS } from "@/features/landing/_utils/landing-navigation";
+import { useTheme } from "@/shared/_components/providers/theme-provider";
 
 const subscribeToMountState = () => () => {};
 const getMountedClientSnapshot = () => true;

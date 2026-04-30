@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Wallet } from "lucide-react";
 import { Button } from "@/shared/_components/ui/button";
 import { APP_NAME } from "@/shared/_constants/brand";
@@ -11,13 +11,20 @@ import {
   dashboardIcons,
   type DashboardIconName,
 } from "@/features/dashboard-shell/_utils/icon-map";
+import { logoutMockAccount } from "@/shared/_utils/mock-auth";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const navItems = [
     ...DASHBOARD_NAV,
     { label: "Pengaturan", href: "/dashboard/pengaturan", icon: "Settings" },
   ] as const;
+
+  function handleLogout() {
+    logoutMockAccount();
+    router.push("/login");
+  }
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-border bg-sidebar px-4 py-5 lg:flex lg:flex-col">
@@ -64,7 +71,11 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <Button variant="ghost" className="mt-3 justify-start gap-3 text-muted-foreground">
+      <Button
+        variant="ghost"
+        className="mt-3 justify-start gap-3 text-muted-foreground"
+        onClick={handleLogout}
+      >
         <LogOut className="h-4 w-4" />
         Keluar
       </Button>
