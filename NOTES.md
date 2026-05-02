@@ -1,20 +1,25 @@
 ## feat:
-- Wired frontend authentication/profile flows to the Go backend API with mock fallback support.
-- Wired dashboard summary, chart, report, transaction list/detail/create/delete, balance, payments, tokens, groups, referrals, and admin API clients.
-- Added integration dashboard UI for payments, API tokens, groups, group reports, and referral management.
-- Added admin UI with admin login, dashboard stats, user list/detail/actions, payment verification/rejection, revenue, referrals, logs, backend-compatible user filters/sorting/pagination, and mock admin data while the API is inactive.
-- Moved admin access to the standalone `/admin` route so it is reachable only by directly entering the admin URL.
+- Made dashboard sidebar collapsible and scrollable so lower actions stay reachable.
+- Added mobile logout action inside the dashboard More menu.
+- Added Google OAuth through NextAuth for login and register when `NEXT_PUBLIC_MOCK_DATA=false`.
+- Added a light/dark theme toggle to the standalone admin page.
 
 ## fix:
-- Replaced all visible emoji/emoticon UI markers with Phosphor icon components.
-- Removed the Admin entry from the user dashboard navigation so admin access is not available from user-facing pages.
-- Replaced a malformed separator character in the admin user list with an ASCII separator.
+- Removed the user-facing Admin dashboard navigation path by keeping admin access on `/admin` only.
+- Reworked admin page colors to use app theme tokens instead of hardcoded light-mode styling.
 
 ## refactor:
-- Added a shared Phosphor icon compatibility module for existing icon imports and app icon mapping.
-- Moved admin page files out of the dashboard route tree into `src/app/admin`.
+- Added a dashboard shell component to manage sidebar collapsed state.
+- Replaced custom dashboard sidebar link markup with a shadcn-style navigation menu wrapper.
 
 ## docs:
 
+## style:
+- Improved admin page copy, empty states, cards, status badges, and payment/user management presentation for non-technical users.
+
 ## chore:
-- Installed and configured `@phosphor-icons/react`.
+- Installed `next-auth` and updated the lockfile.
+
+## test:
+
+## perf:

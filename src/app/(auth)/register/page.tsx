@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { UserPlus } from "@/shared/_components/icons/phosphor";
@@ -23,6 +24,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -77,6 +79,18 @@ export default function RegisterPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  async function handleGoogleRegister() {
+    if (USE_MOCK_DATA) {
+      toast.info("Google register aktif saat NEXT_PUBLIC_MOCK_DATA=false.");
+      return;
+    }
+
+    setIsGoogleSubmitting(true);
+    await signIn("google", {
+      callbackUrl: "/dashboard",
+    });
   }
 
   return (
@@ -154,7 +168,16 @@ export default function RegisterPage() {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <OAuthButton>Daftar dengan Google</OAuthButton>
+      <OAuthButton
+        disabled={USE_MOCK_DATA || isGoogleSubmitting}
+        onClick={() => void handleGoogleRegister()}
+      >
+        {USE_MOCK_DATA
+          ? "Google aktif saat mode API"
+          : isGoogleSubmitting
+            ? "Menghubungkan..."
+            : "Daftar dengan Google"}
+      </OAuthButton>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Sudah punya akun?{" "}
