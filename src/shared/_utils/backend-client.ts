@@ -2,6 +2,7 @@
 
 import type { Transaction } from "@/shared/_types/finance";
 import { apiRequest } from "@/shared/_utils/api-client";
+import { clearAccessToken } from "@/features/auth/_utils/jwt-session";
 
 type BackendUser = {
   created_at: string;
@@ -157,6 +158,8 @@ export type ChangePasswordInput = {
 };
 
 type AuthResponse = {
+  access_token?: string;
+  accessToken?: string;
   balance: BackendBalance;
   expires_in: number;
   user: BackendUser;
@@ -187,6 +190,7 @@ export async function login(input: LoginInput) {
   return apiRequest<AuthResponse>("/api/auth/login", {
     body: JSON.stringify(input),
     method: "POST",
+    skipAuthToken: true,
   });
 }
 
@@ -202,6 +206,7 @@ export async function register(input: RegisterInput) {
         : null,
     }),
     method: "POST",
+    skipAuthToken: true,
   });
 }
 
@@ -228,13 +233,18 @@ export async function refreshAuth() {
   return apiRequest<{ expires_in: number }>("/api/auth/refresh", {
     method: "POST",
     skipAuthRefresh: true,
+    skipAuthToken: true,
   });
 }
 
 export async function logout() {
-  return apiRequest<null>("/api/auth/logout", {
-    method: "POST",
-  });
+  try {
+    return await apiRequest<null>("/api/auth/logout", {
+      method: "POST",
+    });
+  } finally {
+    clearAccessToken();
+  }
 }
 
 export async function changePassword(input: ChangePasswordInput) {
