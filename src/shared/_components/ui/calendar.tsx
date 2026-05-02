@@ -10,7 +10,7 @@ import {
 
 import { cn } from "@/shared/_utils/cn"
 import { Button, buttonVariants } from "@/shared/_components/ui/button"
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "@/shared/_components/icons/phosphor"
 
 function Calendar({
   className,
@@ -219,3 +219,4 @@ function CalendarDayButton({
 }
 
 export { Calendar, CalendarDayButton }
+

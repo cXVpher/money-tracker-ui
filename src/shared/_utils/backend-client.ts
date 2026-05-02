@@ -85,6 +85,13 @@ type PeriodReportResponse = {
   transactions: BackendTransaction[] | null;
 };
 
+type PaginatedResponse<T> = {
+  items: T[];
+  page: number;
+  per_page: number;
+  total: number;
+};
+
 export type DashboardOverviewData = {
   cashflowSeries: Array<{
     expense: number;
@@ -106,6 +113,16 @@ export type DashboardOverviewData = {
 export type ProfileData = {
   balance: BackendBalance;
   user: BackendUser;
+};
+
+export type TransactionListFilters = {
+  from?: string;
+  kategori?: string;
+  page?: number;
+  perPage?: number;
+  search?: string;
+  tipe?: "IN" | "OUT";
+  to?: string;
 };
 
 export type UpdateProfileInput = {
@@ -134,6 +151,11 @@ export type CreateTransactionInput = {
   amount: number;
 };
 
+export type ChangePasswordInput = {
+  currentPassword: string;
+  newPassword: string;
+};
+
 type AuthResponse = {
   balance: BackendBalance;
   expires_in: number;
@@ -144,21 +166,21 @@ const backendCategoryMetadata: Record<
   string,
   { icon: string; label: string }
 > = {
-  Belanja: { icon: "🛍️", label: "Belanja" },
-  Lainnya: { icon: "📌", label: "Lainnya" },
-  Makan: { icon: "🍜", label: "Makanan & Minuman" },
-  Pemasukan: { icon: "💰", label: "Pemasukan" },
-  Tagihan: { icon: "📄", label: "Tagihan" },
-  Transport: { icon: "🚗", label: "Transportasi" },
+  Belanja: { icon: "shopping", label: "Belanja" },
+  Lainnya: { icon: "other", label: "Lainnya" },
+  Makan: { icon: "food", label: "Makanan & Minuman" },
+  Pemasukan: { icon: "salary", label: "Pemasukan" },
+  Tagihan: { icon: "bills", label: "Tagihan" },
+  Transport: { icon: "transport", label: "Transportasi" },
 };
 
 export const backendTransactionCategories = [
-  { color: "#f97316", icon: "🍜", name: "Makan" },
-  { color: "#3b82f6", icon: "🚗", name: "Transport" },
-  { color: "#64748b", icon: "📄", name: "Tagihan" },
-  { color: "#ec4899", icon: "🛍️", name: "Belanja" },
-  { color: "#22c55e", icon: "💰", name: "Pemasukan" },
-  { color: "#a3a3a3", icon: "📌", name: "Lainnya" },
+  { color: "#f97316", icon: "food", name: "Makan" },
+  { color: "#3b82f6", icon: "transport", name: "Transport" },
+  { color: "#64748b", icon: "bills", name: "Tagihan" },
+  { color: "#ec4899", icon: "shopping", name: "Belanja" },
+  { color: "#22c55e", icon: "salary", name: "Pemasukan" },
+  { color: "#a3a3a3", icon: "other", name: "Lainnya" },
 ] as const;
 
 export async function login(input: LoginInput) {
@@ -187,6 +209,10 @@ export async function getProfile() {
   return apiRequest<ProfileData>("/api/me");
 }
 
+export async function getBalance() {
+  return apiRequest<BackendBalance>("/api/balance");
+}
+
 export async function updateProfile(input: UpdateProfileInput) {
   return apiRequest<BackendUser>("/api/me", {
     body: JSON.stringify({
@@ -195,6 +221,29 @@ export async function updateProfile(input: UpdateProfileInput) {
       timezone: input.timezone?.trim() || undefined,
     }),
     method: "PUT",
+  });
+}
+
+export async function refreshAuth() {
+  return apiRequest<{ expires_in: number }>("/api/auth/refresh", {
+    method: "POST",
+    skipAuthRefresh: true,
+  });
+}
+
+export async function logout() {
+  return apiRequest<null>("/api/auth/logout", {
+    method: "POST",
+  });
+}
+
+export async function changePassword(input: ChangePasswordInput) {
+  return apiRequest<null>("/api/me/change-password", {
+    body: JSON.stringify({
+      current_password: input.currentPassword,
+      new_password: input.newPassword,
+    }),
+    method: "POST",
   });
 }
 
@@ -248,6 +297,55 @@ export async function getMonthlyTransactions(
   return (report.transactions ?? []).map(mapBackendTransactionToUi);
 }
 
+export async function getTransactions(filters: TransactionListFilters = {}) {
+  const query = new URLSearchParams();
+
+  if (filters.page) {
+    query.set("page", String(filters.page));
+  }
+  if (filters.perPage) {
+    query.set("per_page", String(filters.perPage));
+  }
+  if (filters.tipe) {
+    query.set("tipe", filters.tipe);
+  }
+  if (filters.kategori) {
+    query.set("kategori", filters.kategori);
+  }
+  if (filters.search) {
+    query.set("search", filters.search);
+  }
+  if (filters.from) {
+    query.set("from", filters.from);
+  }
+  if (filters.to) {
+    query.set("to", filters.to);
+  }
+
+  const path = query.size
+    ? `/api/transactions?${query.toString()}`
+    : "/api/transactions";
+  const response = await apiRequest<PaginatedResponse<BackendTransaction>>(path);
+
+  return {
+    items: response.items.map(mapBackendTransactionToUi),
+    page: response.page,
+    perPage: response.per_page,
+    total: response.total,
+  };
+}
+
+export async function getTransaction(id: string) {
+  const transaction = await apiRequest<BackendTransaction>(`/api/transactions/${id}`);
+  return mapBackendTransactionToUi(transaction);
+}
+
+export async function deleteTransaction(id: string) {
+  return apiRequest<null>(`/api/transactions/${id}`, {
+    method: "DELETE",
+  });
+}
+
 export async function createTransaction(input: CreateTransactionInput) {
   const transaction = await apiRequest<BackendTransaction>("/api/transactions", {
     body: JSON.stringify({
@@ -264,7 +362,7 @@ export async function createTransaction(input: CreateTransactionInput) {
 
 function mapBackendTransactionToUi(transaction: BackendTransaction): Transaction {
   const category = backendCategoryMetadata[transaction.kategori] ?? {
-    icon: "📌",
+    icon: "other",
     label: transaction.kategori,
   };
 

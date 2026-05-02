@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
-import { UserPlus } from "lucide-react";
+import { UserPlus } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/_components/auth-card";
 import { OAuthButton } from "@/features/auth/_components/oauth-button";
@@ -165,3 +165,4 @@ export default function RegisterPage() {
     </AuthCard>
   );
 }
+

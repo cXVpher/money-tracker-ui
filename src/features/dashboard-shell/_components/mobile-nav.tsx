@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Ellipsis, Settings } from "lucide-react";
+import { Ellipsis, Settings } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 import {
   Sheet,
@@ -112,3 +112,4 @@ export function MobileNav() {
     </nav>
   );
 }
+

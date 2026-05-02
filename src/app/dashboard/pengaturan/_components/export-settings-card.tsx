@@ -1,6 +1,6 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
@@ -112,3 +112,4 @@ export function ExportSettingsCard() {
     </Card>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
 import { USE_MOCK_DATA } from "@/shared/_config/runtime";
@@ -341,3 +341,4 @@ function createMockTransaction({
     accountName,
   } satisfies Transaction;
 }
+

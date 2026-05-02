@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import type { Transaction } from "@/shared/_types/finance";
@@ -26,7 +27,7 @@ export function RecentTransactions({ transactions: providedTransactions }: Recen
         {recentTransactions.length ? recentTransactions.map((transaction) => (
           <div key={transaction.id} className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-lg">
-              {transaction.categoryIcon}
+              <AppIcon name={transaction.categoryIcon} size={20} />
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">

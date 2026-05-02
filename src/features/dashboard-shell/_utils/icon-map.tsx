@@ -3,12 +3,14 @@ import {
   BarChart3,
   CalendarDays,
   HandCoins,
+  KeyRound,
   LayoutDashboard,
   PieChart,
   Settings,
+  Shield,
   Target,
   Wallet,
-} from "lucide-react";
+} from "@/shared/_components/icons/phosphor";
 
 export const dashboardIcons = {
   LayoutDashboard,
@@ -19,7 +21,10 @@ export const dashboardIcons = {
   BarChart3,
   HandCoins,
   CalendarDays,
+  KeyRound,
+  Shield,
   Settings,
 };
 
 export type DashboardIconName = keyof typeof dashboardIcons;
+

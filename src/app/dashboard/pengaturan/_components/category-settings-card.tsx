@@ -1,10 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Tags } from "lucide-react";
+import { Tags } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
+import {
+  APP_ICON_OPTIONS,
+  AppIcon,
+} from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/_components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -16,7 +25,10 @@ import {
 } from "@/shared/_components/ui/dialog";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
-import type { CategoryConfig, CategoryGroup } from "@/features/settings/_types/settings";
+import type {
+  CategoryConfig,
+  CategoryGroup,
+} from "@/features/settings/_types/settings";
 import {
   getCategorySettings,
   saveCategorySettings,
@@ -31,7 +43,7 @@ type CategoryEditorState = {
 
 const emptyCategoryDraft: CategoryConfig = {
   color: "#22c55e",
-  icon: "🧾",
+  icon: "other",
   name: "",
 };
 
@@ -125,8 +137,14 @@ export function CategorySettingsCard() {
               key={`${group}-${category.name}-${index}`}
               className="flex items-center justify-between rounded-lg border border-border p-3"
             >
-              <span className="text-sm">
-                {category.icon} {category.name}
+              <span className="flex items-center gap-2 text-sm">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-full"
+                  style={{ backgroundColor: `${category.color}1a`, color: category.color }}
+                >
+                  <AppIcon name={category.icon} size={16} weight="fill" />
+                </span>
+                {category.name}
               </span>
               <Button
                 variant="ghost"
@@ -182,7 +200,7 @@ export function CategorySettingsCard() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category-icon">Icon</Label>
-                <Input
+                <select
                   id="category-icon"
                   value={categoryEditor.values.icon}
                   onChange={(event) =>
@@ -198,7 +216,14 @@ export function CategorySettingsCard() {
                         : current
                     )
                   }
-                />
+                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {APP_ICON_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category-color">Warna</Label>
@@ -233,3 +258,4 @@ export function CategorySettingsCard() {
     </Card>
   );
 }
+

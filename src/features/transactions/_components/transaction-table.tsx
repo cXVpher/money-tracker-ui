@@ -10,7 +10,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpDown, ChevronLeft, ChevronRight, Eye, Trash2 } from "@/shared/_components/icons/phosphor";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent } from "@/shared/_components/ui/card";
@@ -20,11 +20,17 @@ import { formatDate, formatRupiah } from "@/shared/_utils/formatters";
 
 type TransactionTableProps = {
   accounts: Account[];
+  deletingTransactionId?: string | null;
+  onDeleteTransaction?: (transaction: Transaction) => void;
+  onViewTransaction?: (transaction: Transaction) => void;
   transactions: Transaction[];
 };
 
 export function TransactionTable({
   accounts,
+  deletingTransactionId,
+  onDeleteTransaction,
+  onViewTransaction,
   transactions,
 }: TransactionTableProps) {
   const categoryOptions = useMemo(
@@ -105,8 +111,37 @@ export function TransactionTable({
           </span>
         ),
       },
+      {
+        id: "actions",
+        header: "Aksi",
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            {onViewTransaction ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onViewTransaction(row.original)}
+              >
+                <Eye className="h-3.5 w-3.5" />
+                Detail
+              </Button>
+            ) : null}
+            {onDeleteTransaction ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deletingTransactionId === row.original.id}
+                onClick={() => onDeleteTransaction(row.original)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {deletingTransactionId === row.original.id ? "Menghapus..." : "Hapus"}
+              </Button>
+            ) : null}
+          </div>
+        ),
+      },
     ],
-    []
+    [deletingTransactionId, onDeleteTransaction, onViewTransaction]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -159,7 +194,7 @@ export function TransactionTable({
         </div>
 
         <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full min-w-[760px] text-sm">
+          <table className="w-full min-w-[920px] text-sm">
             <thead className="bg-muted/50">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
@@ -242,3 +277,4 @@ function FilterSelect({
     </select>
   );
 }
+

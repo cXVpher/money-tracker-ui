@@ -1,4 +1,4 @@
-import { Plus, Wallet } from "lucide-react";
+import { Plus, Wallet } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 import {
   Dialog,
@@ -39,3 +39,4 @@ export function AccountDialog() {
     </Dialog>
   );
 }
+

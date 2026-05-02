@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User } from "lucide-react";
+import { User } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
 import { USE_MOCK_DATA } from "@/shared/_config/runtime";
@@ -144,3 +144,4 @@ export function ProfileSettingsCard() {
     </Card>
   );
 }
+

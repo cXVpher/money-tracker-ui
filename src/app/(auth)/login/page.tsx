@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
-import { Mail } from "lucide-react";
+import { Mail } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/_components/auth-card";
 import { OAuthButton } from "@/features/auth/_components/oauth-button";
@@ -162,3 +162,4 @@ export default function LoginPage() {
     </AuthCard>
   );
 }
+

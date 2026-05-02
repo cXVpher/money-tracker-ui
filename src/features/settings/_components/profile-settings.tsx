@@ -1,4 +1,4 @@
-import { User } from "lucide-react";
+import { User } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Input } from "@/shared/_components/ui/input";
@@ -29,3 +29,4 @@ export function ProfileSettings() {
     </Card>
   );
 }
+

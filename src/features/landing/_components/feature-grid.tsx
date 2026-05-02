@@ -14,7 +14,7 @@ import {
   Camera,
   Cloud,
   Mic,
-} from "lucide-react";
+} from "@/shared/_components/icons/phosphor";
 
 const features = [
   {
@@ -182,3 +182,4 @@ export function Features() {
     </section>
   );
 }
+

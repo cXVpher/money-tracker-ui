@@ -4,7 +4,7 @@ import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 
 import { cn } from "@/shared/_utils/cn"
-import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
+import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "@/shared/_components/icons/phosphor"
 
 const Select = SelectPrimitive.Root
 
@@ -199,3 +199,4 @@ export {
   SelectTrigger,
   SelectValue,
 }
+

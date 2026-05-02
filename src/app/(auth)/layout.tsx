@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Wallet } from "lucide-react";
+import { Wallet } from "@/shared/_components/icons/phosphor";
 import { APP_NAME } from "@/shared/_constants/brand";
 
 export default function AuthLayout({
@@ -55,3 +55,4 @@ export default function AuthLayout({
     </main>
   );
 }
+

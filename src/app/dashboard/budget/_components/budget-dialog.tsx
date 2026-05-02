@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
 import {
@@ -138,3 +138,4 @@ export function BudgetDialog({
     </Dialog>
   );
 }
+

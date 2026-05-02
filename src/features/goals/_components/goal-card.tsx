@@ -1,3 +1,4 @@
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
@@ -13,7 +14,7 @@ export function GoalCard({ goal }: { goal: Goal }) {
       <CardHeader className="flex-row items-start justify-between">
         <div className="flex items-center gap-3">
           <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent text-xl">
-            {goal.icon}
+            <AppIcon name={goal.icon} size={22} />
           </span>
           <div>
             <CardTitle>{goal.name}</CardTitle>

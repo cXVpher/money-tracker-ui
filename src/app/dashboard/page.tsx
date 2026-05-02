@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Banknote, PiggyBank, TrendingDown, TrendingUp } from "lucide-react";
+import { Banknote, PiggyBank, TrendingDown, TrendingUp } from "@/shared/_components/icons/phosphor";
 import { BudgetOverview } from "@/features/dashboard-overview/_components/budget-overview";
 import { CashflowChart } from "@/features/dashboard-overview/_components/cashflow-chart";
 import { GoalsOverview } from "@/features/dashboard-overview/_components/goals-overview";
@@ -183,3 +183,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

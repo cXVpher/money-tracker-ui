@@ -1,4 +1,5 @@
 import type { Account } from "@/shared/_types/finance";
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { formatRupiah } from "@/shared/_utils/formatters";
@@ -13,7 +14,7 @@ export function AccountCard({ account }: AccountCardProps) {
       <CardHeader className="flex-row items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent text-xl">
-            {account.icon}
+            <AppIcon name={account.icon} size={22} />
           </span>
           <div>
             <CardTitle>{account.name}</CardTitle>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search, Settings } from "lucide-react";
+import { Bell, Search, Settings } from "@/shared/_components/icons/phosphor";
 import { useMemo } from "react";
 import { Avatar, AvatarFallback } from "@/shared/_components/ui/avatar";
 import { Button } from "@/shared/_components/ui/button";
@@ -47,3 +47,4 @@ export function Topbar() {
     </header>
   );
 }
+

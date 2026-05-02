@@ -1,73 +1,75 @@
 "use client";
 
+import { ChatCircleText } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star } from "@/shared/_components/icons/phosphor";
 
 const testimonials = [
   {
-    name: "Raka P.",
     handle: "@rakapra****",
+    name: "Raka P.",
+    rating: 5,
     text: "Pindah dari Excel ke DuitKu, tracking harian jadi lebih konsisten. Nggak drama rumus lagi.",
-    rating: 5,
   },
   {
-    name: "Alya H.",
     handle: "@alyah****",
+    name: "Alya H.",
+    rating: 5,
     text: "Buat cashflow bulanan, DuitKu enak banget dibaca. Tetap pegang kontrol, tapi nggak capek input ulang.",
-    rating: 5,
   },
   {
-    name: "Dimas N.",
     handle: "@dimasn****",
+    name: "Dimas N.",
+    rating: 5,
     text: "Paling kepake pas review cashflow mingguan, nggak perlu susun data dari nol lagi.",
-    rating: 5,
   },
   {
-    name: "Nadia S.",
     handle: "@nadia****",
+    name: "Nadia S.",
+    rating: 5,
     text: "Yang saya suka, alurnya jelas. Tinggal catat, sisanya langsung kebaca di dashboard.",
-    rating: 5,
   },
   {
-    name: "Sinta M.",
     handle: "@sintama****",
+    name: "Sinta M.",
+    rating: 5,
     text: "Flow budget bulanan jadi lebih kebaca, jadi lebih gampang nentuin prioritas pengeluaran.",
-    rating: 5,
   },
   {
-    name: "Farhan R.",
     handle: "@farhan****",
+    name: "Farhan R.",
+    rating: 5,
     text: "Buat catat transaksi cepat di HP, ini lebih praktis daripada buka sheet terus-terusan.",
-    rating: 5,
   },
   {
-    name: "Asha F.",
     handle: "@ashaf****",
-    text: "Tampilannya clean, fiturnya cukup, dan nggak overwhelmed walau dipakai tiap hari.",
+    name: "Asha F.",
     rating: 5,
+    text: "Tampilannya clean, fiturnya cukup, dan nggak overwhelmed walau dipakai tiap hari.",
   },
   {
-    name: "Rizky M.",
     handle: "@rizky****",
-    text: "Gue udah ga pake spreadsheet lagi, karena pake DuitKu jauh lebih sat-set. 🚀",
+    name: "Rizky M.",
     rating: 5,
+    text: "Gue udah ga pake spreadsheet lagi, karena pake DuitKu jauh lebih sat-set.",
   },
 ];
 
 export function Testimonials() {
   return (
-    <section className="py-20 lg:py-32 bg-accent/30">
+    <section className="bg-accent/30 py-20 lg:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="mb-16 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-medium mb-4">
-            💬 Testimoni
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+            <ChatCircleText size={16} weight="fill" />
+            Testimoni
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-[family-name:var(--font-heading)] tracking-tight mb-4">
+          <h2 className="mb-4 font-[family-name:var(--font-heading)] text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
             Kata Mereka
           </h2>
           <p className="text-lg text-muted-foreground">
@@ -75,39 +77,36 @@ export function Testimonials() {
           </p>
         </motion.div>
 
-        {/* Scrolling rows */}
         <div className="space-y-4 overflow-hidden">
-          {/* Row 1 - scrolls left */}
           <div className="relative">
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none dark:from-[oklch(0.12_0.005_240)]" />
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none dark:from-[oklch(0.12_0.005_240)]" />
+            <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-20 bg-gradient-to-r from-background to-transparent dark:from-[oklch(0.12_0.005_240)]" />
+            <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-20 bg-gradient-to-l from-background to-transparent dark:from-[oklch(0.12_0.005_240)]" />
             <motion.div
               animate={{ x: [0, -1200] }}
               transition={{
-                x: { repeat: Infinity, repeatType: "loop", duration: 40, ease: "linear" },
+                x: { duration: 40, ease: "linear", repeat: Infinity, repeatType: "loop" },
               }}
               className="flex gap-4"
             >
-              {[...testimonials, ...testimonials].map((t, i) => (
-                <TestimonialCard key={i} {...t} />
+              {[...testimonials, ...testimonials].map((testimonial, index) => (
+                <TestimonialCard key={index} {...testimonial} />
               ))}
             </motion.div>
           </div>
 
-          {/* Row 2 - scrolls right */}
           <div className="relative">
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none dark:from-[oklch(0.12_0.005_240)]" />
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none dark:from-[oklch(0.12_0.005_240)]" />
+            <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-20 bg-gradient-to-r from-background to-transparent dark:from-[oklch(0.12_0.005_240)]" />
+            <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-20 bg-gradient-to-l from-background to-transparent dark:from-[oklch(0.12_0.005_240)]" />
             <motion.div
               animate={{ x: [-1200, 0] }}
               transition={{
-                x: { repeat: Infinity, repeatType: "loop", duration: 45, ease: "linear" },
+                x: { duration: 45, ease: "linear", repeat: Infinity, repeatType: "loop" },
               }}
               className="flex gap-4"
             >
               {[...testimonials.slice(4), ...testimonials.slice(0, 4), ...testimonials].map(
-                (t, i) => (
-                  <TestimonialCard key={i} {...t} />
+                (testimonial, index) => (
+                  <TestimonialCard key={index} {...testimonial} />
                 )
               )}
             </motion.div>
@@ -119,20 +118,20 @@ export function Testimonials() {
 }
 
 function TestimonialCard({
-  name,
   handle,
-  text,
+  name,
   rating,
+  text,
 }: {
-  name: string;
   handle: string;
-  text: string;
+  name: string;
   rating: number;
+  text: string;
 }) {
   return (
-    <div className="flex-shrink-0 w-[320px] p-5 rounded-2xl border border-border bg-card hover:border-primary/20 transition-colors">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-lime flex items-center justify-center text-sm font-bold text-primary-foreground">
+    <div className="w-[320px] flex-shrink-0 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/20">
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-lime text-sm font-bold text-primary-foreground">
           {name.charAt(0)}
         </div>
         <div>
@@ -140,13 +139,13 @@ function TestimonialCard({
           <p className="text-xs text-muted-foreground">{handle}</p>
         </div>
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+      <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
         &ldquo;{text}&rdquo;
       </p>
       <div className="flex gap-0.5">
-        {Array.from({ length: rating }).map((_, i) => (
+        {Array.from({ length: rating }).map((_, index) => (
           <Star
-            key={i}
+            key={index}
             className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
           />
         ))}
@@ -154,3 +153,4 @@ function TestimonialCard({
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { Plus, Target } from "lucide-react";
+import { Plus, Target } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/_components/ui/dialog";
 import { Input } from "@/shared/_components/ui/input";
@@ -37,3 +37,4 @@ export function GoalDialog() {
     </Dialog>
   );
 }
+

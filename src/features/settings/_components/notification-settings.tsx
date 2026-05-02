@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Bell } from "@/shared/_components/icons/phosphor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Switch } from "@/shared/_components/ui/switch";
 
@@ -24,3 +24,4 @@ export function NotificationSettings() {
     </Card>
   );
 }
+

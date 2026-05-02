@@ -1,64 +1,71 @@
 "use client";
 
+import {
+  ChartBar,
+  DeviceMobile,
+  NotePencil,
+  SealCheck,
+  Table,
+} from "@phosphor-icons/react";
 import { motion } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { Check, X } from "@/shared/_components/icons/phosphor";
 
 const rows = [
   {
     aspect: "Input transaksi",
-    spreadsheet: "Buka file, cari baris, ketik manual",
-    notes: "Cepat tapi gak terstruktur",
-    other: "Bolak-balik buka app",
     duitku: "Satu klik, otomatis terkategori",
     duitkuPositive: true,
+    notes: "Cepat tapi gak terstruktur",
+    other: "Bolak-balik buka app",
+    spreadsheet: "Buka file, cari baris, ketik manual",
   },
   {
     aspect: "Struktur data",
-    spreadsheet: "Kamu setup & rawat sendiri",
-    notes: "Chat & catatan sering terpisah",
-    other: "Tidak terstruktur",
     duitku: "Otomatis rapi per kategori",
     duitkuPositive: true,
+    notes: "Chat & catatan sering terpisah",
+    other: "Tidak terstruktur",
+    spreadsheet: "Kamu setup & rawat sendiri",
   },
   {
     aspect: "Nyaman di HP",
-    spreadsheet: "Zoom & geser kolom",
-    notes: "Cepat coret, rawan berantakan",
-    other: "Bolak-balik app",
     duitku: "Satu layar, fokus",
     duitkuPositive: true,
+    notes: "Cepat coret, rawan berantakan",
+    other: "Bolak-balik app",
+    spreadsheet: "Zoom & geser kolom",
   },
   {
     aspect: "Ringkasan & visual",
-    spreadsheet: "Buat rumus & chart sendiri",
-    notes: "Hitung manual",
-    other: "UI ringkasan tipis",
     duitku: "Dashboard & total siap",
     duitkuPositive: true,
+    notes: "Hitung manual",
+    other: "UI ringkasan tipis",
+    spreadsheet: "Buat rumus & chart sendiri",
   },
   {
     aspect: "Satu alur utuh",
-    spreadsheet: "Terpisah file & konteks",
+    duitku: "Catat -> rapi -> kebaca",
+    duitkuPositive: true,
     notes: "Bukan satu produk UI",
     other: "Bukan untuk audit rutin",
-    duitku: "Catat → rapi → kebaca",
-    duitkuPositive: true,
+    spreadsheet: "Terpisah file & konteks",
   },
   {
     aspect: "Budget tracking",
-    spreadsheet: "Bikin formula kompleks",
-    notes: "Tidak ada",
-    other: "Terbatas",
     duitku: "Set limit, otomatis terlacak",
     duitkuPositive: true,
+    notes: "Tidak ada",
+    other: "Terbatas",
+    spreadsheet: "Bikin formula kompleks",
   },
   {
     aspect: "Multi akun",
-    spreadsheet: "Sheet berbeda, repot",
-    notes: "Campur semua jadi satu",
-    other: "Kadang bayar ekstra",
     duitku: "Bank, e-wallet, tunai, CC",
     duitkuPositive: true,
+    notes: "Campur semua jadi satu",
+    other: "Kadang bayar ekstra",
+    spreadsheet: "Sheet berbeda, repot",
   },
 ];
 
@@ -70,15 +77,16 @@ export function ComparisonTable() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="mb-16 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-medium mb-4">
-            📊 Perbandingan
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+            <ChartBar size={16} weight="fill" />
+            Perbandingan
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-[family-name:var(--font-heading)] tracking-tight mb-4">
+          <h2 className="mb-4 font-[family-name:var(--font-heading)] text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
             Masih Pakai Excel?
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
             Bukan soal tampil keren. Soal workflow yang stabil, gampang
             dilanjutkan, dan minim error.
           </p>
@@ -93,53 +101,61 @@ export function ComparisonTable() {
           <table className="w-full min-w-[700px] border-collapse">
             <thead>
               <tr>
-                <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground w-[18%]">
+                <th className="w-[18%] px-4 py-4 text-left text-sm font-medium text-muted-foreground">
                   Aspek
                 </th>
-                <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground w-[20%]">
-                  📊 Spreadsheet
+                <th className="w-[20%] px-4 py-4 text-left text-sm font-medium text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    <Table size={16} weight="fill" />
+                    Spreadsheet
+                  </span>
                 </th>
-                <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground w-[20%]">
-                  📝 Notes / Chat
+                <th className="w-[20%] px-4 py-4 text-left text-sm font-medium text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    <NotePencil size={16} weight="fill" />
+                    Notes / Chat
+                  </span>
                 </th>
-                <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground w-[20%]">
-                  📱 App Lain
+                <th className="w-[20%] px-4 py-4 text-left text-sm font-medium text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    <DeviceMobile size={16} weight="fill" />
+                    App Lain
+                  </span>
                 </th>
-                <th className="text-left py-4 px-4 w-[22%]">
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                    💚 DuitKu
+                <th className="w-[22%] px-4 py-4 text-left">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-sm font-bold text-primary-foreground">
+                    <SealCheck size={16} weight="fill" />
+                    DuitKu
                   </span>
                 </th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
+              {rows.map((row, index) => (
                 <tr
-                  key={i}
-                  className="border-t border-border hover:bg-accent/30 transition-colors"
+                  key={index}
+                  className="border-t border-border transition-colors hover:bg-accent/30"
                 >
-                  <td className="py-4 px-4 text-sm font-medium">
-                    {row.aspect}
-                  </td>
-                  <td className="py-4 px-4 text-sm text-muted-foreground">
+                  <td className="px-4 py-4 text-sm font-medium">{row.aspect}</td>
+                  <td className="px-4 py-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <X className="h-3.5 w-3.5 text-destructive shrink-0" />
+                      <X className="h-3.5 w-3.5 shrink-0 text-destructive" />
                       {row.spreadsheet}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm text-muted-foreground">
+                  <td className="px-4 py-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <X className="h-3.5 w-3.5 text-destructive shrink-0" />
+                      <X className="h-3.5 w-3.5 shrink-0 text-destructive" />
                       {row.notes}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm text-muted-foreground">
+                  <td className="px-4 py-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <X className="h-3.5 w-3.5 text-destructive shrink-0" />
+                      <X className="h-3.5 w-3.5 shrink-0 text-destructive" />
                       {row.other}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-sm font-medium">
+                  <td className="px-4 py-4 text-sm font-medium">
                     <span className="inline-flex items-center gap-1.5 text-primary">
                       <Check className="h-3.5 w-3.5 shrink-0" />
                       {row.duitku}
@@ -154,3 +170,4 @@ export function ComparisonTable() {
     </section>
   );
 }
+

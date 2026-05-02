@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AtSign, GitFork, Globe, Mail, Wallet } from "lucide-react";
+import { AtSign, GitFork, Globe, Mail, Wallet } from "@/shared/_components/icons/phosphor";
 import { APP_DESCRIPTION, APP_NAME } from "@/shared/_constants/brand";
 
 const footerLinkGroups = [
@@ -100,3 +100,4 @@ export function Footer() {
     </footer>
   );
 }
+

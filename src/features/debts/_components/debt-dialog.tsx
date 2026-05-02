@@ -1,4 +1,4 @@
-import { HandCoins, Plus } from "lucide-react";
+import { HandCoins, Plus } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/shared/_components/ui/dialog";
 import { Input } from "@/shared/_components/ui/input";
@@ -33,3 +33,4 @@ export function DebtDialog() {
     </Dialog>
   );
 }
+

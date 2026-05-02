@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/shared/_components/icons/phosphor";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { cn } from "@/shared/_utils/cn";
@@ -52,3 +52,4 @@ export function StatCard({
     </Card>
   );
 }
+

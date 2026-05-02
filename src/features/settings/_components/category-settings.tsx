@@ -1,4 +1,4 @@
-import { Tags } from "lucide-react";
+import { Tags } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { DEFAULT_CATEGORIES } from "@/features/settings/_utils/category-config";
@@ -32,3 +32,4 @@ export function CategorySettings() {
     </Card>
   );
 }
+

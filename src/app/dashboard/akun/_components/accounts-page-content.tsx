@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 import type { Account } from "@/shared/_types/finance";
 import { getAppAccounts } from "@/shared/_utils/mock-client-store";
@@ -49,3 +49,4 @@ export function AccountsPageContent() {
     </div>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Wallet } from "lucide-react";
+import { Plus, Wallet } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
 import {
@@ -25,10 +25,10 @@ const accountTypeOptions: Array<{
   label: string;
   value: Account["type"];
 }> = [
-  { value: "bank", label: "Bank", icon: "🏦", color: "#0060af" },
-  { value: "ewallet", label: "E-Wallet", icon: "📱", color: "#00aed6" },
-  { value: "cash", label: "Tunai", icon: "💵", color: "#22c55e" },
-  { value: "credit_card", label: "Kartu Kredit", icon: "💳", color: "#ef4444" },
+  { value: "bank", label: "Bank", icon: "bank", color: "#0060af" },
+  { value: "ewallet", label: "E-Wallet", icon: "mobile", color: "#00aed6" },
+  { value: "cash", label: "Tunai", icon: "cash", color: "#22c55e" },
+  { value: "credit_card", label: "Kartu Kredit", icon: "credit_card", color: "#ef4444" },
 ];
 
 type AccountDialogProps = {
@@ -155,3 +155,4 @@ export function AccountDialog({ onAccountCreated }: AccountDialogProps) {
     </Dialog>
   );
 }
+

@@ -14,4 +14,5 @@ export const DASHBOARD_NAV = [
   { label: "Analitik", href: "/dashboard/analitik", icon: "BarChart3" },
   { label: "Hutang", href: "/dashboard/hutang", icon: "HandCoins" },
   { label: "Kalender", href: "/dashboard/kalender", icon: "CalendarDays" },
+  { label: "Integrasi", href: "/dashboard/integrasi", icon: "KeyRound" },
 ] as const;

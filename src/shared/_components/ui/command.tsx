@@ -15,7 +15,7 @@ import {
   InputGroup,
   InputGroupAddon,
 } from "@/shared/_components/ui/input-group"
-import { SearchIcon, CheckIcon } from "lucide-react"
+import { SearchIcon, CheckIcon } from "@/shared/_components/icons/phosphor"
 
 function Command({
   className,
@@ -194,3 +194,4 @@ export {
   CommandShortcut,
   CommandSeparator,
 }
+

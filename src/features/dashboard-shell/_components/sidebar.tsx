@@ -1,27 +1,86 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Wallet } from "lucide-react";
+import { LogOut, Wallet } from "@/shared/_components/icons/phosphor";
+import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
 import { APP_NAME } from "@/shared/_constants/brand";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { DASHBOARD_NAV } from "@/features/dashboard-shell/_utils/navigation";
 import { cn } from "@/shared/_utils/cn";
 import {
   dashboardIcons,
   type DashboardIconName,
 } from "@/features/dashboard-shell/_utils/icon-map";
+import { shouldUseMockFallback } from "@/shared/_utils/api-client";
+import { getBalance, logout as logoutRequest } from "@/shared/_utils/backend-client";
 import { logoutMockAccount } from "@/shared/_utils/mock-auth";
 
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [balanceStatus, setBalanceStatus] = useState<{
+    amount: number;
+    daysRemaining: number;
+    expiresAt?: string | null;
+    planType: string;
+  } | null>(null);
   const navItems = [
     ...DASHBOARD_NAV,
     { label: "Pengaturan", href: "/dashboard/pengaturan", icon: "Settings" },
   ] as const;
 
-  function handleLogout() {
+  useEffect(() => {
+    if (USE_MOCK_DATA) {
+      return;
+    }
+
+    let isActive = true;
+
+    async function loadBalance() {
+      try {
+        const balance = await getBalance();
+
+        if (!isActive) {
+          return;
+        }
+
+        setBalanceStatus({
+          amount: balance.balance,
+          daysRemaining: balance.days_remaining ?? 0,
+          expiresAt: balance.expires_at,
+          planType: balance.plan_type,
+        });
+      } catch (error) {
+        if (!isActive || shouldUseMockFallback(error)) {
+          return;
+        }
+
+        setBalanceStatus(null);
+      }
+    }
+
+    void loadBalance();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  async function handleLogout() {
+    try {
+      if (!USE_MOCK_DATA) {
+        await logoutRequest();
+      }
+    } catch (error) {
+      if (!shouldUseMockFallback(error)) {
+        toast.error(error instanceof Error ? error.message : "Logout gagal.");
+        return;
+      }
+    }
+
     logoutMockAccount();
     router.push("/login");
   }
@@ -62,13 +121,33 @@ export function Sidebar() {
       </nav>
 
       <div className="rounded-xl border border-border bg-background/60 p-3">
-        <p className="text-sm font-semibold">DuitKu Pro</p>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">
-          18 hari tersisa di trial. Upgrade untuk export dan analitik lengkap.
+        <p className="text-sm font-semibold">
+          {balanceStatus ? "Status Akun" : "DuitKu Pro"}
         </p>
-        <Button size="sm" className="mt-3 w-full rounded-full">
-          Upgrade
-        </Button>
+        {balanceStatus ? (
+          <>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Plan {balanceStatus.planType} dengan saldo aplikasi Rp
+              {Intl.NumberFormat("id-ID").format(balanceStatus.amount)}.
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {balanceStatus.daysRemaining > 0
+                ? `${balanceStatus.daysRemaining} hari tersisa`
+                : balanceStatus.expiresAt
+                  ? `Berakhir ${new Date(balanceStatus.expiresAt).toLocaleDateString("id-ID")}`
+                  : "Belum ada masa aktif"}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              18 hari tersisa di trial. Upgrade untuk export dan analitik lengkap.
+            </p>
+            <Button size="sm" className="mt-3 w-full rounded-full">
+              Upgrade
+            </Button>
+          </>
+        )}
       </div>
 
       <Button
@@ -82,3 +161,4 @@ export function Sidebar() {
     </aside>
   );
 }
+

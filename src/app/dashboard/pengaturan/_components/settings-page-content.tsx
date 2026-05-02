@@ -1,6 +1,7 @@
 import { CategorySettingsCard } from "./category-settings-card";
 import { ExportSettingsCard } from "./export-settings-card";
 import { NotificationSettingsCard } from "./notification-settings-card";
+import { PasswordSettingsCard } from "./password-settings-card";
 import { ProfileSettingsCard } from "./profile-settings-card";
 import { ThemeSettingsCard } from "./theme-settings-card";
 
@@ -18,6 +19,8 @@ export function SettingsPageContent() {
         <ProfileSettingsCard />
         <ThemeSettingsCard />
       </div>
+
+      <PasswordSettingsCard />
 
       <CategorySettingsCard />
 

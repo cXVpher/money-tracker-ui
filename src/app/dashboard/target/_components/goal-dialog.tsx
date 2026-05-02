@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Target } from "lucide-react";
+import { Plus, Target } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
+import { GOAL_ICON_OPTIONS } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
 import {
   Dialog,
@@ -29,14 +30,14 @@ export function GoalDialog({ onGoalCreated }: GoalDialogProps) {
   const [targetAmount, setTargetAmount] = useState("");
   const [currentAmount, setCurrentAmount] = useState("0");
   const [goalDeadline, setGoalDeadline] = useState("");
-  const [goalIcon, setGoalIcon] = useState("🎯");
+  const [goalIcon, setGoalIcon] = useState("target");
 
   function resetForm() {
     setGoalName("");
     setTargetAmount("");
     setCurrentAmount("0");
     setGoalDeadline("");
-    setGoalIcon("🎯");
+    setGoalIcon("target");
   }
 
   function handleSaveGoal(event: React.FormEvent<HTMLFormElement>) {
@@ -71,7 +72,7 @@ export function GoalDialog({ onGoalCreated }: GoalDialogProps) {
       targetAmount: parsedTargetAmount,
       currentAmount: parsedCurrentAmount,
       deadline: goalDeadline,
-      icon: goalIcon || "🎯",
+      icon: goalIcon || "target",
       color: "#22c55e",
     };
 
@@ -115,12 +116,18 @@ export function GoalDialog({ onGoalCreated }: GoalDialogProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="goal-icon">Icon</Label>
-            <Input
+            <select
               id="goal-icon"
-              placeholder="🎯"
               value={goalIcon}
               onChange={(event) => setGoalIcon(event.target.value)}
-            />
+              className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {GOAL_ICON_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="target-amount">Nominal target</Label>
@@ -163,3 +170,4 @@ export function GoalDialog({ onGoalCreated }: GoalDialogProps) {
     </Dialog>
   );
 }
+

@@ -1,4 +1,4 @@
-import { Globe } from "lucide-react";
+import { Globe } from "@/shared/_components/icons/phosphor";
 import { Button } from "@/shared/_components/ui/button";
 
 type OAuthButtonProps = {
@@ -13,3 +13,4 @@ export function OAuthButton({ children }: OAuthButtonProps) {
     </Button>
   );
 }
+

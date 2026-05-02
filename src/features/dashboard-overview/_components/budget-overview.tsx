@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { formatRupiahShort } from "@/shared/_utils/formatters";
@@ -20,8 +21,9 @@ export function BudgetOverview() {
           return (
             <div key={budget.id} className="space-y-2">
               <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="font-medium">
-                  {budget.categoryIcon} {budget.categoryName}
+                <span className="flex items-center gap-2 font-medium">
+                  <AppIcon name={budget.categoryIcon} size={18} />
+                  {budget.categoryName}
                 </span>
                 <span className="text-muted-foreground">{percent}%</span>
               </div>

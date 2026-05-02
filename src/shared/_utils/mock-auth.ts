@@ -3,12 +3,17 @@
 import { MOCK_ACCOUNT } from "@/shared/_constants/mock-auth";
 
 const MOCK_SESSION_KEY = "duitku:mock:session";
+const MOCK_CREDENTIALS_KEY = "duitku:mock:credentials";
 const MOCK_SESSION_CHANGE_EVENT = "duitku:mock-session-change";
 
 export type MockSession = {
   email: string;
   name: string;
   phone: string;
+};
+
+type MockCredentials = MockSession & {
+  password: string;
 };
 
 function isBrowser() {
@@ -22,6 +27,14 @@ function saveMockSession(session: MockSession) {
 
   window.localStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(session));
   window.dispatchEvent(new Event(MOCK_SESSION_CHANGE_EVENT));
+}
+
+function saveMockCredentials(credentials: MockCredentials) {
+  if (!isBrowser()) {
+    return;
+  }
+
+  window.localStorage.setItem(MOCK_CREDENTIALS_KEY, JSON.stringify(credentials));
 }
 
 export function subscribeToMockSession(onStoreChange: () => void) {
@@ -52,6 +65,30 @@ export function getMockSessionSnapshot() {
   return window.localStorage.getItem(MOCK_SESSION_KEY);
 }
 
+function getStoredMockCredentials(): MockCredentials | null {
+  if (!isBrowser()) {
+    return null;
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(MOCK_CREDENTIALS_KEY);
+    return rawValue ? (JSON.parse(rawValue) as MockCredentials) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getMockCredentials() {
+  return (
+    getStoredMockCredentials() ?? {
+      email: MOCK_ACCOUNT.email,
+      name: MOCK_ACCOUNT.name,
+      password: MOCK_ACCOUNT.password,
+      phone: MOCK_ACCOUNT.phone,
+    }
+  );
+}
+
 export function getMockSession(): MockSession | null {
   if (!isBrowser()) {
     return null;
@@ -68,10 +105,11 @@ export function getMockSession(): MockSession | null {
 export function loginWithMockAccount(phone: string, password: string) {
   const normalizedPhone = phone.trim();
   const normalizedPassword = password.trim();
+  const credentials = getMockCredentials();
 
   if (
-    normalizedPhone !== MOCK_ACCOUNT.phone ||
-    normalizedPassword !== MOCK_ACCOUNT.password
+    normalizedPhone !== credentials.phone ||
+    normalizedPassword !== credentials.password
   ) {
     return {
       ok: false as const,
@@ -80,9 +118,9 @@ export function loginWithMockAccount(phone: string, password: string) {
   }
 
   const session: MockSession = {
-    email: MOCK_ACCOUNT.email,
-    name: MOCK_ACCOUNT.name,
-    phone: MOCK_ACCOUNT.phone,
+    email: credentials.email,
+    name: credentials.name,
+    phone: credentials.phone,
   };
 
   saveMockSession(session);
@@ -94,15 +132,21 @@ export function loginWithMockAccount(phone: string, password: string) {
 }
 
 export function registerMockAccount(input: MockSession & { password: string }) {
-  const session: MockSession = {
+  const credentials: MockCredentials = {
     email: input.email.trim() || MOCK_ACCOUNT.email,
     name: input.name.trim() || MOCK_ACCOUNT.name,
+    password: input.password.trim() || MOCK_ACCOUNT.password,
     phone: input.phone.trim() || MOCK_ACCOUNT.phone,
   };
 
-  saveMockSession(session);
+  saveMockCredentials(credentials);
+  saveMockSession({
+    email: credentials.email,
+    name: credentials.name,
+    phone: credentials.phone,
+  });
 
-  return session;
+  return credentials;
 }
 
 export function updateMockSessionProfile(input: Partial<MockSession>) {
@@ -118,8 +162,32 @@ export function updateMockSessionProfile(input: Partial<MockSession>) {
     phone: input.phone?.trim() || currentSession.phone,
   };
 
+  const currentCredentials = getMockCredentials();
+  saveMockCredentials({
+    ...currentCredentials,
+    email: nextSession.email,
+    name: nextSession.name,
+    phone: nextSession.phone,
+  });
   saveMockSession(nextSession);
   return nextSession;
+}
+
+export function updateMockPassword(nextPassword: string) {
+  const trimmedPassword = nextPassword.trim();
+
+  if (!trimmedPassword) {
+    return null;
+  }
+
+  const currentCredentials = getMockCredentials();
+  const nextCredentials: MockCredentials = {
+    ...currentCredentials,
+    password: trimmedPassword,
+  };
+
+  saveMockCredentials(nextCredentials);
+  return nextCredentials;
 }
 
 export function logoutMockAccount() {
