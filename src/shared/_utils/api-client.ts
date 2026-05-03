@@ -10,7 +10,6 @@ import {
   refreshAccessToken,
   simulateNextMockRequest401,
   shouldSimulateMock401,
-  storeAccessTokenFromPayload,
   waitForActiveRefresh,
 } from "@/features/auth/_utils/jwt-session";
 
@@ -80,8 +79,6 @@ export async function apiRequest<T>(
   if (!payload) {
     throw new ApiClientError("Respons server tidak valid.", response.status);
   }
-
-  storeAccessTokenFromPayload(payload.data);
 
   return payload.data;
 }
