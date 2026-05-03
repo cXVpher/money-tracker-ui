@@ -30,3 +30,8 @@
 ## test:
 
 ## perf:
+
+## problems:
+- Backend Google/OAuth exchange is missing: NextAuth Google login in the UI does not create backend `access_token` / `refresh_token` cookies, so real backend API calls will remain unauthenticated after Google sign-in unless the backend adds an exchange/callback flow.
+- Admin token refresh is incomplete: admin login returns `refresh_token`, but the inspected backend has no admin refresh route and does not persist admin refresh tokens, so admin sessions cannot recover automatically after access-token expiry.
+- Backend Postman docs appear stale for user login/register: the current handlers set HttpOnly auth cookies and return only `user`, `balance`, and `expires_in`, while the collection still expects `data.access_token` and `data.refresh_token`.
