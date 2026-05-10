@@ -11,13 +11,19 @@ import {
 
 const getMockSessionServerSnapshot = () =>
   (USE_MOCK_DATA ? undefined : null) as string | null | undefined;
+const subscribeToActiveMockSession = USE_MOCK_DATA
+  ? subscribeToMockSession
+  : () => () => {};
+const getActiveMockSessionSnapshot = USE_MOCK_DATA
+  ? getMockSessionSnapshot
+  : () => null;
 
 export function MockAuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const rawSession = useSyncExternalStore(
-    subscribeToMockSession,
-    getMockSessionSnapshot,
+    subscribeToActiveMockSession,
+    getActiveMockSessionSnapshot,
     getMockSessionServerSnapshot
   );
   const session = useMemo<MockSession | null | undefined>(() => {

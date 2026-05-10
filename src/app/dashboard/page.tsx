@@ -9,7 +9,7 @@ import { RecentTransactions } from "@/features/dashboard-overview/_components/re
 import { StatCard } from "@/features/dashboard-overview/_components/stat-card";
 import { UpcomingBills } from "@/features/dashboard-overview/_components/upcoming-bills";
 import { USE_MOCK_DATA } from "@/shared/_config/runtime";
-import { ApiClientError, shouldUseMockFallback } from "@/shared/_utils/api-client";
+import { ApiClientError } from "@/shared/_utils/api-client";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
 import {
   type DashboardOverviewData,
@@ -18,11 +18,13 @@ import {
 import { getAppDashboardSummary } from "@/shared/_utils/mock-client-store";
 
 export default function DashboardPage() {
-  const mockSummary = useMemo(() => getAppDashboardSummary(), []);
+  const mockSummary = useMemo(
+    () => (USE_MOCK_DATA ? getAppDashboardSummary() : null),
+    []
+  );
   const [backendOverview, setBackendOverview] =
     useState<DashboardOverviewData | null>(null);
   const [backendError, setBackendError] = useState<string | null>(null);
-  const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (USE_MOCK_DATA) {
@@ -37,18 +39,10 @@ export default function DashboardPage() {
         if (isActive) {
           setBackendOverview(overview);
           setBackendError(null);
-          setFallbackNotice(null);
         }
       } catch (error) {
         if (isActive) {
-          if (shouldUseMockFallback(error)) {
-            setBackendOverview(null);
-            setFallbackNotice(
-              "API dashboard belum aktif. Menampilkan ringkasan mock sementara."
-            );
-            return;
-          }
-
+          setBackendOverview(null);
           setBackendError(
             error instanceof ApiClientError
               ? error.message
@@ -69,7 +63,9 @@ export default function DashboardPage() {
   const backendSummary = backendOverview?.summary ?? null;
   const dashboardPeriodLabel = isUsingBackendData
     ? backendSummary?.month ?? new Date().toISOString().slice(0, 7)
-    : "April 2026";
+    : USE_MOCK_DATA
+      ? "April 2026"
+      : new Date().toISOString().slice(0, 7);
 
   return (
     <div className="space-y-6">
@@ -85,11 +81,6 @@ export default function DashboardPage() {
       {backendError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {backendError}
-        </div>
-      ) : null}
-      {fallbackNotice ? (
-        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          {fallbackNotice}
         </div>
       ) : null}
 
@@ -126,7 +117,7 @@ export default function DashboardPage() {
               tone={backendSummary.changePercent > 0 ? "danger" : "default"}
             />
           </>
-        ) : (
+        ) : USE_MOCK_DATA && mockSummary ? (
           <>
             <StatCard
               title="Total Saldo"
@@ -158,18 +149,57 @@ export default function DashboardPage() {
               badge={mockSummary.cashflowStatus}
             />
           </>
+        ) : (
+          <>
+            <StatCard
+              title="Saldo Periode"
+              value={formatRupiah(0)}
+              helper="Belum ada data periode ini"
+              icon={Banknote}
+              tone="default"
+            />
+            <StatCard
+              title="Pemasukan"
+              value={formatRupiahShort(0)}
+              helper="Belum ada pemasukan"
+              icon={TrendingUp}
+              tone="default"
+            />
+            <StatCard
+              title="Pengeluaran"
+              value={formatRupiahShort(0)}
+              helper="Belum ada pengeluaran"
+              icon={TrendingDown}
+              tone="default"
+            />
+            <StatCard
+              title="Perubahan Pengeluaran"
+              value="0%"
+              helper="Dibanding bulan lalu"
+              icon={PiggyBank}
+              tone="default"
+            />
+          </>
         )}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
         <CashflowChart
           cashflowSeries={
-            isUsingBackendData ? (backendOverview?.cashflowSeries ?? []) : undefined
+            isUsingBackendData
+              ? (backendOverview?.cashflowSeries ?? [])
+              : USE_MOCK_DATA
+                ? undefined
+                : []
           }
         />
         <RecentTransactions
           transactions={
-            isUsingBackendData ? (backendOverview?.recentTransactions ?? []) : undefined
+            isUsingBackendData
+              ? (backendOverview?.recentTransactions ?? [])
+              : USE_MOCK_DATA
+                ? undefined
+                : []
           }
         />
       </div>

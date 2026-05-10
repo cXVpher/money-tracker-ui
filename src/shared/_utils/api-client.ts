@@ -30,11 +30,13 @@ declare global {
 }
 
 export class ApiClientError extends Error {
+  details: unknown;
   status: number;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, details?: unknown) {
     super(message);
     this.name = "ApiClientError";
+    this.details = details;
     this.status = status;
   }
 }
@@ -72,7 +74,8 @@ export async function apiRequest<T>(
   if (!response.ok) {
     throw new ApiClientError(
       payload?.message ?? "Terjadi kesalahan saat menghubungi server.",
-      response.status
+      response.status,
+      payload?.data
     );
   }
 

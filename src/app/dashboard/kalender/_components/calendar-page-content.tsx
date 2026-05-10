@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { getAppTransactions } from "@/shared/_utils/mock-client-store";
 import { CalendarGrid } from "./calendar-grid";
 import { SelectedDayTransactions } from "./selected-day-transactions";
@@ -9,7 +10,7 @@ import type { CalendarDaySummary } from "../_types/calendar";
 
 export function CalendarPageContent() {
   const calendarDaySummaries = useMemo(
-    () => buildCalendarDaySummaries(getAppTransactions()),
+    () => buildCalendarDaySummaries(USE_MOCK_DATA ? getAppTransactions() : []),
     []
   );
   const initialSelectedDay =
@@ -27,6 +28,12 @@ export function CalendarPageContent() {
           Kalender
         </h1>
       </div>
+
+      {!USE_MOCK_DATA ? (
+        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          Belum ada transaksi untuk ditampilkan di kalender.
+        </div>
+      ) : null}
 
       <CalendarGrid
         days={calendarDaySummaries}

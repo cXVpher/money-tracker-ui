@@ -4,11 +4,15 @@ import { useMemo } from "react";
 import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatDate, formatRupiahShort } from "@/shared/_utils/formatters";
 import { getAppGoals } from "@/shared/_utils/mock-client-store";
 
 export function GoalsOverview() {
-  const goals = useMemo(() => getAppGoals().slice(0, 4), []);
+  const goals = useMemo(
+    () => (USE_MOCK_DATA ? getAppGoals().slice(0, 4) : []),
+    []
+  );
 
   return (
     <Card>
@@ -16,7 +20,7 @@ export function GoalsOverview() {
         <CardTitle>Target Tabungan</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-2">
-        {goals.map((goal) => {
+        {goals.length ? goals.map((goal) => {
           const percent = Math.round(
             (goal.currentAmount / goal.targetAmount) * 100
           );
@@ -40,7 +44,11 @@ export function GoalsOverview() {
               </p>
             </div>
           );
-        })}
+        }) : (
+          <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground sm:col-span-2">
+            Belum ada target tabungan.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

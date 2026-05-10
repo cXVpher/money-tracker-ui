@@ -99,7 +99,7 @@ export function AdminPageContent() {
       toast.success("Masuk sebagai admin.");
       await loadAdminData(nextSession.accessToken, { page: 1 });
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setPageNotice(
           "Admin API belum aktif. Tampilan admin tetap bisa dicoba pakai data demo."
         );
@@ -141,16 +141,16 @@ export function AdminPageContent() {
         ]);
 
       setDashboard(dashboardData);
-      setUsers(userData.items);
+      setUsers(userData.items ?? []);
       setUserPage(userData.page);
       setUserTotal(userData.total);
-      setPayments(paymentData.items);
+      setPayments(paymentData.items ?? []);
       setRevenue(revenueData);
       setReferralOverview(referralData);
-      setLogs(logData.items);
+      setLogs(logData.items ?? []);
       setPageNotice(USE_MOCK_DATA ? "Mode demo aktif. Data bisa berubah lokal di browser ini." : null);
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setPageNotice("Admin API belum siap penuh. Coba lagi saat backend admin menyala.");
         return;
       }
@@ -186,7 +186,7 @@ export function AdminPageContent() {
       const detail = await getAdminUserDetail(session.accessToken, userId);
       setSelectedUserDetail(detail);
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         toast.warning("Detail user belum tersedia saat API mati.");
         return;
       }

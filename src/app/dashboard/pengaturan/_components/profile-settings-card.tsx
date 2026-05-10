@@ -8,15 +8,22 @@ import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
-import { ApiClientError, shouldUseMockFallback } from "@/shared/_utils/api-client";
+import { ApiClientError } from "@/shared/_utils/api-client";
 import { getProfile, updateProfile } from "@/shared/_utils/backend-client";
 import {
   getProfileSettings,
   saveProfileSettings,
 } from "@/shared/_utils/mock-client-store";
 
+const emptyProfileSettings = {
+  email: "",
+  name: "",
+};
+
 export function ProfileSettingsCard() {
-  const [profileSettings, setProfileSettings] = useState(getProfileSettings);
+  const [profileSettings, setProfileSettings] = useState(() =>
+    USE_MOCK_DATA ? getProfileSettings() : emptyProfileSettings
+  );
   const [isLoading, setIsLoading] = useState(!USE_MOCK_DATA);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -38,11 +45,6 @@ export function ProfileSettingsCard() {
         }
       } catch (error) {
         if (isActive) {
-          if (shouldUseMockFallback(error)) {
-            toast.warning("API profil belum aktif. Menampilkan profil mock.");
-            return;
-          }
-
           const message =
             error instanceof ApiClientError
               ? error.message
@@ -81,12 +83,6 @@ export function ProfileSettingsCard() {
       await updateProfile(profileSettings);
       toast.success("Profil berhasil diperbarui.");
     } catch (error) {
-      if (!USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        saveProfileSettings(profileSettings);
-        toast.warning("API profil belum aktif. Profil disimpan lokal dulu.");
-        return;
-      }
-
       const message =
         error instanceof ApiClientError
           ? error.message

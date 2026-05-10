@@ -76,7 +76,7 @@ export function BudgetDialog({
 
     addStoredBudget(budget);
     onBudgetCreated?.(budget);
-    toast.success("Budget mock berhasil ditambahkan.");
+    toast.success("Budget berhasil ditambahkan.");
     resetForm();
     setIsOpen(false);
   }
@@ -99,7 +99,7 @@ export function BudgetDialog({
         <DialogHeader>
           <DialogTitle>Tambah atau Edit Budget</DialogTitle>
           <DialogDescription>
-            Perubahan budget disimpan lokal sampai API budget tersedia.
+            Perubahan budget disimpan di perangkat ini.
           </DialogDescription>
         </DialogHeader>
         <form className="grid gap-4" onSubmit={handleSaveBudget}>

@@ -23,7 +23,6 @@ import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { Textarea } from "@/shared/_components/ui/textarea";
 import type { Account, Transaction } from "@/shared/_types/finance";
-import { shouldUseMockFallback } from "@/shared/_utils/api-client";
 import {
   addStoredTransaction,
   createClientId,
@@ -113,10 +112,10 @@ export function TransactionForm({
         });
         addStoredTransaction(transaction);
         onTransactionCreated?.(transaction);
-        toast.success("Transaksi mock berhasil ditambahkan.");
+          toast.success("Transaksi berhasil ditambahkan.");
       } else {
         if (transactionType === "transfer") {
-          toast.error("Mode backend belum mendukung transaksi transfer.");
+          toast.error("Transaksi transfer belum tersedia.");
           return;
         }
 
@@ -133,27 +132,6 @@ export function TransactionForm({
       resetForm();
       setIsOpen(false);
     } catch (error) {
-      if (preferBackend && shouldUseMockFallback(error)) {
-        const fallbackTransaction = createMockTransaction({
-          accounts,
-          amount: parsedAmount,
-          category: selectedCategory,
-          date: date || new Date().toISOString().slice(0, 10),
-          description,
-          selectedAccountName,
-          tags,
-          transactionType,
-        });
-        addStoredTransaction(fallbackTransaction);
-        onTransactionCreated?.(fallbackTransaction);
-        toast.warning(
-          "API transaksi belum aktif. Transaksi disimpan sebagai data mock."
-        );
-        resetForm();
-        setIsOpen(false);
-        return;
-      }
-
       toast.error(
         error instanceof Error
           ? error.message
@@ -181,8 +159,8 @@ export function TransactionForm({
           <DialogTitle>Tambah Transaksi</DialogTitle>
           <DialogDescription>
             {preferBackend
-              ? "Akan mencoba menyimpan ke API, lalu fallback ke mock bila endpoint belum aktif."
-              : "Transaksi baru disimpan lokal sebagai mock sampai API transaksi siap."}
+              ? "Transaksi akan disimpan ke akun kamu."
+              : "Transaksi baru disimpan di perangkat ini."}
           </DialogDescription>
         </DialogHeader>
 

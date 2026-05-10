@@ -3,7 +3,7 @@
 import { apiRequest } from "@/shared/_utils/api-client";
 
 type PaginatedResponse<T> = {
-  items: T[];
+  items: T[] | null;
   page: number;
   per_page: number;
   total: number;

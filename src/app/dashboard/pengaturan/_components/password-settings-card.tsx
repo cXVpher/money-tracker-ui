@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/u
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { USE_MOCK_DATA } from "@/shared/_config/runtime";
-import { ApiClientError, shouldUseMockFallback } from "@/shared/_utils/api-client";
+import { ApiClientError } from "@/shared/_utils/api-client";
 import { changePassword } from "@/shared/_utils/backend-client";
 import { getMockCredentials, updateMockPassword } from "@/shared/_utils/mock-auth";
 
@@ -51,7 +51,7 @@ export function PasswordSettingsCard() {
         }
 
         updateMockPassword(newPassword);
-        toast.success("Password mock berhasil diubah.");
+        toast.success("Password berhasil diubah.");
         resetForm();
         return;
       }
@@ -63,20 +63,6 @@ export function PasswordSettingsCard() {
       toast.success("Password berhasil diubah.");
       resetForm();
     } catch (error) {
-      if (!USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        const credentials = getMockCredentials();
-
-        if (currentPassword !== credentials.password) {
-          toast.error("Password sekarang tidak cocok.");
-          return;
-        }
-
-        updateMockPassword(newPassword);
-        toast.warning("API password belum aktif. Password disimpan di mode mock.");
-        resetForm();
-        return;
-      }
-
       const message =
         error instanceof ApiClientError
           ? error.message

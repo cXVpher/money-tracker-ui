@@ -35,7 +35,7 @@ import {
 const emptyReferralSummary: ReferralSummary = {
   active_referrals: 0,
   code: null,
-  commission_per_user: 5000,
+  commission_per_user: 0,
   pending_payout: 0,
   total_earned: 0,
   total_referrals: 0,
@@ -51,7 +51,7 @@ export function IntegrationsPageContent() {
   const [groupReport, setGroupReport] = useState<GroupReportResponse | null>(null);
   const [pageNotice, setPageNotice] = useState<string | null>(
     USE_MOCK_DATA
-      ? "Mode mock aktif. Halaman ini siap pakai dan akan mencoba endpoint asli saat API dinyalakan."
+      ? "Mode demo aktif. Beberapa data disimpan di perangkat ini."
       : null
   );
   const [isLoading, setIsLoading] = useState(!USE_MOCK_DATA);
@@ -93,9 +93,9 @@ export function IntegrationsPageContent() {
           return;
         }
 
-        setPayments(paymentData.items);
-        setTokens(tokenData);
-        setGroups(groupData);
+        setPayments(paymentData.items ?? []);
+        setTokens(tokenData ?? []);
+        setGroups(groupData ?? []);
         setReferralSummary(referralData);
         setPageNotice(null);
       } catch (error) {
@@ -103,9 +103,9 @@ export function IntegrationsPageContent() {
           return;
         }
 
-        if (shouldUseMockFallback(error)) {
+        if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
           setPageNotice(
-            "API integrasi belum aktif penuh. Kamu masih bisa cek UI dan form dari halaman ini."
+            "Beberapa fitur integrasi belum tersedia. Kamu masih bisa mencoba tampilan dan form."
           );
         } else {
           setPageNotice(error instanceof Error ? error.message : "Gagal memuat modul integrasi.");
@@ -155,12 +155,12 @@ export function IntegrationsPageContent() {
       setTopupProof(null);
       toast.success(response.message);
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setPayments((current) => [
           {
             amount: parsedAmount,
             created_at: new Date().toISOString(),
-            description: topupDescription || "Top up lokal",
+            description: topupDescription || "Top up",
             id: `local-pay-${Date.now()}`,
             status: "pending",
             type: "topup",
@@ -168,7 +168,7 @@ export function IntegrationsPageContent() {
           },
           ...current,
         ]);
-        toast.warning("API top up belum aktif. Request disimpan di daftar lokal.");
+        toast.warning("Permintaan top up disimpan di daftar.");
         setTopupAmount("");
         setTopupDescription("");
         setTopupProof(null);
@@ -189,21 +189,21 @@ export function IntegrationsPageContent() {
       const token = await createToken(tokenName.trim());
       setTokens((current) => [token, ...current]);
       setTokenName("");
-      toast.success("Token API berhasil dibuat.");
+      toast.success("Token integrasi berhasil dibuat.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setTokens((current) => [
           {
             created_at: new Date().toISOString(),
             id: `local-token-${Date.now()}`,
             name: tokenName.trim(),
-            token: `ft_local_${Date.now()}`,
+            token: `ft_demo_${Date.now()}`,
             user_id: "mock-user",
           },
           ...current,
         ]);
         setTokenName("");
-        toast.warning("API token belum aktif. Token sementara dibuat di lokal.");
+        toast.warning("Token sementara dibuat di perangkat ini.");
         return;
       }
 
@@ -217,9 +217,9 @@ export function IntegrationsPageContent() {
       setTokens((current) => current.filter((token) => token.id !== id));
       toast.success("Token berhasil dihapus.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setTokens((current) => current.filter((token) => token.id !== id));
-        toast.warning("API hapus token belum aktif. Daftar lokal tetap diperbarui.");
+        toast.warning("Daftar token diperbarui di perangkat ini.");
         return;
       }
 
@@ -247,7 +247,7 @@ export function IntegrationsPageContent() {
       setGroupName("");
       toast.success("Grup berhasil dibuat.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setGroups((current) => [
           {
             id: `local-group-${Date.now()}`,
@@ -258,7 +258,7 @@ export function IntegrationsPageContent() {
           ...current,
         ]);
         setGroupName("");
-        toast.warning("API grup belum aktif. Grup lokal ditambahkan ke tampilan.");
+        toast.warning("Grup ditambahkan ke tampilan.");
         return;
       }
 
@@ -277,9 +277,9 @@ export function IntegrationsPageContent() {
       setInvitePhone("");
       toast.success("Undangan anggota berhasil dikirim.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setInvitePhone("");
-        toast.warning("API invite belum aktif. Form sudah siap dipakai saat API hidup.");
+        toast.warning("Undangan belum bisa dikirim sekarang.");
         return;
       }
 
@@ -317,7 +317,7 @@ export function IntegrationsPageContent() {
       });
       toast.success("Transaksi grup berhasil dibuat.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setGroupTransaction({
           amount: "",
           categoryName: "Lainnya",
@@ -325,7 +325,7 @@ export function IntegrationsPageContent() {
           groupId: "",
           transactionType: "OUT",
         });
-        toast.warning("API transaksi grup belum aktif. Form tetap sudah terhubung.");
+        toast.warning("Transaksi grup belum bisa disimpan sekarang.");
         return;
       }
 
@@ -346,7 +346,7 @@ export function IntegrationsPageContent() {
       setGroupReport(report);
       toast.success("Report grup berhasil dimuat.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         const group = groups.find((item) => item.id === groupReportGroupId);
         setGroupReport({
           by_kategori: null,
@@ -355,7 +355,7 @@ export function IntegrationsPageContent() {
           month: groupReportMonth,
           total_out: 0,
         });
-        toast.warning("API report grup belum aktif. Menampilkan placeholder lokal.");
+        toast.warning("Report grup belum tersedia untuk periode ini.");
         return;
       }
 
@@ -372,12 +372,12 @@ export function IntegrationsPageContent() {
       }));
       toast.success("Kode referral baru berhasil dibuat.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
+      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
         setReferralSummary((current) => ({
           ...current,
           code: `MOCK${String(Date.now()).slice(-4)}`,
         }));
-        toast.warning("API referral belum aktif. Kode dummy ditampilkan di lokal.");
+        toast.warning("Kode contoh ditampilkan sementara.");
         return;
       }
 
@@ -502,7 +502,7 @@ export function IntegrationsPageContent() {
         <TabsContent value="tokens" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Buat API Token</CardTitle>
+              <CardTitle>Buat Token Integrasi</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4 sm:flex-row">
               <Input
@@ -547,7 +547,7 @@ export function IntegrationsPageContent() {
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Belum ada token API.
+                  Belum ada token integrasi.
                 </p>
               )}
             </CardContent>

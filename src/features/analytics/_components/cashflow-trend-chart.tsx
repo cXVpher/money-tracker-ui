@@ -2,11 +2,23 @@
 
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiah, formatRupiahShort } from "@/features/analytics/_utils/chart-formatters";
 import { getMonthlyCashflowSeries } from "@/shared/_utils/mock-client-store";
 
 export function CashflowTrendChart() {
-  const cashflowSeries = useMemo(() => getMonthlyCashflowSeries(), []);
+  const cashflowSeries = useMemo(
+    () => (USE_MOCK_DATA ? getMonthlyCashflowSeries() : []),
+    []
+  );
+
+  if (!cashflowSeries.length) {
+    return (
+      <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted/40 text-sm text-muted-foreground">
+        Belum ada riwayat cashflow.
+      </div>
+    );
+  }
 
   return (
     <ResponsiveContainer width="100%" height={280} minWidth={0}>

@@ -87,7 +87,7 @@ type PeriodReportResponse = {
 };
 
 type PaginatedResponse<T> = {
-  items: T[];
+  items: T[] | null;
   page: number;
   per_page: number;
   total: number;
@@ -199,9 +199,9 @@ export async function register(input: RegisterInput) {
   return apiRequest<AuthResponse>("/api/auth/register", {
     body: JSON.stringify({
       email: input.email?.trim() ? input.email.trim() : null,
-      name: input.name,
-      password: input.password,
-      phone: input.phone,
+      name: input.name.trim(),
+      password: input.password.trim(),
+      phone: input.phone.trim(),
       referral_code: input.referralCode?.trim()
         ? input.referralCode.trim()
         : null,
@@ -338,9 +338,10 @@ export async function getTransactions(filters: TransactionListFilters = {}) {
     ? `/api/transactions?${query.toString()}`
     : "/api/transactions";
   const response = await apiRequest<PaginatedResponse<BackendTransaction>>(path);
+  const items = response.items ?? [];
 
   return {
-    items: response.items.map(mapBackendTransactionToUi),
+    items: items.map(mapBackendTransactionToUi),
     page: response.page,
     perPage: response.per_page,
     total: response.total,

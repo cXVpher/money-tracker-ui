@@ -78,7 +78,7 @@ export function GoalDialog({ onGoalCreated }: GoalDialogProps) {
 
     addStoredGoal(goal);
     onGoalCreated?.(goal);
-    toast.success("Target mock berhasil ditambahkan.");
+    toast.success("Target berhasil ditambahkan.");
     resetForm();
     setIsOpen(false);
   }
@@ -101,7 +101,7 @@ export function GoalDialog({ onGoalCreated }: GoalDialogProps) {
         <DialogHeader>
           <DialogTitle>Buat Target Tabungan</DialogTitle>
           <DialogDescription>
-            Target baru disimpan lokal sampai API goals tersedia.
+            Target baru disimpan di perangkat ini.
           </DialogDescription>
         </DialogHeader>
         <form className="grid gap-4" onSubmit={handleSaveGoal}>

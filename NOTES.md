@@ -1,37 +1,30 @@
 ## feat:
-- Made dashboard sidebar collapsible and scrollable so lower actions stay reachable.
-- Added mobile logout action inside the dashboard More menu.
-- Added Google OAuth through NextAuth for login and register when `NEXT_PUBLIC_MOCK_DATA=false`.
-- Added a light/dark theme toggle to the standalone admin page.
-- Added native fetch access/refresh token flow with cookie-first real API auth, 401 refresh retry, and request queueing.
-- Added mock auth simulation for testing 401 refresh and queued request plumbing without the real backend.
+- Added field-level register validation with inline messages for name, phone, email, password, and backend validation errors.
+- Added a single icon-only dashboard theme toggle that switches between dark and light, with dark as the default.
 
 ## fix:
-- Removed the user-facing Admin dashboard navigation path by keeping admin access on `/admin` only.
-- Reworked admin page colors to use app theme tokens instead of hardcoded light-mode styling.
-- Kept real JWT handling bypassed during normal `NEXT_PUBLIC_MOCK_DATA=true` mode so existing mock auth and mock store continue working.
-- Stopped generic API responses from storing `token` fields as JWT access tokens, preventing created API tokens from corrupting the session.
-- Skipped refresh handling for unauthenticated login/register requests so credential failures surface their original backend errors.
+- Hid login mock credential and fallback sections when `NEXT_PUBLIC_MOCK_DATA=false`.
+- Removed real-mode fallback paths that logged in, registered, saved, or displayed mock/local data after backend failures.
+- Updated the dashboard topbar to read the real backend profile in API mode so avatar initials match the logged-in user.
+- Prevented the mock auth gate from reading mock session storage when mock mode is disabled.
+- Normalized nullable paginated `items` responses to empty arrays for transactions, integrations, and admin lists to prevent runtime crashes.
+- Prevented dashboard sections from seeding local mock data in API mode; sections without connected backend data now render empty states or disabled actions.
 
 ## refactor:
-- Added a dashboard shell component to manage sidebar collapsed state.
-- Replaced custom dashboard sidebar link markup with a shadcn-style navigation menu wrapper.
-- Moved token/session management into `src/features/auth` while keeping `src/shared/_utils/api-client.ts` as the shared fetch wrapper.
+- Preserved backend error details in `ApiClientError` so form-level code can map server validation errors to fields.
+- Trimmed register payload values before sending them to the backend.
+- Updated paginated response typings to allow `items: null` where the backend can return nullable lists.
 
 ## docs:
-- Documented secure refresh-token handling expectations for httpOnly cookies in Next.js Server and Client Components.
 
 ## style:
-- Improved admin page copy, empty states, cards, status badges, and payment/user management presentation for non-technical users.
+- Reworded dashboard empty states, notices, dialogs, and toasts to avoid exposing technical terms like mock, API, backend, or endpoint to users.
 
 ## chore:
-- Installed `next-auth` and updated the lockfile.
 
 ## test:
 
 ## perf:
 
 ## problems:
-- Backend Google/OAuth exchange is missing: NextAuth Google login in the UI does not create backend `access_token` / `refresh_token` cookies, so real backend API calls will remain unauthenticated after Google sign-in unless the backend adds an exchange/callback flow.
-- Admin token refresh is incomplete: admin login returns `refresh_token`, but the inspected backend has no admin refresh route and does not persist admin refresh tokens, so admin sessions cannot recover automatically after access-token expiry.
-- Backend Postman docs appear stale for user login/register: the current handlers set HttpOnly auth cookies and return only `user`, `balance`, and `expires_in`, while the collection still expects `data.access_token` and `data.refresh_token`.
+- Akun, budget, target, hutang, calendar, export, notification, and category settings still need real backend endpoints before they can be fully usable with `NEXT_PUBLIC_MOCK_DATA=false`.

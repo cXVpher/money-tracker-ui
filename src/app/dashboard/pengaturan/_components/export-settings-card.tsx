@@ -4,6 +4,7 @@ import { Download } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import {
   buildMockAppExport,
   downloadTextFile,
@@ -11,6 +12,11 @@ import {
 
 export function ExportSettingsCard() {
   function handleExportJson() {
+    if (!USE_MOCK_DATA) {
+      toast.error("Export data belum tersedia.");
+      return;
+    }
+
     downloadTextFile(
       "duitku-backup.json",
       JSON.stringify(buildMockAppExport(), null, 2),
@@ -20,6 +26,11 @@ export function ExportSettingsCard() {
   }
 
   function handleExportCsv() {
+    if (!USE_MOCK_DATA) {
+      toast.error("Export data belum tersedia.");
+      return;
+    }
+
     const transactions = buildMockAppExport().data.transactions;
     const csvLines = [
       [
@@ -49,6 +60,11 @@ export function ExportSettingsCard() {
   }
 
   function handleExportPdf() {
+    if (!USE_MOCK_DATA) {
+      toast.error("Export data belum tersedia.");
+      return;
+    }
+
     const exportSnapshot = buildMockAppExport();
     const printWindow = window.open("", "_blank", "noopener,noreferrer");
 
@@ -98,16 +114,23 @@ export function ExportSettingsCard() {
           Export Data
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-wrap gap-2">
-        <Button variant="outline" onClick={handleExportCsv}>
+      <CardContent className="space-y-4">
+        {!USE_MOCK_DATA ? (
+          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            Export data belum tersedia untuk akun ini.
+          </div>
+        ) : null}
+        <div className="flex flex-wrap gap-2">
+        <Button variant="outline" onClick={handleExportCsv} disabled={!USE_MOCK_DATA}>
           Export CSV
         </Button>
-        <Button variant="outline" onClick={handleExportPdf}>
+        <Button variant="outline" onClick={handleExportPdf} disabled={!USE_MOCK_DATA}>
           Export PDF
         </Button>
-        <Button variant="outline" onClick={handleExportJson}>
+        <Button variant="outline" onClick={handleExportJson} disabled={!USE_MOCK_DATA}>
           Backup JSON
         </Button>
+        </div>
       </CardContent>
     </Card>
   );

@@ -8,6 +8,7 @@ import {
   AppIcon,
 } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import {
   Card,
   CardContent,
@@ -47,8 +48,15 @@ const emptyCategoryDraft: CategoryConfig = {
   name: "",
 };
 
+const emptyCategorySettings: CategorySettings = {
+  expense: [],
+  income: [],
+};
+
 export function CategorySettingsCard() {
-  const [categorySettings, setCategorySettings] = useState(getCategorySettings);
+  const [categorySettings, setCategorySettings] = useState(() =>
+    USE_MOCK_DATA ? getCategorySettings() : emptyCategorySettings
+  );
   const [categoryEditor, setCategoryEditor] = useState<CategoryEditorState | null>(
     null
   );
@@ -70,6 +78,11 @@ export function CategorySettingsCard() {
     category?: CategoryConfig,
     index?: number
   ) {
+    if (!USE_MOCK_DATA) {
+      toast.error("Pengaturan kategori belum tersedia.");
+      return;
+    }
+
     setCategoryEditor({
       group,
       index: index ?? null,
@@ -79,6 +92,11 @@ export function CategorySettingsCard() {
 
   function handleSaveCategory() {
     if (!categoryEditor) {
+      return;
+    }
+
+    if (!USE_MOCK_DATA) {
+      toast.error("Pengaturan kategori belum tersedia.");
       return;
     }
 
@@ -114,10 +132,17 @@ export function CategorySettingsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {!USE_MOCK_DATA ? (
+          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            Pengaturan kategori belum tersedia untuk akun ini.
+          </div>
+        ) : null}
+
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
+            disabled={!USE_MOCK_DATA}
             onClick={() => openCategoryEditor("expense")}
           >
             Tambah Kategori Pengeluaran
@@ -125,6 +150,7 @@ export function CategorySettingsCard() {
           <Button
             variant="outline"
             size="sm"
+            disabled={!USE_MOCK_DATA}
             onClick={() => openCategoryEditor("income")}
           >
             Tambah Kategori Pemasukan
@@ -132,7 +158,7 @@ export function CategorySettingsCard() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {categoryRows.map(({ category, group, index }) => (
+          {categoryRows.length ? categoryRows.map(({ category, group, index }) => (
             <div
               key={`${group}-${category.name}-${index}`}
               className="flex items-center justify-between rounded-lg border border-border p-3"
@@ -154,7 +180,11 @@ export function CategorySettingsCard() {
                 Edit
               </Button>
             </div>
-          ))}
+          )) : (
+            <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">
+              Belum ada kategori.
+            </div>
+          )}
         </div>
       </CardContent>
 
@@ -172,7 +202,7 @@ export function CategorySettingsCard() {
               {categoryEditor?.index === null ? "Tambah Kategori" : "Edit Kategori"}
             </DialogTitle>
             <DialogDescription>
-              Perubahan kategori disimpan lokal sampai API kategori siap.
+              Perubahan kategori disimpan di perangkat ini.
             </DialogDescription>
           </DialogHeader>
 

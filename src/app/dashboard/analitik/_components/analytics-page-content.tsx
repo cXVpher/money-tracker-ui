@@ -1,6 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
+import {
+  type DashboardOverviewData,
+  getDashboardOverviewData,
+} from "@/shared/_utils/backend-client";
 import {
   accountBalanceSeries,
   incomeSourceBreakdown,
@@ -17,6 +23,48 @@ import { MetricCard } from "./metric-card";
 
 export function AnalyticsPageContent() {
   const isChartClientReady = useChartClientReady();
+  const [backendOverview, setBackendOverview] =
+    useState<DashboardOverviewData | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (USE_MOCK_DATA) {
+      return;
+    }
+
+    let isActive = true;
+
+    async function loadAnalytics() {
+      try {
+        const overview = await getDashboardOverviewData();
+
+        if (isActive) {
+          setBackendOverview(overview);
+          setLoadError(null);
+        }
+      } catch (error) {
+        if (isActive) {
+          setBackendOverview(null);
+          setLoadError(
+            error instanceof Error ? error.message : "Gagal memuat analitik."
+          );
+        }
+      }
+    }
+
+    void loadAnalytics();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const cashflowSeries = USE_MOCK_DATA
+    ? undefined
+    : backendOverview?.cashflowSeries ?? [];
+  const incomeSources = USE_MOCK_DATA ? incomeSourceBreakdown : [];
+  const balanceSeries = USE_MOCK_DATA ? accountBalanceSeries : [];
+  const metrics = USE_MOCK_DATA ? monthOverMonthChangeMetrics : [];
 
   return (
     <div className="space-y-6">
@@ -27,9 +75,19 @@ export function AnalyticsPageContent() {
         </h1>
       </div>
 
+      {loadError ? (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {loadError}
+        </div>
+      ) : null}
+
       <div className="grid gap-6 xl:grid-cols-2">
         <ChartCard title="Tren Cashflow Bulanan">
-          {isChartClientReady ? <CashflowChart /> : <ChartFallback />}
+          {isChartClientReady ? (
+            <CashflowChart cashflowSeries={cashflowSeries} />
+          ) : (
+            <ChartFallback />
+          )}
         </ChartCard>
 
         <ChartCard title="Expense by Category">
@@ -37,16 +95,20 @@ export function AnalyticsPageContent() {
         </ChartCard>
 
         <ChartCard title="Sumber Pemasukan">
-          {isChartClientReady ? (
-            <IncomeSourcesChart incomeSources={incomeSourceBreakdown} />
+          {isChartClientReady && incomeSources.length ? (
+            <IncomeSourcesChart incomeSources={incomeSources} />
+          ) : isChartClientReady ? (
+            <ChartEmptyState message="Belum ada pemasukan untuk dianalisis." />
           ) : (
             <ChartFallback />
           )}
         </ChartCard>
 
         <ChartCard title="Pertumbuhan Saldo">
-          {isChartClientReady ? (
-            <BalanceGrowthChart balanceSeries={accountBalanceSeries} />
+          {isChartClientReady && balanceSeries.length ? (
+            <BalanceGrowthChart balanceSeries={balanceSeries} />
+          ) : isChartClientReady ? (
+            <ChartEmptyState message="Belum ada riwayat saldo." />
           ) : (
             <ChartFallback />
           )}
@@ -58,11 +120,23 @@ export function AnalyticsPageContent() {
           <CardTitle>Month-over-Month</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
-          {monthOverMonthChangeMetrics.map((metric) => (
+          {metrics.length ? metrics.map((metric) => (
             <MetricCard key={metric.label} {...metric} />
-          ))}
+          )) : (
+            <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground sm:col-span-3">
+              Belum ada perbandingan bulanan.
+            </div>
+          )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function ChartEmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted/40 text-sm text-muted-foreground">
+      {message}
     </div>
   );
 }

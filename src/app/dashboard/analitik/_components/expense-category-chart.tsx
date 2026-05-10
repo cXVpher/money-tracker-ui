@@ -2,11 +2,23 @@
 
 import { useMemo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiah } from "@/shared/_utils/formatters";
 import { getExpenseCategorySeries } from "@/shared/_utils/mock-client-store";
 
 export function ExpenseCategoryChart() {
-  const expenseCategorySeries = useMemo(() => getExpenseCategorySeries(), []);
+  const expenseCategorySeries = useMemo(
+    () => (USE_MOCK_DATA ? getExpenseCategorySeries() : []),
+    []
+  );
+
+  if (!expenseCategorySeries.length) {
+    return (
+      <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted/40 text-sm text-muted-foreground">
+        Belum ada kategori pengeluaran.
+      </div>
+    );
+  }
 
   return (
     <ResponsiveContainer width="100%" height={280} minWidth={0}>

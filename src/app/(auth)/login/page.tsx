@@ -13,7 +13,7 @@ import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { MOCK_ACCOUNT } from "@/shared/_constants/mock-auth";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
-import { ApiClientError, shouldUseMockFallback } from "@/shared/_utils/api-client";
+import { ApiClientError } from "@/shared/_utils/api-client";
 import { login } from "@/shared/_utils/backend-client";
 import { loginWithMockAccount } from "@/shared/_utils/mock-auth";
 
@@ -59,16 +59,6 @@ export default function LoginPage() {
       toast.success("Login berhasil.");
       router.push(nextPath || "/dashboard");
     } catch (error) {
-      if (!USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        const fallbackResult = loginWithMockAccount(phone, password);
-
-        if (fallbackResult.ok) {
-          toast.warning("API login belum aktif. Masuk dengan akun mock.");
-          router.push(nextPath || "/dashboard");
-          return;
-        }
-      }
-
       const message =
         error instanceof ApiClientError
           ? error.message
@@ -107,18 +97,7 @@ export default function LoginPage() {
               Password: <span className="font-medium text-foreground">{MOCK_ACCOUNT.password}</span>
             </p>
           </div>
-        ) : (
-          <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground">
-            <p className="font-semibold text-foreground">Fallback Mock</p>
-            <p className="mt-1">
-              Jika API login belum aktif, gunakan akun mock:
-              {" "}
-              <span className="font-medium text-foreground">{MOCK_ACCOUNT.phone}</span>
-              {" / "}
-              <span className="font-medium text-foreground">{MOCK_ACCOUNT.password}</span>
-            </p>
-          </div>
-        )}
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor="phone">Nomor WhatsApp</Label>
           <Input

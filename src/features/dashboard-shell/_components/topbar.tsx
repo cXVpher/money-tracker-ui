@@ -1,16 +1,66 @@
 "use client";
 
-import { Bell, Search, Settings } from "@/shared/_components/icons/phosphor";
-import { useMemo } from "react";
+import { Bell, Moon, Search, Sun } from "@/shared/_components/icons/phosphor";
+import { useEffect, useMemo, useState } from "react";
 import { Avatar, AvatarFallback } from "@/shared/_components/ui/avatar";
 import { Button } from "@/shared/_components/ui/button";
 import { Input } from "@/shared/_components/ui/input";
-import { getMockInitials, getMockSession } from "@/shared/_utils/mock-auth";
+import { useTheme } from "@/shared/_components/providers/theme-provider";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
+import { getProfile } from "@/shared/_utils/backend-client";
+import { getMockSession } from "@/shared/_utils/mock-auth";
+
+const DEFAULT_PROFILE_NAME = "Dashboard Keuangan";
+const DEFAULT_INITIALS = "DK";
 
 export function Topbar() {
-  const session = useMemo(() => getMockSession(), []);
-  const initials = getMockInitials(session);
-  const greetingName = session?.name ?? "Dashboard Keuangan";
+  const { resolvedTheme, setTheme, theme } = useTheme();
+  const mockSession = useMemo(() => (USE_MOCK_DATA ? getMockSession() : null), []);
+  const [backendName, setBackendName] = useState<string | null>(null);
+  const isLightTheme = resolvedTheme === "light";
+
+  useEffect(() => {
+    if (USE_MOCK_DATA) {
+      return;
+    }
+
+    let isActive = true;
+
+    async function loadProfile() {
+      try {
+        const profile = await getProfile();
+
+        if (isActive) {
+          setBackendName(profile.user.name);
+        }
+      } catch {
+        if (isActive) {
+          setBackendName(null);
+        }
+      }
+    }
+
+    void loadProfile();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (theme === "system") {
+      setTheme("dark");
+    }
+  }, [setTheme, theme]);
+
+  function handleToggleTheme() {
+    setTheme(isLightTheme ? "dark" : "light");
+  }
+
+  const greetingName = USE_MOCK_DATA
+    ? mockSession?.name ?? DEFAULT_PROFILE_NAME
+    : backendName ?? DEFAULT_PROFILE_NAME;
+  const initials = getInitials(greetingName);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
@@ -35,8 +85,19 @@ export function Topbar() {
         <Button variant="ghost" size="icon" className="rounded-full">
           <Bell className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Settings className="h-4 w-4" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          onClick={handleToggleTheme}
+          aria-label={isLightTheme ? "Gunakan tema gelap" : "Gunakan tema terang"}
+          title={isLightTheme ? "Tema gelap" : "Tema terang"}
+        >
+          {isLightTheme ? (
+            <Moon className="h-4 w-4" />
+          ) : (
+            <Sun className="h-4 w-4" />
+          )}
         </Button>
         <Avatar className="h-9 w-9">
           <AvatarFallback className="bg-primary text-primary-foreground">
@@ -46,5 +107,16 @@ export function Topbar() {
       </div>
     </header>
   );
+}
+
+function getInitials(name: string) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+  return initials || DEFAULT_INITIALS;
 }
 

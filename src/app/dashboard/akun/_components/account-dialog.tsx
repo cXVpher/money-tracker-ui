@@ -79,7 +79,7 @@ export function AccountDialog({ onAccountCreated }: AccountDialogProps) {
 
     addStoredAccount(account);
     onAccountCreated?.(account);
-    toast.success("Akun mock berhasil ditambahkan.");
+    toast.success("Akun berhasil ditambahkan.");
     resetForm();
     setIsOpen(false);
   }
@@ -102,7 +102,7 @@ export function AccountDialog({ onAccountCreated }: AccountDialogProps) {
         <DialogHeader>
           <DialogTitle>Tambah Akun Finansial</DialogTitle>
           <DialogDescription>
-            Data disimpan lokal sebagai mock sampai integrasi API akun siap.
+            Data akun disimpan di perangkat ini.
           </DialogDescription>
         </DialogHeader>
         <form className="grid gap-4" onSubmit={handleSaveAccount}>

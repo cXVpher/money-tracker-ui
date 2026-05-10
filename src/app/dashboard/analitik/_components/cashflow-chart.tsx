@@ -2,11 +2,27 @@
 
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
 import { getMonthlyCashflowSeries } from "@/shared/_utils/mock-client-store";
 
-export function CashflowChart() {
-  const cashflowSeries = useMemo(() => getMonthlyCashflowSeries(), []);
+type CashflowChartProps = {
+  cashflowSeries?: Array<{
+    expense: number;
+    income: number;
+    month: string;
+  }>;
+};
+
+export function CashflowChart({ cashflowSeries: providedSeries }: CashflowChartProps) {
+  const cashflowSeries = useMemo(
+    () => providedSeries ?? (USE_MOCK_DATA ? getMonthlyCashflowSeries() : []),
+    [providedSeries]
+  );
+
+  if (!cashflowSeries.length) {
+    return <EmptyChartState message="Belum ada riwayat cashflow." />;
+  }
 
   return (
     <ResponsiveContainer width="100%" height={280} minWidth={0}>
@@ -19,5 +35,13 @@ export function CashflowChart() {
         <Area type="monotone" dataKey="expense" name="Pengeluaran" stroke="var(--warning)" fill="var(--warning)" fillOpacity={0.18} />
       </AreaChart>
     </ResponsiveContainer>
+  );
+}
+
+function EmptyChartState({ message }: { message: string }) {
+  return (
+    <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted/40 text-sm text-muted-foreground">
+      {message}
+    </div>
   );
 }

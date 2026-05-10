@@ -7,7 +7,6 @@ import { TransactionTable } from "@/features/transactions/_components/transactio
 import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/_components/ui/dialog";
 import type { Account, Transaction } from "@/shared/_types/finance";
-import { shouldUseMockFallback } from "@/shared/_utils/api-client";
 import {
   backendTransactionCategories,
   deleteTransaction,
@@ -21,20 +20,25 @@ import {
 } from "@/shared/_utils/mock-client-store";
 
 export function TransactionsPageContent() {
-  const mockAccounts = useMemo<Account[]>(() => getAppAccounts(), []);
-  const mockTransactions = useMemo<Transaction[]>(() => getAppTransactions(), []);
+  const mockAccounts = useMemo<Account[]>(
+    () => (USE_MOCK_DATA ? getAppAccounts() : []),
+    []
+  );
+  const mockTransactions = useMemo<Transaction[]>(
+    () => (USE_MOCK_DATA ? getAppTransactions() : []),
+    []
+  );
   const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
   const [isUsingBackendData, setIsUsingBackendData] = useState(false);
   const categoryOptions = useMemo(
     () =>
-      USE_MOCK_DATA || !isUsingBackendData
+      USE_MOCK_DATA
         ? getCategoryOptions()
         : [...backendTransactionCategories],
-    [isUsingBackendData]
+    []
   );
 
   useEffect(() => {
@@ -48,22 +52,14 @@ export function TransactionsPageContent() {
       try {
         const nextTransactions = await getTransactions({ page: 1, perPage: 50 });
         if (isActive) {
-          setTransactions(nextTransactions.items);
+          setTransactions(nextTransactions.items ?? []);
           setIsUsingBackendData(true);
           setLoadError(null);
-          setFallbackNotice(null);
         }
       } catch (error) {
         if (isActive) {
-          if (shouldUseMockFallback(error)) {
-            setTransactions(mockTransactions);
-            setIsUsingBackendData(false);
-            setFallbackNotice(
-              "API transaksi belum aktif. Menampilkan transaksi mock sementara."
-            );
-            return;
-          }
-
+          setTransactions([]);
+          setIsUsingBackendData(false);
           setLoadError(
             error instanceof Error
               ? error.message
@@ -78,10 +74,10 @@ export function TransactionsPageContent() {
     return () => {
       isActive = false;
     };
-  }, [mockTransactions]);
+  }, []);
 
   async function handleViewTransaction(transaction: Transaction) {
-    if (!isUsingBackendData) {
+    if (USE_MOCK_DATA) {
       setSelectedTransaction(transaction);
       return;
     }
@@ -90,12 +86,6 @@ export function TransactionsPageContent() {
       const detailedTransaction = await getTransaction(transaction.id);
       setSelectedTransaction(detailedTransaction);
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
-        setSelectedTransaction(transaction);
-        toast.warning("Detail transaksi dari API belum tersedia. Menampilkan data lokal.");
-        return;
-      }
-
       toast.error(
         error instanceof Error ? error.message : "Gagal memuat detail transaksi."
       );
@@ -116,11 +106,11 @@ export function TransactionsPageContent() {
     setDeletingTransactionId(transaction.id);
 
     try {
-      if (!isUsingBackendData) {
+      if (USE_MOCK_DATA) {
         setTransactions((currentTransactions) =>
           currentTransactions.filter((item) => item.id !== transaction.id)
         );
-        toast.success("Transaksi mock dihapus dari daftar saat ini.");
+        toast.success("Transaksi dihapus dari daftar saat ini.");
         return;
       }
 
@@ -130,14 +120,6 @@ export function TransactionsPageContent() {
       );
       toast.success("Transaksi berhasil dihapus.");
     } catch (error) {
-      if (shouldUseMockFallback(error)) {
-        setTransactions((currentTransactions) =>
-          currentTransactions.filter((item) => item.id !== transaction.id)
-        );
-        toast.warning("API hapus transaksi belum aktif. Daftar lokal tetap diperbarui.");
-        return;
-      }
-
       toast.error(
         error instanceof Error ? error.message : "Gagal menghapus transaksi."
       );
@@ -164,11 +146,6 @@ export function TransactionsPageContent() {
           }
         />
       </div>
-      {fallbackNotice ? (
-        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          {fallbackNotice}
-        </div>
-      ) : null}
       {loadError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {loadError}

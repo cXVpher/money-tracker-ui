@@ -25,7 +25,7 @@ type ApiEnvelope<T> = {
 };
 
 export type PaginatedResponse<T> = {
-  items: T[];
+  items: T[] | null;
   page: number;
   per_page: number;
   total: number;

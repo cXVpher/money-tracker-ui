@@ -66,13 +66,13 @@ export function DebtDialog({ onDebtCreated }: DebtDialogProps) {
       amount: parsedAmount,
       remainingAmount: parsedAmount,
       dueDate,
-      description: description.trim() || "Catatan hutang lokal",
+      description: description.trim() || "Catatan hutang",
       status: "active",
     };
 
     addStoredDebt(debt);
     onDebtCreated?.(debt);
-    toast.success("Catatan hutang mock berhasil ditambahkan.");
+    toast.success("Catatan hutang berhasil ditambahkan.");
     resetForm();
     setIsOpen(false);
   }
@@ -95,7 +95,7 @@ export function DebtDialog({ onDebtCreated }: DebtDialogProps) {
         <DialogHeader>
           <DialogTitle>Tambah Hutang atau Piutang</DialogTitle>
           <DialogDescription>
-            Catatan baru disimpan lokal sebagai mock data.
+            Catatan baru disimpan di perangkat ini.
           </DialogDescription>
         </DialogHeader>
         <form className="grid gap-4" onSubmit={handleSaveDebt}>

@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { Budget } from "@/shared/_types/finance";
+import { Button } from "@/shared/_components/ui/button";
+import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { BudgetCard } from "./budget-card";
 import { BudgetDialog } from "./budget-dialog";
 import { BudgetHistory } from "./budget-history";
@@ -10,8 +12,13 @@ import { getBudgetSpendingSummary } from "../_utils/budget-spending-summary";
 import { getAppBudgets, getCategoryOptions } from "@/shared/_utils/mock-client-store";
 
 export function BudgetPageContent() {
-  const [budgets, setBudgets] = useState<Budget[]>(getAppBudgets);
-  const categoryOptions = useMemo(() => getCategoryOptions(), []);
+  const [budgets, setBudgets] = useState<Budget[]>(() =>
+    USE_MOCK_DATA ? getAppBudgets() : []
+  );
+  const categoryOptions = useMemo(
+    () => (USE_MOCK_DATA ? getCategoryOptions() : []),
+    []
+  );
   const budgetSpendingSummary = useMemo(
     () => getBudgetSpendingSummary(budgets),
     [budgets]
@@ -26,20 +33,36 @@ export function BudgetPageContent() {
             Budget
           </h1>
         </div>
-        <BudgetDialog
-          categoryOptions={categoryOptions}
-          onBudgetCreated={(budget) =>
-            setBudgets((currentBudgets) => [...currentBudgets, budget])
-          }
-        />
+        {USE_MOCK_DATA ? (
+          <BudgetDialog
+            categoryOptions={categoryOptions}
+            onBudgetCreated={(budget) =>
+              setBudgets((currentBudgets) => [...currentBudgets, budget])
+            }
+          />
+        ) : (
+          <Button className="rounded-full" disabled>
+            Atur Budget
+          </Button>
+        )}
       </div>
+
+      {!USE_MOCK_DATA ? (
+        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          Budget belum tersedia untuk akun ini.
+        </div>
+      ) : null}
 
       <BudgetSpendingSummaryCard budgetSpendingSummary={budgetSpendingSummary} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {budgets.map((budget) => (
+        {budgets.length ? budgets.map((budget) => (
           <BudgetCard key={budget.id} budget={budget} />
-        ))}
+        )) : (
+          <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground md:col-span-2 xl:col-span-3">
+            Belum ada budget aktif.
+          </div>
+        )}
       </div>
 
       <BudgetHistory totalSpent={budgetSpendingSummary.totalSpent} />
