@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { QueryProvider } from "@/shared/_components/providers/query-provider";
 import { ThemeProvider } from "@/shared/_components/providers/theme-provider";
 import { TooltipProvider } from "@/shared/_components/ui/tooltip";
 import { Toaster } from "sonner";
@@ -88,7 +89,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          <QueryProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </QueryProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

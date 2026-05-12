@@ -14,6 +14,12 @@
 - Preserved backend error details in `ApiClientError` so form-level code can map server validation errors to fields.
 - Trimmed register payload values before sending them to the backend.
 - Updated paginated response typings to allow `items: null` where the backend can return nullable lists.
+- Added a shared TanStack Query provider at the app root for client-side server-state caching.
+- Refactored the transactions page to load backend transactions with `useQuery` instead of manual `useEffect` state.
+- Refactored backend transaction detail and delete flows to use `useMutation`.
+- Added optimistic transaction removal with rollback when backend deletion fails.
+- Updated newly created backend transactions into the query cache before invalidating for fresh server data.
+- Kept mock transaction data handling separate from backend query state.
 
 ## docs:
 

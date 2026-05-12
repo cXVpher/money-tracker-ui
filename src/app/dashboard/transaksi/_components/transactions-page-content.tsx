@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TransactionForm } from "@/features/transactions/_components/transaction-form";
 import { TransactionTable } from "@/features/transactions/_components/transaction-table";
@@ -19,20 +20,22 @@ import {
   getCategoryOptions,
 } from "@/shared/_utils/mock-client-store";
 
+const transactionListQueryKey = ["transactions", { page: 1, perPage: 50 }] as const;
+
 export function TransactionsPageContent() {
+  const queryClient = useQueryClient();
   const mockAccounts = useMemo<Account[]>(
     () => (USE_MOCK_DATA ? getAppAccounts() : []),
     []
   );
-  const mockTransactions = useMemo<Transaction[]>(
+  const initialMockTransactions = useMemo<Transaction[]>(
     () => (USE_MOCK_DATA ? getAppTransactions() : []),
     []
   );
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const [mockTransactions, setMockTransactions] = useState<Transaction[]>(
+    initialMockTransactions
+  );
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [isUsingBackendData, setIsUsingBackendData] = useState(false);
   const categoryOptions = useMemo(
     () =>
       USE_MOCK_DATA
@@ -41,40 +44,73 @@ export function TransactionsPageContent() {
     []
   );
 
-  useEffect(() => {
-    if (USE_MOCK_DATA) {
-      return;
-    }
+  const transactionsQuery = useQuery({
+    enabled: !USE_MOCK_DATA,
+    queryFn: async () => {
+      const nextTransactions = await getTransactions({ page: 1, perPage: 50 });
+      return nextTransactions.items ?? [];
+    },
+    queryKey: transactionListQueryKey,
+  });
 
-    let isActive = true;
+  const transactionDetailMutation = useMutation({
+    mutationFn: getTransaction,
+    onError: (error) => {
+      toast.error(
+        error instanceof Error ? error.message : "Gagal memuat detail transaksi."
+      );
+    },
+    onSuccess: setSelectedTransaction,
+  });
 
-    async function loadTransactions() {
-      try {
-        const nextTransactions = await getTransactions({ page: 1, perPage: 50 });
-        if (isActive) {
-          setTransactions(nextTransactions.items ?? []);
-          setIsUsingBackendData(true);
-          setLoadError(null);
-        }
-      } catch (error) {
-        if (isActive) {
-          setTransactions([]);
-          setIsUsingBackendData(false);
-          setLoadError(
-            error instanceof Error
-              ? error.message
-              : "Gagal memuat transaksi bulan berjalan."
-          );
-        }
+  const deleteTransactionMutation = useMutation({
+    mutationFn: deleteTransaction,
+    onError: (error, _transactionId, context: { previousTransactions?: Transaction[] } | undefined) => {
+      if (context?.previousTransactions) {
+        queryClient.setQueryData(
+          transactionListQueryKey,
+          context.previousTransactions
+        );
       }
-    }
 
-    void loadTransactions();
+      toast.error(
+        error instanceof Error ? error.message : "Gagal menghapus transaksi."
+      );
+    },
+    onMutate: async (transactionId) => {
+      await queryClient.cancelQueries({ queryKey: transactionListQueryKey });
 
-    return () => {
-      isActive = false;
-    };
-  }, []);
+      const previousTransactions =
+        queryClient.getQueryData<Transaction[]>(transactionListQueryKey);
+
+      queryClient.setQueryData<Transaction[]>(
+        transactionListQueryKey,
+        (currentTransactions = []) =>
+          currentTransactions.filter((item) => item.id !== transactionId)
+      );
+
+      return { previousTransactions };
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: transactionListQueryKey });
+    },
+    onSuccess: () => {
+      toast.success("Transaksi berhasil dihapus.");
+    },
+  });
+
+  const transactions = USE_MOCK_DATA
+    ? mockTransactions
+    : (transactionsQuery.data ?? []);
+  const deletingTransactionId = deleteTransactionMutation.isPending
+    ? deleteTransactionMutation.variables
+    : null;
+  const loadError =
+    !USE_MOCK_DATA && transactionsQuery.isError
+      ? transactionsQuery.error instanceof Error
+        ? transactionsQuery.error.message
+        : "Gagal memuat transaksi bulan berjalan."
+      : null;
 
   async function handleViewTransaction(transaction: Transaction) {
     if (USE_MOCK_DATA) {
@@ -82,17 +118,10 @@ export function TransactionsPageContent() {
       return;
     }
 
-    try {
-      const detailedTransaction = await getTransaction(transaction.id);
-      setSelectedTransaction(detailedTransaction);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Gagal memuat detail transaksi."
-      );
-    }
+    transactionDetailMutation.mutate(transaction.id);
   }
 
-  async function handleDeleteTransaction(transaction: Transaction) {
+  function handleDeleteTransaction(transaction: Transaction) {
     if (typeof window !== "undefined") {
       const shouldDelete = window.confirm(
         `Hapus transaksi "${transaction.description}"?`
@@ -103,29 +132,31 @@ export function TransactionsPageContent() {
       }
     }
 
-    setDeletingTransactionId(transaction.id);
-
-    try {
-      if (USE_MOCK_DATA) {
-        setTransactions((currentTransactions) =>
-          currentTransactions.filter((item) => item.id !== transaction.id)
-        );
-        toast.success("Transaksi dihapus dari daftar saat ini.");
-        return;
-      }
-
-      await deleteTransaction(transaction.id);
-      setTransactions((currentTransactions) =>
+    if (USE_MOCK_DATA) {
+      setMockTransactions((currentTransactions) =>
         currentTransactions.filter((item) => item.id !== transaction.id)
       );
-      toast.success("Transaksi berhasil dihapus.");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Gagal menghapus transaksi."
-      );
-    } finally {
-      setDeletingTransactionId(null);
+      toast.success("Transaksi dihapus dari daftar saat ini.");
+      return;
     }
+
+    deleteTransactionMutation.mutate(transaction.id);
+  }
+
+  function handleTransactionCreated(transaction: Transaction) {
+    if (USE_MOCK_DATA) {
+      setMockTransactions((currentTransactions) => [
+        transaction,
+        ...currentTransactions,
+      ]);
+      return;
+    }
+
+    queryClient.setQueryData<Transaction[]>(
+      transactionListQueryKey,
+      (currentTransactions = []) => [transaction, ...currentTransactions]
+    );
+    void queryClient.invalidateQueries({ queryKey: transactionListQueryKey });
   }
 
   return (
@@ -138,12 +169,10 @@ export function TransactionsPageContent() {
           </h1>
         </div>
         <TransactionForm
-          accounts={isUsingBackendData ? [] : mockAccounts}
+          accounts={USE_MOCK_DATA ? mockAccounts : []}
           preferBackend={!USE_MOCK_DATA}
           categoryOptions={categoryOptions}
-          onTransactionCreated={(transaction) =>
-            setTransactions((currentTransactions) => [transaction, ...currentTransactions])
-          }
+          onTransactionCreated={handleTransactionCreated}
         />
       </div>
       {loadError ? (
@@ -151,8 +180,11 @@ export function TransactionsPageContent() {
           {loadError}
         </div>
       ) : null}
+      {!USE_MOCK_DATA && transactionsQuery.isLoading ? (
+        <p className="text-sm text-muted-foreground">Memuat transaksi...</p>
+      ) : null}
       <TransactionTable
-        accounts={isUsingBackendData ? [] : mockAccounts}
+        accounts={USE_MOCK_DATA ? mockAccounts : []}
         deletingTransactionId={deletingTransactionId}
         onDeleteTransaction={handleDeleteTransaction}
         onViewTransaction={handleViewTransaction}
