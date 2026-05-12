@@ -20,6 +20,8 @@
 - Added optimistic transaction removal with rollback when backend deletion fails.
 - Updated newly created backend transactions into the query cache before invalidating for fresh server data.
 - Kept mock transaction data handling separate from backend query state.
+- Refactored the transaction form to use `react-hook-form` with `zod` validation instead of per-field component state.
+- Added transaction submit pending state that disables form controls and shows a saving label.
 
 ## docs:
 

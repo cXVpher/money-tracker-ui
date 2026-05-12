@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch, type FieldErrors } from "react-hook-form";
+import { z } from "zod";
 import { Plus } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
@@ -39,6 +42,73 @@ type TransactionFormProps = {
   onTransactionCreated?: (transaction: Transaction) => void;
 };
 
+type TransactionFormValues = {
+  amount: string;
+  date: string;
+  description: string;
+  selectedAccountName: string;
+  selectedCategoryName: string;
+  tags: string;
+  transactionType: Transaction["type"];
+};
+
+function createTransactionFormSchema(isMockMode: boolean) {
+  return z
+    .object({
+      amount: z
+        .string()
+        .trim()
+        .refine((value) => {
+          const parsedAmount = Number(value);
+          return !Number.isNaN(parsedAmount) && parsedAmount > 0;
+        }, "Nominal transaksi harus lebih besar dari 0."),
+      date: z.string(),
+      description: z
+        .string()
+        .trim()
+        .min(1, "Deskripsi transaksi wajib diisi."),
+      selectedAccountName: z.string(),
+      selectedCategoryName: z.string().min(1, "Kategori transaksi wajib dipilih."),
+      tags: z.string(),
+      transactionType: z.enum(["expense", "income", "transfer"]),
+    })
+    .superRefine((value, context) => {
+      if (isMockMode && !value.date) {
+        context.addIssue({
+          code: "custom",
+          message: "Tanggal transaksi wajib diisi.",
+          path: ["date"],
+        });
+      }
+
+      if (!isMockMode && value.transactionType === "transfer") {
+        context.addIssue({
+          code: "custom",
+          message: "Transaksi transfer belum tersedia.",
+          path: ["transactionType"],
+        });
+      }
+    });
+}
+
+function getDefaultFormValues({
+  accounts,
+  categoryOptions,
+}: {
+  accounts: Account[];
+  categoryOptions: TransactionFormProps["categoryOptions"];
+}): TransactionFormValues {
+  return {
+    amount: "",
+    date: "",
+    description: "",
+    selectedAccountName: accounts[0]?.name ?? "",
+    selectedCategoryName: categoryOptions[0]?.name ?? "",
+    tags: "",
+    transactionType: "expense",
+  };
+}
+
 export function TransactionForm({
   accounts,
   categoryOptions,
@@ -46,52 +116,25 @@ export function TransactionForm({
   onTransactionCreated,
 }: TransactionFormProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [transactionType, setTransactionType] =
-    useState<Transaction["type"]>("expense");
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState("");
-  const [selectedCategoryName, setSelectedCategoryName] = useState(
-    categoryOptions[0]?.name ?? ""
-  );
-  const [selectedAccountName, setSelectedAccountName] = useState(
-    accounts[0]?.name ?? ""
-  );
-  const [description, setDescription] = useState("");
-  const [tags, setTags] = useState("");
   const isMockMode = !preferBackend;
+  const form = useForm<TransactionFormValues>({
+    defaultValues: getDefaultFormValues({ accounts, categoryOptions }),
+    resolver: zodResolver(createTransactionFormSchema(isMockMode)),
+  });
+  const transactionType = useWatch({
+    control: form.control,
+    name: "transactionType",
+  });
 
   function resetForm() {
-    setTransactionType("expense");
-    setAmount("");
-    setDate("");
-    setSelectedCategoryName(categoryOptions[0]?.name ?? "");
-    setSelectedAccountName(accounts[0]?.name ?? "");
-    setDescription("");
-    setTags("");
+    form.reset(getDefaultFormValues({ accounts, categoryOptions }));
   }
 
-  async function handleSaveTransaction(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const parsedAmount = Number(amount);
+  async function handleSaveTransaction(values: TransactionFormValues) {
+    const parsedAmount = Number(values.amount);
     const selectedCategory = categoryOptions.find(
-      (category) => category.name === selectedCategoryName
+      (category) => category.name === values.selectedCategoryName
     );
-
-    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-      toast.error("Nominal transaksi harus lebih besar dari 0.");
-      return;
-    }
-
-    if (isMockMode && !date) {
-      toast.error("Tanggal transaksi wajib diisi.");
-      return;
-    }
-
-    if (!description.trim()) {
-      toast.error("Deskripsi transaksi wajib diisi.");
-      return;
-    }
 
     if (!selectedCategory) {
       toast.error("Akun atau kategori transaksi tidak valid.");
@@ -104,17 +147,17 @@ export function TransactionForm({
           accounts,
           amount: parsedAmount,
           category: selectedCategory,
-          date,
-          description,
-          selectedAccountName,
-          tags,
-          transactionType,
+          date: values.date,
+          description: values.description,
+          selectedAccountName: values.selectedAccountName,
+          tags: values.tags,
+          transactionType: values.transactionType,
         });
         addStoredTransaction(transaction);
         onTransactionCreated?.(transaction);
-          toast.success("Transaksi berhasil ditambahkan.");
+        toast.success("Transaksi berhasil ditambahkan.");
       } else {
-        if (transactionType === "transfer") {
+        if (values.transactionType === "transfer") {
           toast.error("Transaksi transfer belum tersedia.");
           return;
         }
@@ -122,8 +165,8 @@ export function TransactionForm({
         const transaction = await createTransaction({
           amount: parsedAmount,
           categoryName: selectedCategory.name,
-          description: description.trim(),
-          transactionType: transactionType as CreateTransactionInput["transactionType"],
+          description: values.description.trim(),
+          transactionType: values.transactionType as CreateTransactionInput["transactionType"],
         });
         onTransactionCreated?.(transaction);
         toast.success("Transaksi berhasil ditambahkan.");
@@ -138,6 +181,18 @@ export function TransactionForm({
           : "Transaksi belum bisa disimpan."
       );
     }
+  }
+
+  function handleInvalidSubmit(errors: FieldErrors<TransactionFormValues>) {
+    const firstError =
+      errors.amount?.message ??
+      errors.date?.message ??
+      errors.description?.message ??
+      errors.selectedCategoryName?.message ??
+      errors.transactionType?.message ??
+      "Periksa kembali data transaksi.";
+
+    toast.error(firstError);
   }
 
   return (
@@ -164,7 +219,10 @@ export function TransactionForm({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="grid gap-4" onSubmit={handleSaveTransaction}>
+        <form
+          className="grid gap-4"
+          onSubmit={form.handleSubmit(handleSaveTransaction, handleInvalidSubmit)}
+        >
           <div className="grid grid-cols-3 gap-2">
             {(isMockMode
               ? ["expense", "income", "transfer"]
@@ -175,7 +233,13 @@ export function TransactionForm({
                 type="button"
                 variant={type === transactionType ? "default" : "outline"}
                 className="capitalize"
-                onClick={() => setTransactionType(type as Transaction["type"])}
+                disabled={form.formState.isSubmitting}
+                onClick={() =>
+                  form.setValue("transactionType", type as Transaction["type"], {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
               >
                 {type === "expense"
                   ? "Expense"
@@ -193,8 +257,8 @@ export function TransactionForm({
                 id="amount"
                 placeholder="150000"
                 className="h-10"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
+                disabled={form.formState.isSubmitting}
+                {...form.register("amount")}
               />
             </div>
             {isMockMode ? (
@@ -204,8 +268,8 @@ export function TransactionForm({
                   id="date"
                   type="date"
                   className="h-10"
-                  value={date}
-                  onChange={(event) => setDate(event.target.value)}
+                  disabled={form.formState.isSubmitting}
+                  {...form.register("date")}
                 />
               </div>
             ) : null}
@@ -213,9 +277,9 @@ export function TransactionForm({
               <Label htmlFor="category">Kategori</Label>
               <select
                 id="category"
-                value={selectedCategoryName}
-                onChange={(event) => setSelectedCategoryName(event.target.value)}
                 className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                disabled={form.formState.isSubmitting}
+                {...form.register("selectedCategoryName")}
               >
                 {categoryOptions.map((category) => (
                   <option key={category.name} value={category.name}>
@@ -229,9 +293,9 @@ export function TransactionForm({
                 <Label htmlFor="account">Akun</Label>
                 <select
                   id="account"
-                  value={selectedAccountName}
-                  onChange={(event) => setSelectedAccountName(event.target.value)}
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  disabled={form.formState.isSubmitting}
+                  {...form.register("selectedAccountName")}
                 >
                   {accounts.map((account) => (
                     <option key={account.id} value={account.name}>
@@ -248,8 +312,8 @@ export function TransactionForm({
             <Textarea
               id="description"
               placeholder="Contoh: makan siang"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
+              disabled={form.formState.isSubmitting}
+              {...form.register("description")}
             />
           </div>
           {isMockMode ? (
@@ -258,8 +322,8 @@ export function TransactionForm({
               <Input
                 id="tags"
                 placeholder="kerja, reimbursable"
-                value={tags}
-                onChange={(event) => setTags(event.target.value)}
+                disabled={form.formState.isSubmitting}
+                {...form.register("tags")}
               />
             </div>
           ) : null}
@@ -268,7 +332,9 @@ export function TransactionForm({
             <DialogClose render={<Button variant="outline" type="button" />}>
               Batal
             </DialogClose>
-            <Button type="submit">Simpan Transaksi</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? "Menyimpan..." : "Simpan Transaksi"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
