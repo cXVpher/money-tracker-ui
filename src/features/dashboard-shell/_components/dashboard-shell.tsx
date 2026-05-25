@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MobileNav } from "@/features/dashboard-shell/_components/mobile-nav";
 import { Sidebar } from "@/features/dashboard-shell/_components/sidebar";
 import { Topbar } from "@/features/dashboard-shell/_components/topbar";
 import { cn } from "@/shared/_utils/cn";
+import { startPeriodicRefresh, stopPeriodicRefresh } from "@/features/auth/_utils/jwt-session";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    startPeriodicRefresh();
+    return () => stopPeriodicRefresh();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

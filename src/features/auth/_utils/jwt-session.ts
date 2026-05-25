@@ -31,8 +31,9 @@ type RefreshResult =
     };
 
 let refreshPromise: Promise<RefreshResult> | null = null;
+let refreshIntervalId: ReturnType<typeof setInterval> | null = null;
 
-
+const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 jam
 
 export function clearAccessToken() {
   // no-op for httpOnly cookies
@@ -42,8 +43,6 @@ export function getAuthHeaders(): Record<string, string> {
   return {};
 }
 
-
-
 export function hasActiveRefresh() {
   return refreshPromise != null;
 }
@@ -52,18 +51,25 @@ export async function waitForActiveRefresh() {
   if (!refreshPromise) {
     return;
   }
-
   await refreshPromise;
 }
 
-export function refreshAccessToken() {
-  if (!refreshPromise) {
-    refreshPromise = runRefreshRequest().finally(() => {
-      refreshPromise = null;
-    });
-  }
+export function startPeriodicRefresh() {
+  if (refreshIntervalId !== null) return;
 
-  return refreshPromise;
+  // Langsung refresh sekali saat pertama kali dashboard dibuka
+  void runRefreshRequest();
+
+  refreshIntervalId = setInterval(() => {
+    void runRefreshRequest();
+  }, REFRESH_INTERVAL_MS);
+}
+
+export function stopPeriodicRefresh() {
+  if (refreshIntervalId !== null) {
+    clearInterval(refreshIntervalId);
+    refreshIntervalId = null;
+  }
 }
 
 // removed mock logic

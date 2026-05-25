@@ -1,12 +1,7 @@
 "use client";
 
 import { FRONTEND_API_BASE_URL } from "@/shared/_config/runtime";
-import {
-  getAuthHeaders,
-  hasActiveRefresh,
-  refreshAccessToken,
-  waitForActiveRefresh,
-} from "@/features/auth/_utils/jwt-session";
+import { getAuthHeaders } from "@/features/auth/_utils/jwt-session";
 
 type ApiEnvelope<T> = {
   code: number;
@@ -61,31 +56,7 @@ async function apiFetch(
   path: string,
   init: ApiFetchOptions = {}
 ): Promise<Response> {
-
-  if (!init.skipAuthRefresh && hasActiveRefresh()) {
-    await waitForActiveRefresh();
-  }
-
-  const response = await fetchWithDefaults(path, init);
-
-  if (
-    response.status !== 401 ||
-    init.skipAuthRefresh ||
-    isRefreshRequest(path)
-  ) {
-    return response;
-  }
-
-  const refreshResult = await refreshAccessToken();
-
-  if (!refreshResult.ok) {
-    throw new ApiClientError(refreshResult.error.message, 401);
-  }
-
-  return fetchWithDefaults(path, {
-    ...init,
-    skipAuthRefresh: true,
-  });
+  return fetchWithDefaults(path, init);
 }
 
 // removed mock simulation runs
