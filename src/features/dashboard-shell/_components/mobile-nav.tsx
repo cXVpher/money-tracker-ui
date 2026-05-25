@@ -15,10 +15,7 @@ import {
   SheetTrigger,
 } from "@/shared/_components/ui/sheet";
 import { DASHBOARD_NAV } from "@/features/dashboard-shell/_utils/navigation";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
-import { shouldUseMockFallback } from "@/shared/_utils/api-client";
 import { logout as logoutRequest } from "@/shared/_utils/backend-client";
-import { logoutMockAccount } from "@/shared/_utils/mock-auth";
 import { cn } from "@/shared/_utils/cn";
 import {
   dashboardIcons,
@@ -43,17 +40,12 @@ export function MobileNav() {
 
   async function handleLogout() {
     try {
-      if (!USE_MOCK_DATA) {
-        await logoutRequest();
-      }
+      await logoutRequest();
     } catch (error) {
-      if (!shouldUseMockFallback(error)) {
-        toast.error(error instanceof Error ? error.message : "Logout gagal.");
-        return;
-      }
+      toast.error(error instanceof Error ? error.message : "Logout gagal.");
+      return;
     }
 
-    logoutMockAccount();
     setIsMoreMenuOpen(false);
     router.push("/login");
   }

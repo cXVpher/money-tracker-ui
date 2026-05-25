@@ -9,13 +9,10 @@ import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/_components/auth-card";
 import { OAuthButton } from "@/features/auth/_components/oauth-button";
 import { Button } from "@/shared/_components/ui/button";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
-import { MOCK_ACCOUNT } from "@/shared/_constants/mock-auth";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { ApiClientError } from "@/shared/_utils/api-client";
 import { login } from "@/shared/_utils/backend-client";
-import { loginWithMockAccount } from "@/shared/_utils/mock-auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,19 +39,6 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      if (USE_MOCK_DATA) {
-        const result = loginWithMockAccount(phone, password);
-
-        if (!result.ok) {
-          toast.error(result.message);
-          return;
-        }
-
-        toast.success("Login mock berhasil.");
-        router.push(nextPath || "/dashboard");
-        return;
-      }
-
       await login({ password, phone });
       toast.success("Login berhasil.");
       router.push(nextPath || "/dashboard");
@@ -70,11 +54,6 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
-    if (USE_MOCK_DATA) {
-      toast.info("Google login aktif saat NEXT_PUBLIC_MOCK_DATA=false.");
-      return;
-    }
-
     setIsGoogleSubmitting(true);
     await signIn("google", {
       callbackUrl: nextPath || "/dashboard",
@@ -87,17 +66,6 @@ export default function LoginPage() {
       description="Lanjutkan pencatatan keuanganmu dari dashboard."
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {USE_MOCK_DATA ? (
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm">
-            <p className="font-semibold text-foreground">Akun Mock</p>
-            <p className="mt-1 text-muted-foreground">
-              Nomor: <span className="font-medium text-foreground">{MOCK_ACCOUNT.phone}</span>
-            </p>
-            <p className="text-muted-foreground">
-              Password: <span className="font-medium text-foreground">{MOCK_ACCOUNT.password}</span>
-            </p>
-          </div>
-        ) : null}
         <div className="space-y-2">
           <Label htmlFor="phone">Nomor WhatsApp</Label>
           <Input
@@ -145,12 +113,10 @@ export default function LoginPage() {
       </div>
 
       <OAuthButton
-        disabled={USE_MOCK_DATA || isGoogleSubmitting}
+        disabled={isGoogleSubmitting}
         onClick={() => void handleGoogleLogin()}
       >
-        {USE_MOCK_DATA
-          ? "Google aktif saat mode API"
-          : isGoogleSubmitting
+        {isGoogleSubmitting
             ? "Menghubungkan..."
             : "Masuk dengan Google"}
       </OAuthButton>

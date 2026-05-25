@@ -19,16 +19,13 @@ import {
 } from "@/shared/_components/ui/navigation-menu";
 import { ScrollArea } from "@/shared/_components/ui/scroll-area";
 import { APP_NAME } from "@/shared/_constants/brand";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { DASHBOARD_NAV } from "@/features/dashboard-shell/_utils/navigation";
 import { cn } from "@/shared/_utils/cn";
 import {
   dashboardIcons,
   type DashboardIconName,
 } from "@/features/dashboard-shell/_utils/icon-map";
-import { shouldUseMockFallback } from "@/shared/_utils/api-client";
 import { getBalance, logout as logoutRequest } from "@/shared/_utils/backend-client";
-import { logoutMockAccount } from "@/shared/_utils/mock-auth";
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -50,9 +47,6 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
   ] as const;
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      return;
-    }
 
     let isActive = true;
 
@@ -71,10 +65,6 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
           planType: balance.plan_type,
         });
       } catch (error) {
-        if (!isActive || shouldUseMockFallback(error)) {
-          return;
-        }
-
         setBalanceStatus(null);
       }
     }
@@ -88,17 +78,12 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
 
   async function handleLogout() {
     try {
-      if (!USE_MOCK_DATA) {
-        await logoutRequest();
-      }
+      await logoutRequest();
     } catch (error) {
-      if (!shouldUseMockFallback(error)) {
-        toast.error(error instanceof Error ? error.message : "Logout gagal.");
-        return;
-      }
+      toast.error(error instanceof Error ? error.message : "Logout gagal.");
+      return;
     }
 
-    logoutMockAccount();
     router.push("/login");
   }
 

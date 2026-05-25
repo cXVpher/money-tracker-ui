@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import {
   type DashboardOverviewData,
   getDashboardOverviewData,
@@ -28,10 +27,6 @@ export function AnalyticsPageContent() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      return;
-    }
-
     let isActive = true;
 
     async function loadAnalytics() {
@@ -59,12 +54,10 @@ export function AnalyticsPageContent() {
     };
   }, []);
 
-  const cashflowSeries = USE_MOCK_DATA
-    ? undefined
-    : backendOverview?.cashflowSeries ?? [];
-  const incomeSources = USE_MOCK_DATA ? incomeSourceBreakdown : [];
-  const balanceSeries = USE_MOCK_DATA ? accountBalanceSeries : [];
-  const metrics = USE_MOCK_DATA ? monthOverMonthChangeMetrics : [];
+  const cashflowSeries = backendOverview?.cashflowSeries ?? [];
+  const incomeSources: any[] = [];
+  const balanceSeries: any[] = [];
+  const metrics: any[] = [];
 
   return (
     <div className="space-y-6">

@@ -8,7 +8,6 @@ import {
   AppIcon,
 } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import {
   Card,
   CardContent,
@@ -30,11 +29,6 @@ import type {
   CategoryConfig,
   CategoryGroup,
 } from "@/features/settings/_types/settings";
-import {
-  getCategorySettings,
-  saveCategorySettings,
-  type CategorySettings,
-} from "@/shared/_utils/mock-client-store";
 
 type CategoryEditorState = {
   group: CategoryGroup;
@@ -48,15 +42,18 @@ const emptyCategoryDraft: CategoryConfig = {
   name: "",
 };
 
+type CategorySettings = {
+  expense: CategoryConfig[];
+  income: CategoryConfig[];
+};
+
 const emptyCategorySettings: CategorySettings = {
   expense: [],
   income: [],
 };
 
 export function CategorySettingsCard() {
-  const [categorySettings, setCategorySettings] = useState(() =>
-    USE_MOCK_DATA ? getCategorySettings() : emptyCategorySettings
-  );
+  const [categorySettings, setCategorySettings] = useState(emptyCategorySettings);
   const [categoryEditor, setCategoryEditor] = useState<CategoryEditorState | null>(
     null
   );
@@ -78,49 +75,11 @@ export function CategorySettingsCard() {
     category?: CategoryConfig,
     index?: number
   ) {
-    if (!USE_MOCK_DATA) {
-      toast.error("Pengaturan kategori belum tersedia.");
-      return;
-    }
-
-    setCategoryEditor({
-      group,
-      index: index ?? null,
-      values: category ? { ...category } : { ...emptyCategoryDraft },
-    });
+    toast.error("Pengaturan kategori belum tersedia.");
   }
 
   function handleSaveCategory() {
-    if (!categoryEditor) {
-      return;
-    }
-
-    if (!USE_MOCK_DATA) {
-      toast.error("Pengaturan kategori belum tersedia.");
-      return;
-    }
-
-    if (!categoryEditor.values.name.trim()) {
-      toast.error("Nama kategori wajib diisi.");
-      return;
-    }
-
-    const nextCategorySettings: CategorySettings = {
-      expense: [...categorySettings.expense],
-      income: [...categorySettings.income],
-    };
-
-    if (categoryEditor.index === null) {
-      nextCategorySettings[categoryEditor.group].push(categoryEditor.values);
-    } else {
-      nextCategorySettings[categoryEditor.group][categoryEditor.index] =
-        categoryEditor.values;
-    }
-
-    setCategorySettings(nextCategorySettings);
-    saveCategorySettings(nextCategorySettings);
-    setCategoryEditor(null);
-    toast.success("Kategori tersimpan di perangkat ini.");
+    toast.error("Pengaturan kategori belum tersedia.");
   }
 
   return (
@@ -132,17 +91,15 @@ export function CategorySettingsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!USE_MOCK_DATA ? (
-          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-            Pengaturan kategori belum tersedia untuk akun ini.
-          </div>
-        ) : null}
+        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          Pengaturan kategori belum tersedia untuk akun ini.
+        </div>
 
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
-            disabled={!USE_MOCK_DATA}
+            disabled
             onClick={() => openCategoryEditor("expense")}
           >
             Tambah Kategori Pengeluaran
@@ -150,7 +107,7 @@ export function CategorySettingsCard() {
           <Button
             variant="outline"
             size="sm"
-            disabled={!USE_MOCK_DATA}
+            disabled
             onClick={() => openCategoryEditor("income")}
           >
             Tambah Kategori Pemasukan

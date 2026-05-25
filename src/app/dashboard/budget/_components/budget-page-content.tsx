@@ -3,22 +3,14 @@
 import { useMemo, useState } from "react";
 import type { Budget } from "@/shared/_types/finance";
 import { Button } from "@/shared/_components/ui/button";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { BudgetCard } from "./budget-card";
-import { BudgetDialog } from "./budget-dialog";
 import { BudgetHistory } from "./budget-history";
 import { BudgetSpendingSummaryCard } from "./budget-spending-summary-card";
 import { getBudgetSpendingSummary } from "../_utils/budget-spending-summary";
-import { getAppBudgets, getCategoryOptions } from "@/shared/_utils/mock-client-store";
 
 export function BudgetPageContent() {
-  const [budgets, setBudgets] = useState<Budget[]>(() =>
-    USE_MOCK_DATA ? getAppBudgets() : []
-  );
-  const categoryOptions = useMemo(
-    () => (USE_MOCK_DATA ? getCategoryOptions() : []),
-    []
-  );
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const categoryOptions: any[] = [];
   const budgetSpendingSummary = useMemo(
     () => getBudgetSpendingSummary(budgets),
     [budgets]
@@ -33,25 +25,14 @@ export function BudgetPageContent() {
             Budget
           </h1>
         </div>
-        {USE_MOCK_DATA ? (
-          <BudgetDialog
-            categoryOptions={categoryOptions}
-            onBudgetCreated={(budget) =>
-              setBudgets((currentBudgets) => [...currentBudgets, budget])
-            }
-          />
-        ) : (
-          <Button className="rounded-full" disabled>
-            Atur Budget
-          </Button>
-        )}
+        <Button className="rounded-full" disabled>
+          Atur Budget
+        </Button>
       </div>
 
-      {!USE_MOCK_DATA ? (
-        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          Budget belum tersedia untuk akun ini.
-        </div>
-      ) : null}
+      <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        Budget belum tersedia untuk akun ini.
+      </div>
 
       <BudgetSpendingSummaryCard budgetSpendingSummary={budgetSpendingSummary} />
 

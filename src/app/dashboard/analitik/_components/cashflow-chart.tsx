@@ -2,9 +2,7 @@
 
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
-import { getMonthlyCashflowSeries } from "@/shared/_utils/mock-client-store";
 
 type CashflowChartProps = {
   cashflowSeries?: Array<{
@@ -16,7 +14,7 @@ type CashflowChartProps = {
 
 export function CashflowChart({ cashflowSeries: providedSeries }: CashflowChartProps) {
   const cashflowSeries = useMemo(
-    () => providedSeries ?? (USE_MOCK_DATA ? getMonthlyCashflowSeries() : []),
+    () => providedSeries ?? [],
     [providedSeries]
   );
 

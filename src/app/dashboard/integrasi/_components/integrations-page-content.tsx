@@ -10,8 +10,7 @@ import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { Textarea } from "@/shared/_components/ui/textarea";
 import { Badge } from "@/shared/_components/ui/badge";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
-import { shouldUseMockFallback } from "@/shared/_utils/api-client";
+
 import {
   createGroup,
   createGroupTransaction,
@@ -49,12 +48,8 @@ export function IntegrationsPageContent() {
   const [referralSummary, setReferralSummary] =
     useState<ReferralSummary>(emptyReferralSummary);
   const [groupReport, setGroupReport] = useState<GroupReportResponse | null>(null);
-  const [pageNotice, setPageNotice] = useState<string | null>(
-    USE_MOCK_DATA
-      ? "Mode demo aktif. Beberapa data disimpan di perangkat ini."
-      : null
-  );
-  const [isLoading, setIsLoading] = useState(!USE_MOCK_DATA);
+  const [pageNotice, setPageNotice] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [topupAmount, setTopupAmount] = useState("");
   const [topupDescription, setTopupDescription] = useState("");
@@ -74,10 +69,6 @@ export function IntegrationsPageContent() {
   const [groupReportMonth, setGroupReportMonth] = useState(currentMonth);
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      return;
-    }
-
     let isActive = true;
 
     async function loadData() {
@@ -103,13 +94,7 @@ export function IntegrationsPageContent() {
           return;
         }
 
-        if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-          setPageNotice(
-            "Beberapa fitur integrasi belum tersedia. Kamu masih bisa mencoba tampilan dan form."
-          );
-        } else {
-          setPageNotice(error instanceof Error ? error.message : "Gagal memuat modul integrasi.");
-        }
+        setPageNotice(error instanceof Error ? error.message : "Gagal memuat modul integrasi.");
       } finally {
         if (isActive) {
           setIsLoading(false);
@@ -155,26 +140,6 @@ export function IntegrationsPageContent() {
       setTopupProof(null);
       toast.success(response.message);
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setPayments((current) => [
-          {
-            amount: parsedAmount,
-            created_at: new Date().toISOString(),
-            description: topupDescription || "Top up",
-            id: `local-pay-${Date.now()}`,
-            status: "pending",
-            type: "topup",
-            user_id: "mock-user",
-          },
-          ...current,
-        ]);
-        toast.warning("Permintaan top up disimpan di daftar.");
-        setTopupAmount("");
-        setTopupDescription("");
-        setTopupProof(null);
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal membuat top up.");
     }
   }
@@ -191,22 +156,6 @@ export function IntegrationsPageContent() {
       setTokenName("");
       toast.success("Token integrasi berhasil dibuat.");
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setTokens((current) => [
-          {
-            created_at: new Date().toISOString(),
-            id: `local-token-${Date.now()}`,
-            name: tokenName.trim(),
-            token: `ft_demo_${Date.now()}`,
-            user_id: "mock-user",
-          },
-          ...current,
-        ]);
-        setTokenName("");
-        toast.warning("Token sementara dibuat di perangkat ini.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal membuat token.");
     }
   }
@@ -217,12 +166,6 @@ export function IntegrationsPageContent() {
       setTokens((current) => current.filter((token) => token.id !== id));
       toast.success("Token berhasil dihapus.");
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setTokens((current) => current.filter((token) => token.id !== id));
-        toast.warning("Daftar token diperbarui di perangkat ini.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal menghapus token.");
     }
   }
@@ -247,21 +190,6 @@ export function IntegrationsPageContent() {
       setGroupName("");
       toast.success("Grup berhasil dibuat.");
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setGroups((current) => [
-          {
-            id: `local-group-${Date.now()}`,
-            member_count: 1,
-            name: groupName.trim(),
-            role: "owner",
-          },
-          ...current,
-        ]);
-        setGroupName("");
-        toast.warning("Grup ditambahkan ke tampilan.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal membuat grup.");
     }
   }
@@ -277,12 +205,6 @@ export function IntegrationsPageContent() {
       setInvitePhone("");
       toast.success("Undangan anggota berhasil dikirim.");
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setInvitePhone("");
-        toast.warning("Undangan belum bisa dikirim sekarang.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal mengundang anggota.");
     }
   }
@@ -317,18 +239,6 @@ export function IntegrationsPageContent() {
       });
       toast.success("Transaksi grup berhasil dibuat.");
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setGroupTransaction({
-          amount: "",
-          categoryName: "Lainnya",
-          description: "",
-          groupId: "",
-          transactionType: "OUT",
-        });
-        toast.warning("Transaksi grup belum bisa disimpan sekarang.");
-        return;
-      }
-
       toast.error(
         error instanceof Error ? error.message : "Gagal membuat transaksi grup."
       );
@@ -346,19 +256,6 @@ export function IntegrationsPageContent() {
       setGroupReport(report);
       toast.success("Report grup berhasil dimuat.");
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        const group = groups.find((item) => item.id === groupReportGroupId);
-        setGroupReport({
-          by_kategori: null,
-          by_member: null,
-          group_name: group?.name ?? "Grup Lokal",
-          month: groupReportMonth,
-          total_out: 0,
-        });
-        toast.warning("Report grup belum tersedia untuk periode ini.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal memuat report grup.");
     }
   }
@@ -372,15 +269,6 @@ export function IntegrationsPageContent() {
       }));
       toast.success("Kode referral baru berhasil dibuat.");
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setReferralSummary((current) => ({
-          ...current,
-          code: `MOCK${String(Date.now()).slice(-4)}`,
-        }));
-        toast.warning("Kode contoh ditampilkan sementara.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal membuat kode referral.");
     }
   }

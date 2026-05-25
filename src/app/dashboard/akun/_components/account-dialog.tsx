@@ -17,7 +17,7 @@ import {
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import type { Account } from "@/shared/_types/finance";
-import { addStoredAccount, createClientId } from "@/shared/_utils/mock-client-store";
+
 
 const accountTypeOptions: Array<{
   color: string;
@@ -68,20 +68,8 @@ export function AccountDialog({ onAccountCreated }: AccountDialogProps) {
       return;
     }
 
-    const account: Account = {
-      id: createClientId("account"),
-      name: accountName.trim(),
-      type: accountType,
-      balance: parsedBalance,
-      icon: selectedType.icon,
-      color: selectedType.color,
-    };
-
-    addStoredAccount(account);
-    onAccountCreated?.(account);
-    toast.success("Akun berhasil ditambahkan.");
-    resetForm();
-    setIsOpen(false);
+    toast.error("Fitur tambah akun belum tersedia saat ini.");
+    return;
   }
 
   return (

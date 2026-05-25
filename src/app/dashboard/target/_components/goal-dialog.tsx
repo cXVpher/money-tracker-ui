@@ -18,7 +18,7 @@ import {
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import type { Goal } from "@/shared/_types/finance";
-import { addStoredGoal, createClientId } from "@/shared/_utils/mock-client-store";
+
 
 type GoalDialogProps = {
   onGoalCreated?: (goal: Goal) => void;
@@ -66,21 +66,8 @@ export function GoalDialog({ onGoalCreated }: GoalDialogProps) {
       return;
     }
 
-    const goal: Goal = {
-      id: createClientId("goal"),
-      name: goalName.trim(),
-      targetAmount: parsedTargetAmount,
-      currentAmount: parsedCurrentAmount,
-      deadline: goalDeadline,
-      icon: goalIcon || "target",
-      color: "#22c55e",
-    };
-
-    addStoredGoal(goal);
-    onGoalCreated?.(goal);
-    toast.success("Target berhasil ditambahkan.");
-    resetForm();
-    setIsOpen(false);
+    toast.error("Fitur tambah target belum tersedia saat ini.");
+    return;
   }
 
   return (

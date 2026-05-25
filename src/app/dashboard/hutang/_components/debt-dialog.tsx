@@ -17,7 +17,7 @@ import {
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import type { Debt } from "@/shared/_types/finance";
-import { addStoredDebt, createClientId } from "@/shared/_utils/mock-client-store";
+
 
 type DebtDialogProps = {
   onDebtCreated?: (debt: Debt) => void;
@@ -59,22 +59,8 @@ export function DebtDialog({ onDebtCreated }: DebtDialogProps) {
       return;
     }
 
-    const debt: Debt = {
-      id: createClientId("debt"),
-      type: debtType,
-      personName: personName.trim(),
-      amount: parsedAmount,
-      remainingAmount: parsedAmount,
-      dueDate,
-      description: description.trim() || "Catatan hutang",
-      status: "active",
-    };
-
-    addStoredDebt(debt);
-    onDebtCreated?.(debt);
-    toast.success("Catatan hutang berhasil ditambahkan.");
-    resetForm();
-    setIsOpen(false);
+    toast.error("Fitur tambah hutang belum tersedia saat ini.");
+    return;
   }
 
   return (

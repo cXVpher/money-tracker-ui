@@ -4,16 +4,12 @@ import { useEffect, useState } from "react";
 import { User } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { ApiClientError } from "@/shared/_utils/api-client";
 import { getProfile, updateProfile } from "@/shared/_utils/backend-client";
-import {
-  getProfileSettings,
-  saveProfileSettings,
-} from "@/shared/_utils/mock-client-store";
+
 
 const emptyProfileSettings = {
   email: "",
@@ -21,16 +17,12 @@ const emptyProfileSettings = {
 };
 
 export function ProfileSettingsCard() {
-  const [profileSettings, setProfileSettings] = useState(() =>
-    USE_MOCK_DATA ? getProfileSettings() : emptyProfileSettings
-  );
-  const [isLoading, setIsLoading] = useState(!USE_MOCK_DATA);
+  const [profileSettings, setProfileSettings] = useState(emptyProfileSettings);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      return;
-    }
+
 
     let isActive = true;
 
@@ -74,11 +66,7 @@ export function ProfileSettingsCard() {
     setIsSaving(true);
 
     try {
-      if (USE_MOCK_DATA) {
-        saveProfileSettings(profileSettings);
-        toast.success("Profil tersimpan di perangkat ini.");
-        return;
-      }
+
 
       await updateProfile(profileSettings);
       toast.success("Profil berhasil diperbarui.");

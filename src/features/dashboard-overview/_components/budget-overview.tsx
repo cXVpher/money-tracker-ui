@@ -1,18 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
 import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiahShort } from "@/shared/_utils/formatters";
-import { getAppBudgets } from "@/shared/_utils/mock-client-store";
 
 export function BudgetOverview() {
-  const budgets = useMemo(
-    () => (USE_MOCK_DATA ? getAppBudgets().slice(0, 5) : []),
-    []
-  );
+  const budgets: any[] = [];
+
 
   return (
     <Card>

@@ -7,7 +7,6 @@ import { z } from "zod";
 import { Plus } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import {
   type CreateTransactionInput,
   createTransaction,
@@ -25,34 +24,25 @@ import {
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { Textarea } from "@/shared/_components/ui/textarea";
-import type { Account, Transaction } from "@/shared/_types/finance";
-import {
-  addStoredTransaction,
-  createClientId,
-} from "@/shared/_utils/mock-client-store";
+import type { Transaction } from "@/shared/_types/finance";
 
 type TransactionFormProps = {
-  accounts: Account[];
-  categoryOptions: Array<{
+  categoryOptions: ReadonlyArray<{
     color: string;
     icon: string;
     name: string;
   }>;
-  preferBackend?: boolean;
   onTransactionCreated?: (transaction: Transaction) => void;
 };
 
 type TransactionFormValues = {
   amount: string;
-  date: string;
   description: string;
-  selectedAccountName: string;
   selectedCategoryName: string;
-  tags: string;
   transactionType: Transaction["type"];
 };
 
-function createTransactionFormSchema(isMockMode: boolean) {
+function createTransactionFormSchema() {
   return z
     .object({
       amount: z
@@ -62,26 +52,15 @@ function createTransactionFormSchema(isMockMode: boolean) {
           const parsedAmount = Number(value);
           return !Number.isNaN(parsedAmount) && parsedAmount > 0;
         }, "Nominal transaksi harus lebih besar dari 0."),
-      date: z.string(),
       description: z
         .string()
         .trim()
         .min(1, "Deskripsi transaksi wajib diisi."),
-      selectedAccountName: z.string(),
       selectedCategoryName: z.string().min(1, "Kategori transaksi wajib dipilih."),
-      tags: z.string(),
       transactionType: z.enum(["expense", "income", "transfer"]),
     })
     .superRefine((value, context) => {
-      if (isMockMode && !value.date) {
-        context.addIssue({
-          code: "custom",
-          message: "Tanggal transaksi wajib diisi.",
-          path: ["date"],
-        });
-      }
-
-      if (!isMockMode && value.transactionType === "transfer") {
+      if (value.transactionType === "transfer") {
         context.addIssue({
           code: "custom",
           message: "Transaksi transfer belum tersedia.",
@@ -92,34 +71,26 @@ function createTransactionFormSchema(isMockMode: boolean) {
 }
 
 function getDefaultFormValues({
-  accounts,
   categoryOptions,
 }: {
-  accounts: Account[];
   categoryOptions: TransactionFormProps["categoryOptions"];
 }): TransactionFormValues {
   return {
     amount: "",
-    date: "",
     description: "",
-    selectedAccountName: accounts[0]?.name ?? "",
     selectedCategoryName: categoryOptions[0]?.name ?? "",
-    tags: "",
     transactionType: "expense",
   };
 }
 
 export function TransactionForm({
-  accounts,
   categoryOptions,
-  preferBackend = !USE_MOCK_DATA,
   onTransactionCreated,
 }: TransactionFormProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const isMockMode = !preferBackend;
   const form = useForm<TransactionFormValues>({
-    defaultValues: getDefaultFormValues({ accounts, categoryOptions }),
-    resolver: zodResolver(createTransactionFormSchema(isMockMode)),
+    defaultValues: getDefaultFormValues({ categoryOptions }),
+    resolver: zodResolver(createTransactionFormSchema()),
   });
   const transactionType = useWatch({
     control: form.control,
@@ -127,7 +98,7 @@ export function TransactionForm({
   });
 
   function resetForm() {
-    form.reset(getDefaultFormValues({ accounts, categoryOptions }));
+    form.reset(getDefaultFormValues({ categoryOptions }));
   }
 
   async function handleSaveTransaction(values: TransactionFormValues) {
@@ -142,35 +113,19 @@ export function TransactionForm({
     }
 
     try {
-      if (isMockMode) {
-        const transaction = createMockTransaction({
-          accounts,
-          amount: parsedAmount,
-          category: selectedCategory,
-          date: values.date,
-          description: values.description,
-          selectedAccountName: values.selectedAccountName,
-          tags: values.tags,
-          transactionType: values.transactionType,
-        });
-        addStoredTransaction(transaction);
-        onTransactionCreated?.(transaction);
-        toast.success("Transaksi berhasil ditambahkan.");
-      } else {
-        if (values.transactionType === "transfer") {
-          toast.error("Transaksi transfer belum tersedia.");
-          return;
-        }
-
-        const transaction = await createTransaction({
-          amount: parsedAmount,
-          categoryName: selectedCategory.name,
-          description: values.description.trim(),
-          transactionType: values.transactionType as CreateTransactionInput["transactionType"],
-        });
-        onTransactionCreated?.(transaction);
-        toast.success("Transaksi berhasil ditambahkan.");
+      if (values.transactionType === "transfer") {
+        toast.error("Transaksi transfer belum tersedia.");
+        return;
       }
+
+      const transaction = await createTransaction({
+        amount: parsedAmount,
+        categoryName: selectedCategory.name,
+        description: values.description.trim(),
+        transactionType: values.transactionType as CreateTransactionInput["transactionType"],
+      });
+      onTransactionCreated?.(transaction);
+      toast.success("Transaksi berhasil ditambahkan.");
 
       resetForm();
       setIsOpen(false);
@@ -186,7 +141,6 @@ export function TransactionForm({
   function handleInvalidSubmit(errors: FieldErrors<TransactionFormValues>) {
     const firstError =
       errors.amount?.message ??
-      errors.date?.message ??
       errors.description?.message ??
       errors.selectedCategoryName?.message ??
       errors.transactionType?.message ??
@@ -213,9 +167,7 @@ export function TransactionForm({
         <DialogHeader>
           <DialogTitle>Tambah Transaksi</DialogTitle>
           <DialogDescription>
-            {preferBackend
-              ? "Transaksi akan disimpan ke akun kamu."
-              : "Transaksi baru disimpan di perangkat ini."}
+            Transaksi akan disimpan dan tersinkronisasi ke server.
           </DialogDescription>
         </DialogHeader>
 
@@ -224,10 +176,7 @@ export function TransactionForm({
           onSubmit={form.handleSubmit(handleSaveTransaction, handleInvalidSubmit)}
         >
           <div className="grid grid-cols-3 gap-2">
-            {(isMockMode
-              ? ["expense", "income", "transfer"]
-              : ["expense", "income"]
-            ).map((type) => (
+            {["expense", "income"].map((type) => (
               <Button
                 key={type}
                 type="button"
@@ -261,18 +210,6 @@ export function TransactionForm({
                 {...form.register("amount")}
               />
             </div>
-            {isMockMode ? (
-              <div className="space-y-2">
-                <Label htmlFor="date">Tanggal</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  className="h-10"
-                  disabled={form.formState.isSubmitting}
-                  {...form.register("date")}
-                />
-              </div>
-            ) : null}
             <div className="space-y-2">
               <Label htmlFor="category">Kategori</Label>
               <select
@@ -288,23 +225,6 @@ export function TransactionForm({
                 ))}
               </select>
             </div>
-            {isMockMode ? (
-              <div className="space-y-2">
-                <Label htmlFor="account">Akun</Label>
-                <select
-                  id="account"
-                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                  disabled={form.formState.isSubmitting}
-                  {...form.register("selectedAccountName")}
-                >
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.name}>
-                      {account.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
           </div>
 
           <div className="space-y-2">
@@ -316,17 +236,6 @@ export function TransactionForm({
               {...form.register("description")}
             />
           </div>
-          {isMockMode ? (
-            <div className="space-y-2">
-              <Label htmlFor="tags">Tags</Label>
-              <Input
-                id="tags"
-                placeholder="kerja, reimbursable"
-                disabled={form.formState.isSubmitting}
-                {...form.register("tags")}
-              />
-            </div>
-          ) : null}
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline" type="button" />}>
@@ -341,48 +250,3 @@ export function TransactionForm({
     </Dialog>
   );
 }
-
-function createMockTransaction({
-  accounts,
-  amount,
-  category,
-  date,
-  description,
-  selectedAccountName,
-  tags,
-  transactionType,
-}: {
-  accounts: Account[];
-  amount: number;
-  category: {
-    color: string;
-    icon: string;
-    name: string;
-  };
-  date: string;
-  description: string;
-  selectedAccountName: string;
-  tags: string;
-  transactionType: Transaction["type"];
-}) {
-  const selectedAccount =
-    accounts.find((account) => account.name === selectedAccountName) ?? null;
-  const accountName = selectedAccount?.name ?? "DuitKu";
-  const accountId = selectedAccount?.id ?? "mock-backend";
-
-  return {
-    id: createClientId("transaction"),
-    accountId,
-    categoryId: createClientId("category"),
-    type: transactionType,
-    amount,
-    description: tags.trim()
-      ? `${description.trim()} [${tags.trim()}]`
-      : description.trim(),
-    date,
-    categoryName: category.name,
-    categoryIcon: category.icon,
-    accountName,
-  } satisfies Transaction;
-}
-

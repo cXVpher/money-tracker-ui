@@ -17,7 +17,7 @@ import {
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import type { Budget } from "@/shared/_types/finance";
-import { addStoredBudget, createClientId } from "@/shared/_utils/mock-client-store";
+
 
 type BudgetDialogProps = {
   categoryOptions: Array<{
@@ -65,20 +65,8 @@ export function BudgetDialog({
       return;
     }
 
-    const budget: Budget = {
-      id: createClientId("budget"),
-      categoryName: selectedCategory.name,
-      categoryIcon: selectedCategory.icon,
-      limit: parsedLimit,
-      spent: 0,
-      color: selectedCategory.color,
-    };
-
-    addStoredBudget(budget);
-    onBudgetCreated?.(budget);
-    toast.success("Budget berhasil ditambahkan.");
-    resetForm();
-    setIsOpen(false);
+    toast.error("Fitur tambah budget belum tersedia saat ini.");
+    return;
   }
 
   return (

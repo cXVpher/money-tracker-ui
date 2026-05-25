@@ -11,9 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiahShort } from "@/shared/_utils/formatters";
-import { getMonthlyCashflowSeries } from "@/shared/_utils/mock-client-store";
 
 const subscribeToMountState = () => () => {};
 const getMountedClientSnapshot = () => true;
@@ -29,7 +27,7 @@ type CashflowChartProps = {
 
 export function CashflowChart({ cashflowSeries: providedSeries }: CashflowChartProps) {
   const cashflowSeries = useMemo(
-    () => providedSeries ?? (USE_MOCK_DATA ? getMonthlyCashflowSeries() : []),
+    () => providedSeries ?? [],
     [providedSeries]
   );
   const isMounted = useSyncExternalStore(

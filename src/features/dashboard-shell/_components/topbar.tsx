@@ -6,24 +6,17 @@ import { Avatar, AvatarFallback } from "@/shared/_components/ui/avatar";
 import { Button } from "@/shared/_components/ui/button";
 import { Input } from "@/shared/_components/ui/input";
 import { useTheme } from "@/shared/_components/providers/theme-provider";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { getProfile } from "@/shared/_utils/backend-client";
-import { getMockSession } from "@/shared/_utils/mock-auth";
 
 const DEFAULT_PROFILE_NAME = "Dashboard Keuangan";
 const DEFAULT_INITIALS = "DK";
 
 export function Topbar() {
   const { resolvedTheme, setTheme, theme } = useTheme();
-  const mockSession = useMemo(() => (USE_MOCK_DATA ? getMockSession() : null), []);
   const [backendName, setBackendName] = useState<string | null>(null);
   const isLightTheme = resolvedTheme === "light";
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      return;
-    }
-
     let isActive = true;
 
     async function loadProfile() {
@@ -57,9 +50,7 @@ export function Topbar() {
     setTheme(isLightTheme ? "dark" : "light");
   }
 
-  const greetingName = USE_MOCK_DATA
-    ? mockSession?.name ?? DEFAULT_PROFILE_NAME
-    : backendName ?? DEFAULT_PROFILE_NAME;
+  const greetingName = backendName ?? DEFAULT_PROFILE_NAME;
   const initials = getInitials(greetingName);
 
   return (

@@ -2,15 +2,10 @@
 
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiah, formatRupiahShort } from "@/features/analytics/_utils/chart-formatters";
-import { getMonthlyCashflowSeries } from "@/shared/_utils/mock-client-store";
 
 export function CashflowTrendChart() {
-  const cashflowSeries = useMemo(
-    () => (USE_MOCK_DATA ? getMonthlyCashflowSeries() : []),
-    []
-  );
+  const cashflowSeries: any[] = [];
 
   if (!cashflowSeries.length) {
     return (

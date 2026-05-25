@@ -5,47 +5,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TransactionForm } from "@/features/transactions/_components/transaction-form";
 import { TransactionTable } from "@/features/transactions/_components/transaction-table";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/_components/ui/dialog";
-import type { Account, Transaction } from "@/shared/_types/finance";
+import type { Transaction } from "@/shared/_types/finance";
 import {
   backendTransactionCategories,
   deleteTransaction,
   getTransaction,
   getTransactions,
 } from "@/shared/_utils/backend-client";
-import {
-  getAppAccounts,
-  getAppTransactions,
-  getCategoryOptions,
-} from "@/shared/_utils/mock-client-store";
 
 const transactionListQueryKey = ["transactions", { page: 1, perPage: 50 }] as const;
 
 export function TransactionsPageContent() {
   const queryClient = useQueryClient();
-  const mockAccounts = useMemo<Account[]>(
-    () => (USE_MOCK_DATA ? getAppAccounts() : []),
-    []
-  );
-  const initialMockTransactions = useMemo<Transaction[]>(
-    () => (USE_MOCK_DATA ? getAppTransactions() : []),
-    []
-  );
-  const [mockTransactions, setMockTransactions] = useState<Transaction[]>(
-    initialMockTransactions
-  );
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const categoryOptions = useMemo(
-    () =>
-      USE_MOCK_DATA
-        ? getCategoryOptions()
-        : [...backendTransactionCategories],
-    []
-  );
+  const categoryOptions = backendTransactionCategories;
 
   const transactionsQuery = useQuery({
-    enabled: !USE_MOCK_DATA,
     queryFn: async () => {
       const nextTransactions = await getTransactions({ page: 1, perPage: 50 });
       return nextTransactions.items ?? [];
@@ -99,25 +75,18 @@ export function TransactionsPageContent() {
     },
   });
 
-  const transactions = USE_MOCK_DATA
-    ? mockTransactions
-    : (transactionsQuery.data ?? []);
+  const transactions = transactionsQuery.data ?? [];
   const deletingTransactionId = deleteTransactionMutation.isPending
     ? deleteTransactionMutation.variables
     : null;
   const loadError =
-    !USE_MOCK_DATA && transactionsQuery.isError
+    transactionsQuery.isError
       ? transactionsQuery.error instanceof Error
         ? transactionsQuery.error.message
         : "Gagal memuat transaksi bulan berjalan."
       : null;
 
   async function handleViewTransaction(transaction: Transaction) {
-    if (USE_MOCK_DATA) {
-      setSelectedTransaction(transaction);
-      return;
-    }
-
     transactionDetailMutation.mutate(transaction.id);
   }
 
@@ -132,25 +101,10 @@ export function TransactionsPageContent() {
       }
     }
 
-    if (USE_MOCK_DATA) {
-      setMockTransactions((currentTransactions) =>
-        currentTransactions.filter((item) => item.id !== transaction.id)
-      );
-      toast.success("Transaksi dihapus dari daftar saat ini.");
-      return;
-    }
-
     deleteTransactionMutation.mutate(transaction.id);
   }
 
   function handleTransactionCreated(transaction: Transaction) {
-    if (USE_MOCK_DATA) {
-      setMockTransactions((currentTransactions) => [
-        transaction,
-        ...currentTransactions,
-      ]);
-      return;
-    }
 
     queryClient.setQueryData<Transaction[]>(
       transactionListQueryKey,
@@ -169,8 +123,6 @@ export function TransactionsPageContent() {
           </h1>
         </div>
         <TransactionForm
-          accounts={USE_MOCK_DATA ? mockAccounts : []}
-          preferBackend={!USE_MOCK_DATA}
           categoryOptions={categoryOptions}
           onTransactionCreated={handleTransactionCreated}
         />
@@ -180,11 +132,11 @@ export function TransactionsPageContent() {
           {loadError}
         </div>
       ) : null}
-      {!USE_MOCK_DATA && transactionsQuery.isLoading ? (
+      {transactionsQuery.isLoading ? (
         <p className="text-sm text-muted-foreground">Memuat transaksi...</p>
       ) : null}
       <TransactionTable
-        accounts={USE_MOCK_DATA ? mockAccounts : []}
+        accounts={[]}
         deletingTransactionId={deletingTransactionId}
         onDeleteTransaction={handleDeleteTransaction}
         onViewTransaction={handleViewTransaction}

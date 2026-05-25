@@ -2,15 +2,10 @@
 
 import { useMemo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { formatRupiah } from "@/features/analytics/_utils/chart-formatters";
-import { getExpenseCategorySeries } from "@/shared/_utils/mock-client-store";
 
 export function ExpenseCategoryChart() {
-  const expenseCategorySeries = useMemo(
-    () => (USE_MOCK_DATA ? getExpenseCategorySeries() : []),
-    []
-  );
+  const expenseCategorySeries: any[] = [];
 
   if (!expenseCategorySeries.length) {
     return (

@@ -9,12 +9,10 @@ import { toast } from "sonner";
 import { AuthCard } from "@/features/auth/_components/auth-card";
 import { OAuthButton } from "@/features/auth/_components/oauth-button";
 import { Button } from "@/shared/_components/ui/button";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { ApiClientError } from "@/shared/_utils/api-client";
 import { register } from "@/shared/_utils/backend-client";
-import { registerMockAccount } from "@/shared/_utils/mock-auth";
 
 type RegisterField = "email" | "name" | "password" | "phone" | "referralCode";
 type RegisterFieldErrors = Partial<Record<RegisterField, string>>;
@@ -77,17 +75,6 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      if (USE_MOCK_DATA) {
-        registerMockAccount({
-          email,
-          name,
-          password,
-          phone,
-        });
-        toast.success("Akun mock berhasil dibuat dan langsung login.");
-        router.push("/dashboard");
-        return;
-      }
 
       await register({
         email,
@@ -118,11 +105,6 @@ export default function RegisterPage() {
   }
 
   async function handleGoogleRegister() {
-    if (USE_MOCK_DATA) {
-      toast.info("Google register aktif saat NEXT_PUBLIC_MOCK_DATA=false.");
-      return;
-    }
-
     setIsGoogleSubmitting(true);
     await signIn("google", {
       callbackUrl: "/dashboard",
@@ -266,12 +248,10 @@ export default function RegisterPage() {
       </div>
 
       <OAuthButton
-        disabled={USE_MOCK_DATA || isGoogleSubmitting}
+        disabled={isGoogleSubmitting}
         onClick={() => void handleGoogleRegister()}
       >
-        {USE_MOCK_DATA
-          ? "Google aktif saat mode API"
-          : isGoogleSubmitting
+        {isGoogleSubmitting
             ? "Menghubungkan..."
             : "Daftar dengan Google"}
       </OAuthButton>

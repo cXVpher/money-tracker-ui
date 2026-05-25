@@ -8,29 +8,19 @@ import { GoalsOverview } from "@/features/dashboard-overview/_components/goals-o
 import { RecentTransactions } from "@/features/dashboard-overview/_components/recent-transactions";
 import { StatCard } from "@/features/dashboard-overview/_components/stat-card";
 import { UpcomingBills } from "@/features/dashboard-overview/_components/upcoming-bills";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { ApiClientError } from "@/shared/_utils/api-client";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
 import {
   type DashboardOverviewData,
   getDashboardOverviewData,
 } from "@/shared/_utils/backend-client";
-import { getAppDashboardSummary } from "@/shared/_utils/mock-client-store";
 
 export default function DashboardPage() {
-  const mockSummary = useMemo(
-    () => (USE_MOCK_DATA ? getAppDashboardSummary() : null),
-    []
-  );
   const [backendOverview, setBackendOverview] =
     useState<DashboardOverviewData | null>(null);
   const [backendError, setBackendError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      return;
-    }
-
     let isActive = true;
 
     async function loadOverview() {
@@ -59,13 +49,11 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const isUsingBackendData = !USE_MOCK_DATA && backendOverview !== null;
+  const isUsingBackendData = backendOverview !== null;
   const backendSummary = backendOverview?.summary ?? null;
   const dashboardPeriodLabel = isUsingBackendData
     ? backendSummary?.month ?? new Date().toISOString().slice(0, 7)
-    : USE_MOCK_DATA
-      ? "April 2026"
-      : new Date().toISOString().slice(0, 7);
+    : new Date().toISOString().slice(0, 7);
 
   return (
     <div className="space-y-6">
@@ -117,38 +105,6 @@ export default function DashboardPage() {
               tone={backendSummary.changePercent > 0 ? "danger" : "default"}
             />
           </>
-        ) : USE_MOCK_DATA && mockSummary ? (
-          <>
-            <StatCard
-              title="Total Saldo"
-              value={formatRupiah(mockSummary.totalBalance)}
-              helper={`${mockSummary.accountCount} akun aktif`}
-              icon={Banknote}
-              badge="+12.5%"
-              tone="success"
-            />
-            <StatCard
-              title="Pemasukan"
-              value={formatRupiahShort(mockSummary.monthlyIncome)}
-              helper="Bulan berjalan"
-              icon={TrendingUp}
-              tone="success"
-            />
-            <StatCard
-              title="Pengeluaran"
-              value={formatRupiahShort(mockSummary.monthlyExpense)}
-              helper="Budget masih terkendali"
-              icon={TrendingDown}
-              tone="warning"
-            />
-            <StatCard
-              title="Runway Dana Darurat"
-              value={`${mockSummary.emergencyRunway} bulan`}
-              helper="Estimasi biaya hidup"
-              icon={PiggyBank}
-              badge={mockSummary.cashflowStatus}
-            />
-          </>
         ) : (
           <>
             <StatCard
@@ -188,18 +144,14 @@ export default function DashboardPage() {
           cashflowSeries={
             isUsingBackendData
               ? (backendOverview?.cashflowSeries ?? [])
-              : USE_MOCK_DATA
-                ? undefined
-                : []
+              : []
           }
         />
         <RecentTransactions
           transactions={
             isUsingBackendData
               ? (backendOverview?.recentTransactions ?? [])
-              : USE_MOCK_DATA
-                ? undefined
-                : []
+              : []
           }
         />
       </div>

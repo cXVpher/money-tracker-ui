@@ -22,8 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/u
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { useTheme } from "@/shared/_components/providers/theme-provider";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
-import { shouldUseMockFallback } from "@/shared/_utils/api-client";
+
 import { cn } from "@/shared/_utils/cn";
 import {
   addAdminUserBalance,
@@ -68,11 +67,7 @@ export function AdminPageContent() {
   const [userTotal, setUserTotal] = useState(0);
   const [payoutCode, setPayoutCode] = useState("");
   const [payoutPeriod, setPayoutPeriod] = useState(currentMonth);
-  const [pageNotice, setPageNotice] = useState<string | null>(
-    USE_MOCK_DATA
-      ? "Mode demo aktif. Semua data di halaman ini aman untuk dicoba."
-      : null
-  );
+  const [pageNotice, setPageNotice] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<AdminDashboardStats | null>(null);
   const [users, setUsers] = useState<AdminUserListItem[]>([]);
   const [selectedUserDetail, setSelectedUserDetail] =
@@ -97,25 +92,16 @@ export function AdminPageContent() {
       const nextSession = await adminLogin(username.trim(), password.trim());
       setSession(nextSession);
       toast.success("Masuk sebagai admin.");
-      await loadAdminData(nextSession.accessToken, { page: 1 });
+      await loadAdminData({ page: 1 });
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setPageNotice(
-          "Admin API belum aktif. Tampilan admin tetap bisa dicoba pakai data demo."
-        );
-        toast.warning("Admin API belum aktif.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Login admin gagal.");
     }
   }
 
   async function loadAdminData(
-    token = session?.accessToken,
     userListParams: Partial<AdminUserListParams> = {}
   ) {
-    if (!token) {
+    if (!session) {
       return;
     }
 
@@ -125,8 +111,8 @@ export function AdminPageContent() {
       const nextUserPage = userListParams.page ?? userPage;
       const [dashboardData, userData, paymentData, revenueData, referralData, logData] =
         await Promise.all([
-          getAdminDashboard(token),
-          listAdminUsers(token, {
+          getAdminDashboard(),
+          listAdminUsers({
             order: userListParams.order ?? userOrder,
             page: nextUserPage,
             perPage: ADMIN_USER_PER_PAGE,
@@ -134,10 +120,10 @@ export function AdminPageContent() {
             sort: userListParams.sort ?? userSort,
             status: userListParams.status ?? userStatus,
           }),
-          listAdminPayments(token, { page: 1, perPage: 20 }),
-          getAdminRevenue(token, currentMonth),
-          getAdminReferralOverview(token),
-          getAdminLogs(token, { page: 1, perPage: 20 }),
+          listAdminPayments({ page: 1, perPage: 20 }),
+          getAdminRevenue(currentMonth),
+          getAdminReferralOverview(),
+          getAdminLogs({ page: 1, perPage: 20 }),
         ]);
 
       setDashboard(dashboardData);
@@ -148,13 +134,7 @@ export function AdminPageContent() {
       setRevenue(revenueData);
       setReferralOverview(referralData);
       setLogs(logData.items ?? []);
-      setPageNotice(USE_MOCK_DATA ? "Mode demo aktif. Data bisa berubah lokal di browser ini." : null);
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        setPageNotice("Admin API belum siap penuh. Coba lagi saat backend admin menyala.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal memuat data admin.");
     } finally {
       setIsLoadingData(false);
@@ -162,41 +142,36 @@ export function AdminPageContent() {
   }
 
   async function handleSearchUsers() {
-    if (!session?.accessToken) {
+    if (!session) {
       return;
     }
 
-    await loadAdminData(session.accessToken, { page: 1 });
+    await loadAdminData({ page: 1 });
   }
 
   async function handleUserPageChange(nextPage: number) {
-    if (!session?.accessToken || nextPage < 1 || nextPage > userPageCount) {
+    if (!session || nextPage < 1 || nextPage > userPageCount) {
       return;
     }
 
-    await loadAdminData(session.accessToken, { page: nextPage });
+    await loadAdminData({ page: nextPage });
   }
 
   async function handleSelectUser(userId: string) {
-    if (!session?.accessToken) {
+    if (!session) {
       return;
     }
 
     try {
-      const detail = await getAdminUserDetail(session.accessToken, userId);
+      const detail = await getAdminUserDetail(userId);
       setSelectedUserDetail(detail);
     } catch (error) {
-      if (USE_MOCK_DATA && shouldUseMockFallback(error)) {
-        toast.warning("Detail user belum tersedia saat API mati.");
-        return;
-      }
-
       toast.error(error instanceof Error ? error.message : "Gagal memuat detail user.");
     }
   }
 
   async function handleToggleUser(user: AdminUserListItem) {
-    if (!session?.accessToken) {
+    if (!session) {
       return;
     }
 
@@ -209,7 +184,7 @@ export function AdminPageContent() {
     }
 
     try {
-      await updateAdminUserStatus(session.accessToken, {
+      await updateAdminUserStatus({
         isActive: !user.is_active,
         reason,
         userId: user.id,
@@ -236,7 +211,7 @@ export function AdminPageContent() {
   }
 
   async function handleAddBalance(user: AdminUserListItem) {
-    if (!session?.accessToken) {
+    if (!session) {
       return;
     }
 
@@ -254,7 +229,7 @@ export function AdminPageContent() {
     }
 
     try {
-      const response = await addAdminUserBalance(session.accessToken, {
+      const response = await addAdminUserBalance({
         amount: parsedAmount,
         description,
         userId: user.id,
@@ -274,12 +249,12 @@ export function AdminPageContent() {
   }
 
   async function handleVerifyPayment(paymentId: string) {
-    if (!session?.accessToken) {
+    if (!session) {
       return;
     }
 
     try {
-      await verifyAdminPayment(session.accessToken, paymentId);
+      await verifyAdminPayment(paymentId);
       setPayments((current) =>
         current.map((payment) =>
           payment.id === paymentId ? { ...payment, status: "verified" } : payment
@@ -292,7 +267,7 @@ export function AdminPageContent() {
   }
 
   async function handleRejectPayment(paymentId: string) {
-    if (!session?.accessToken) {
+    if (!session) {
       return;
     }
 
@@ -302,7 +277,7 @@ export function AdminPageContent() {
     }
 
     try {
-      await rejectAdminPayment(session.accessToken, { paymentId, reason });
+      await rejectAdminPayment({ paymentId, reason });
       setPayments((current) =>
         current.map((payment) =>
           payment.id === paymentId ? { ...payment, status: "rejected" } : payment
@@ -315,7 +290,7 @@ export function AdminPageContent() {
   }
 
   async function handleCreateReferralPayout() {
-    if (!session?.accessToken) {
+    if (!session) {
       return;
     }
 
@@ -325,7 +300,7 @@ export function AdminPageContent() {
     }
 
     try {
-      await createAdminReferralPayout(session.accessToken, {
+      await createAdminReferralPayout({
         period: payoutPeriod.trim(),
         referralCode: payoutCode.trim(),
       });

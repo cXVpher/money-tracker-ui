@@ -1,22 +1,7 @@
 "use client";
 
-import { API_BASE_URL, USE_MOCK_DATA } from "@/shared/_config/runtime";
+import { FRONTEND_API_BASE_URL } from "@/shared/_config/runtime";
 import { ApiClientError } from "@/shared/_utils/api-client";
-import {
-  addMockAdminUserBalance,
-  createMockAdminReferralPayout,
-  getMockAdminDashboard,
-  getMockAdminLogs,
-  getMockAdminReferralOverview,
-  getMockAdminRevenue,
-  getMockAdminUserDetail,
-  listMockAdminPayments,
-  listMockAdminUsers,
-  mockAdminLogin,
-  rejectMockAdminPayment,
-  updateMockAdminUserStatus,
-  verifyMockAdminPayment,
-} from "@/shared/_utils/mock-admin-client";
 
 type ApiEnvelope<T> = {
   code: number;
@@ -32,7 +17,6 @@ export type PaginatedResponse<T> = {
 };
 
 export type AdminSession = {
-  accessToken: string;
   admin: {
     created_at: string;
     id: string;
@@ -40,7 +24,6 @@ export type AdminSession = {
     username: string;
   };
   expiresIn: number;
-  refreshToken: string;
 };
 
 export type AdminDashboardStats = {
@@ -149,45 +132,32 @@ export type AdminLogListParams = {
 };
 
 export async function adminLogin(username: string, password: string) {
-  if (USE_MOCK_DATA) {
-    return mockAdminLogin(username, password);
-  }
-
   const data = await adminRequest<{
-    access_token: string;
     admin: AdminSession["admin"];
     expires_in: number;
-    refresh_token: string;
-  }>("/api/admin/auth/login", null, {
+  }>("/api/admin/auth/login", {
     body: JSON.stringify({ password, username }),
     method: "POST",
   });
 
   return {
-    accessToken: data.access_token,
     admin: data.admin,
     expiresIn: data.expires_in,
-    refreshToken: data.refresh_token,
   } satisfies AdminSession;
 }
 
-export async function getAdminDashboard(token: string) {
-  if (USE_MOCK_DATA) {
-    return getMockAdminDashboard();
-  }
+export async function getAdminDashboard() {
 
-  return adminRequest<AdminDashboardStats>("/api/admin/dashboard", token);
+
+  return adminRequest<AdminDashboardStats>("/api/admin/dashboard");
 }
 
 export async function listAdminUsers(
-  token: string,
   input: AdminUserListParams | string = {}
 ) {
   const params = typeof input === "string" ? { search: input } : input;
 
-  if (USE_MOCK_DATA) {
-    return listMockAdminUsers(params);
-  }
+
 
   const query = new URLSearchParams();
 
@@ -211,28 +181,22 @@ export async function listAdminUsers(
   }
 
   const path = query.size ? `/api/admin/users?${query.toString()}` : "/api/admin/users";
-  return adminRequest<PaginatedResponse<AdminUserListItem>>(path, token);
+  return adminRequest<PaginatedResponse<AdminUserListItem>>(path);
 }
 
-export async function getAdminUserDetail(token: string, userId: string) {
-  if (USE_MOCK_DATA) {
-    return getMockAdminUserDetail(userId);
-  }
+export async function getAdminUserDetail(userId: string) {
 
-  return adminRequest<AdminUserDetail>(`/api/admin/users/${userId}`, token);
+
+  return adminRequest<AdminUserDetail>(`/api/admin/users/${userId}`);
 }
 
 export async function updateAdminUserStatus(
-  token: string,
   input: { isActive: boolean; reason: string; userId: string }
 ) {
-  if (USE_MOCK_DATA) {
-    return updateMockAdminUserStatus(input);
-  }
+
 
   return adminRequest<{ is_active: boolean }>(
     `/api/admin/users/${input.userId}/status`,
-    token,
     {
       body: JSON.stringify({
         is_active: input.isActive,
@@ -244,16 +208,12 @@ export async function updateAdminUserStatus(
 }
 
 export async function addAdminUserBalance(
-  token: string,
   input: { amount: number; description: string; userId: string }
 ) {
-  if (USE_MOCK_DATA) {
-    return addMockAdminUserBalance(input);
-  }
+
 
   return adminRequest<{ new_balance: number }>(
     `/api/admin/users/${input.userId}/balance`,
-    token,
     {
       body: JSON.stringify({
         amount: input.amount,
@@ -265,14 +225,11 @@ export async function addAdminUserBalance(
 }
 
 export async function listAdminPayments(
-  token: string,
   input: AdminPaymentListParams | string = {}
 ) {
   const params = typeof input === "string" ? { status: input } : input;
 
-  if (USE_MOCK_DATA) {
-    return listMockAdminPayments(params);
-  }
+
 
   const query = new URLSearchParams();
 
@@ -289,65 +246,52 @@ export async function listAdminPayments(
   const path = query.size
     ? `/api/admin/payments?${query.toString()}`
     : "/api/admin/payments";
-  return adminRequest<PaginatedResponse<AdminPaymentItem>>(path, token);
+  return adminRequest<PaginatedResponse<AdminPaymentItem>>(path);
 }
 
-export async function verifyAdminPayment(token: string, paymentId: string) {
-  if (USE_MOCK_DATA) {
-    return verifyMockAdminPayment(paymentId);
-  }
+export async function verifyAdminPayment(paymentId: string) {
+
 
   return adminRequest<{
     expires_at?: string | null;
     new_balance: number;
     payment_id: string;
-  }>(`/api/admin/payments/${paymentId}/verify`, token, {
+  }>(`/api/admin/payments/${paymentId}/verify`, {
     method: "PUT",
   });
 }
 
 export async function rejectAdminPayment(
-  token: string,
   input: { paymentId: string; reason: string }
 ) {
-  if (USE_MOCK_DATA) {
-    return rejectMockAdminPayment(input.paymentId);
-  }
 
-  return adminRequest<null>(`/api/admin/payments/${input.paymentId}/reject`, token, {
+
+  return adminRequest<null>(`/api/admin/payments/${input.paymentId}/reject`, {
     body: JSON.stringify({ reason: input.reason }),
     method: "PUT",
   });
 }
 
-export async function getAdminRevenue(token: string, month: string) {
-  if (USE_MOCK_DATA) {
-    return getMockAdminRevenue(month);
-  }
+export async function getAdminRevenue(month: string) {
+
 
   return adminRequest<AdminRevenue>(
-    `/api/admin/revenue?month=${encodeURIComponent(month)}`,
-    token
+    `/api/admin/revenue?month=${encodeURIComponent(month)}`
   );
 }
 
-export async function getAdminReferralOverview(token: string) {
-  if (USE_MOCK_DATA) {
-    return getMockAdminReferralOverview();
-  }
+export async function getAdminReferralOverview() {
 
-  return adminRequest<Record<string, unknown>>("/api/admin/referrals", token);
+
+  return adminRequest<Record<string, unknown>>("/api/admin/referrals");
 }
 
 export async function createAdminReferralPayout(
-  token: string,
   input: { period: string; referralCode: string }
 ) {
-  if (USE_MOCK_DATA) {
-    return createMockAdminReferralPayout(input);
-  }
 
-  return adminRequest<Record<string, unknown>>("/api/admin/referrals/payout", token, {
+
+  return adminRequest<Record<string, unknown>>("/api/admin/referrals/payout", {
     body: JSON.stringify({
       period: input.period,
       referral_code: input.referralCode,
@@ -356,10 +300,8 @@ export async function createAdminReferralPayout(
   });
 }
 
-export async function getAdminLogs(token: string, params: AdminLogListParams = {}) {
-  if (USE_MOCK_DATA) {
-    return getMockAdminLogs(params);
-  }
+export async function getAdminLogs(params: AdminLogListParams = {}) {
+
 
   const query = new URLSearchParams();
 
@@ -377,22 +319,20 @@ export async function getAdminLogs(token: string, params: AdminLogListParams = {
   }
 
   const path = query.size ? `/api/admin/logs?${query.toString()}` : "/api/admin/logs";
-  return adminRequest<PaginatedResponse<AdminLogItem>>(path, token);
+  return adminRequest<PaginatedResponse<AdminLogItem>>(path);
 }
 
 async function adminRequest<T>(
   path: string,
-  token: string | null,
   init?: RequestInit
 ) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${FRONTEND_API_BASE_URL}${path}`, {
     credentials: "include",
     headers: {
       Accept: "application/json",
       ...(init?.body instanceof FormData
         ? {}
         : { "Content-Type": "application/json" }),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...init?.headers,
     },
     ...init,
@@ -408,10 +348,7 @@ async function adminRequest<T>(
 
   if (!response.ok) {
     throw new ApiClientError(
-      payload?.message ??
-        (USE_MOCK_DATA
-          ? "Mode admin belum tersedia di mock."
-          : "Terjadi kesalahan saat menghubungi admin API."),
+      payload?.message ?? "Terjadi kesalahan saat menghubungi admin API.",
       response.status
     );
   }

@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { Bell } from "@/shared/_components/icons/phosphor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import { Switch } from "@/shared/_components/ui/switch";
-import {
-  getNotificationSettings,
-  saveNotificationSettings,
-  type NotificationSettings,
-} from "@/shared/_utils/mock-client-store";
+
+type NotificationSettings = {
+  billReminders: boolean;
+  budgetAlerts: boolean;
+  weeklySummary: boolean;
+};
 
 const notificationItems: Array<{
   key: keyof NotificationSettings;
@@ -28,16 +28,14 @@ const disabledNotificationSettings: NotificationSettings = {
 
 export function NotificationSettingsCard() {
   const [notificationSettings, setNotificationSettings] = useState(
-    () => (USE_MOCK_DATA ? getNotificationSettings() : disabledNotificationSettings)
+    disabledNotificationSettings
   );
 
   function handleToggleNotification(
     key: keyof NotificationSettings,
     checked: boolean
   ) {
-    if (!USE_MOCK_DATA) {
-      return;
-    }
+    return;
 
     const nextNotificationSettings = {
       ...notificationSettings,
@@ -45,7 +43,6 @@ export function NotificationSettingsCard() {
     };
 
     setNotificationSettings(nextNotificationSettings);
-    saveNotificationSettings(nextNotificationSettings);
   }
 
   return (
@@ -57,17 +54,15 @@ export function NotificationSettingsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!USE_MOCK_DATA ? (
-          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-            Pengaturan notifikasi belum tersedia untuk akun ini.
-          </div>
-        ) : null}
+        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+          Pengaturan notifikasi belum tersedia untuk akun ini.
+        </div>
         {notificationItems.map((item) => (
           <div key={item.key} className="flex items-center justify-between">
             <span className="text-sm">{item.label}</span>
             <Switch
               checked={notificationSettings[item.key]}
-              disabled={!USE_MOCK_DATA}
+              disabled
               onCheckedChange={(checked) =>
                 handleToggleNotification(item.key, checked)
               }

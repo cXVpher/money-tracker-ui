@@ -4,10 +4,8 @@ import { useMemo } from "react";
 import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
 import type { Transaction } from "@/shared/_types/finance";
 import { formatRelativeDate, formatRupiah } from "@/shared/_utils/formatters";
-import { getAppTransactions } from "@/shared/_utils/mock-client-store";
 
 type RecentTransactionsProps = {
   transactions?: Transaction[];
@@ -15,7 +13,7 @@ type RecentTransactionsProps = {
 
 export function RecentTransactions({ transactions: providedTransactions }: RecentTransactionsProps) {
   const recentTransactions = useMemo(
-    () => providedTransactions ?? (USE_MOCK_DATA ? getAppTransactions().slice(0, 5) : []),
+    () => providedTransactions ?? [],
     [providedTransactions]
   );
 

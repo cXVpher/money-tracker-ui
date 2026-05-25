@@ -7,10 +7,9 @@ import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
-import { USE_MOCK_DATA } from "@/shared/_config/runtime";
+
 import { ApiClientError } from "@/shared/_utils/api-client";
 import { changePassword } from "@/shared/_utils/backend-client";
-import { getMockCredentials, updateMockPassword } from "@/shared/_utils/mock-auth";
 
 export function PasswordSettingsCard() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -42,20 +41,6 @@ export function PasswordSettingsCard() {
     setIsSaving(true);
 
     try {
-      if (USE_MOCK_DATA) {
-        const credentials = getMockCredentials();
-
-        if (currentPassword !== credentials.password) {
-          toast.error("Password sekarang tidak cocok.");
-          return;
-        }
-
-        updateMockPassword(newPassword);
-        toast.success("Password berhasil diubah.");
-        resetForm();
-        return;
-      }
-
       await changePassword({
         currentPassword,
         newPassword,
