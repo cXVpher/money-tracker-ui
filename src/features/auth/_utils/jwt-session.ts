@@ -32,13 +32,7 @@ type RefreshResult =
 
 let refreshPromise: Promise<RefreshResult> | null = null;
 
-export function getAccessToken() {
-  return null;
-}
 
-export function setAccessToken(nextAccessToken: string | null) {
-  // no-op for httpOnly cookies
-}
 
 export function clearAccessToken() {
   // no-op for httpOnly cookies
@@ -48,10 +42,7 @@ export function getAuthHeaders(): Record<string, string> {
   return {};
 }
 
-export function storeAccessTokenFromPayload(payload: unknown) {
-  // The token is handled automatically via HttpOnly cookies by the backend.
-  return null;
-}
+
 
 export function hasActiveRefresh() {
   return refreshPromise != null;

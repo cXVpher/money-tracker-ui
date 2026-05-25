@@ -2,73 +2,113 @@ import { NextRequest, NextResponse } from "next/server";
 import { API_BASE_URL } from "@/shared/_config/runtime";
 import { cookies } from "next/headers";
 
-async function handleProxy(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+// Cookie names that the backend sets / expects
+const USER_ACCESS_COOKIE = "user_access_token";
+const USER_REFRESH_COOKIE = "user_refresh_token";
+
+async function handleProxy(
+  request: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
   const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
+
+  // Read the access token from the backend-named cookie
+  const token = cookieStore.get(USER_ACCESS_COOKIE)?.value;
 
   const resolvedParams = await params;
   const pathString = resolvedParams.path.join("/");
-  const backendUrl = new URL(`${API_BASE_URL}/${pathString}${request.nextUrl.search}`);
+  const backendUrl = new URL(
+    `${API_BASE_URL}/${pathString}${request.nextUrl.search}`
+  );
 
+  // Build forwarded headers
   const headers = new Headers(request.headers);
   headers.delete("host");
 
+  // Forward the backend cookies so refresh/logout endpoints receive them
+  const allCookies = cookieStore.getAll();
+  if (allCookies.length > 0) {
+    headers.set(
+      "cookie",
+      allCookies.map((c) => `${c.name}=${c.value}`).join("; ")
+    );
+  }
+
+  // Attach bearer token for authenticated endpoints
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const isAuthLoginOrRefresh = 
-    pathString === "api/auth/login" || 
-    pathString === "api/admin/auth/login" || 
-    pathString === "api/auth/register" || 
-    pathString === "api/auth/refresh";
-  
-  const isAuthLogout = pathString === "api/auth/logout";
+  const isAuthEndpoint =
+    pathString === "api/auth/login" ||
+    pathString === "api/admin/auth/login" ||
+    pathString === "api/auth/register" ||
+    pathString === "api/auth/refresh" ||
+    pathString === "api/admin/auth/refresh";
+
+  const isLogoutEndpoint =
+    pathString === "api/auth/logout" ||
+    pathString === "api/admin/auth/logout";
 
   try {
     const response = await fetch(backendUrl.toString(), {
       method: request.method,
       headers,
-      body: request.method !== "GET" && request.method !== "HEAD" ? request.body : undefined,
+      body:
+        request.method !== "GET" && request.method !== "HEAD"
+          ? request.body
+          : undefined,
       // @ts-ignore
       duplex: "half",
     });
 
-    if (isAuthLoginOrRefresh && response.ok) {
+    // For auth endpoints, strip tokens from the JSON response body
+    // and forward the backend's Set-Cookie headers directly so that
+    // the browser stores the correct cookie names the backend expects.
+    if (isAuthEndpoint && response.ok) {
       const data = await response.json();
-      
-      if (data.code === 200 && data.data) {
-        const { access_token, accessToken, refresh_token, refreshToken, ...restData } = data.data;
-        const actualAccessToken = access_token || accessToken;
-        const actualRefreshToken = refresh_token || refreshToken;
-        
-        if (actualAccessToken) {
-          cookieStore.set("access_token", actualAccessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-          });
-        }
-        
-        if (actualRefreshToken) {
-          cookieStore.set("refresh_token", actualRefreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-          });
-        }
-        
-        return NextResponse.json({ ...data, data: restData }, { status: response.status });
+
+      // Strip tokens from the payload before forwarding to the browser
+      let sanitizedData = data;
+      if (data?.data && typeof data.data === "object") {
+        const {
+          access_token,
+          accessToken,
+          refresh_token,
+          refreshToken,
+          ...rest
+        } = data.data as Record<string, unknown>;
+        void access_token; void accessToken; void refresh_token; void refreshToken;
+        sanitizedData = { ...data, data: rest };
       }
-      
-      return NextResponse.json(data, { status: response.status });
+
+      // Forward the backend Set-Cookie headers unchanged so the browser
+      // stores user_access_token / user_refresh_token with the correct
+      // Path and attributes the backend intended.
+      const nextResponse = NextResponse.json(sanitizedData, {
+        status: response.status,
+      });
+
+      response.headers.forEach((value, key) => {
+        if (key.toLowerCase() === "set-cookie") {
+          nextResponse.headers.append("set-cookie", value);
+        }
+      });
+
+      return nextResponse;
     }
 
-    if (isAuthLogout) {
-      cookieStore.delete("access_token");
-      cookieStore.delete("refresh_token");
+    // For logout, clear the cookies on the Next.js side as well
+    if (isLogoutEndpoint) {
+      const nextResponse = new NextResponse(response.body, {
+        status: response.status,
+        headers: response.headers,
+      });
+      // Expire both cookie names
+      const cookieOpts = "Path=/; Max-Age=0; HttpOnly; SameSite=Lax";
+      nextResponse.headers.append("set-cookie", `${USER_ACCESS_COOKIE}=; ${cookieOpts}`);
+      nextResponse.headers.append("set-cookie", `${USER_REFRESH_COOKIE}=; Path=/api/auth/refresh; Max-Age=0; HttpOnly; SameSite=Lax`);
+      return nextResponse;
     }
 
     return new NextResponse(response.body, {

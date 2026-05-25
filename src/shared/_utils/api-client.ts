@@ -57,7 +57,7 @@ export async function apiRequest<T>(
   return payload.data;
 }
 
-export async function apiFetch(
+async function apiFetch(
   path: string,
   init: ApiFetchOptions = {}
 ): Promise<Response> {

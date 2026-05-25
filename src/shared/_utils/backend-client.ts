@@ -231,14 +231,6 @@ export async function updateProfile(input: UpdateProfileInput) {
   });
 }
 
-export async function refreshAuth() {
-  return apiRequest<{ expires_in: number }>("/api/auth/refresh", {
-    method: "POST",
-    skipAuthRefresh: true,
-    skipAuthToken: true,
-  });
-}
-
 export async function logout() {
   try {
     return await apiRequest<null>("/api/auth/logout", {
