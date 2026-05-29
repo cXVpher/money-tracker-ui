@@ -50,16 +50,14 @@ async function handleProxy(
     pathString === "api/auth/logout" ||
     pathString === "api/admin/auth/logout";
 
+  const hasBody = request.method !== "GET" && request.method !== "HEAD";
+  const bodyBuffer = hasBody ? await request.arrayBuffer() : undefined;
+
   try {
     const response = await fetch(backendUrl.toString(), {
       method: request.method,
       headers,
-      body:
-        request.method !== "GET" && request.method !== "HEAD"
-          ? request.body
-          : undefined,
-      // @ts-ignore
-      duplex: "half",
+      body: bodyBuffer && bodyBuffer.byteLength > 0 ? bodyBuffer : undefined,
     });
 
     // For auth endpoints, strip tokens from the JSON response body
