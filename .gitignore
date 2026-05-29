@@ -36,6 +36,9 @@ yarn-error.log*
 # markdown files
 TO-DO.md
 
+# local documentation
+/docs
+
 # vercel
 .vercel
 
