@@ -58,7 +58,7 @@ function DashboardPreview() {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-xs text-muted-foreground">Total Saldo</p>
-            <p className="font-[family-name:var(--font-heading)] text-2xl font-bold sm:text-3xl">
+            <p className="font-heading text-2xl font-bold sm:text-3xl">
               {formatRupiah(24_150_000)}
             </p>
           </div>
@@ -105,7 +105,7 @@ function DashboardPreview() {
                 </div>
               </div>
               <span
-                className={`font-[family-name:var(--font-geist-mono)] text-sm font-semibold ${
+                className={`font-(family-name:--font-geist-mono) text-sm font-semibold ${
                   transaction.amount > 0 ? "text-success" : "text-destructive"
                 }`}
               >
@@ -150,7 +150,7 @@ export function Hero() {
       <div className="absolute inset-0 -z-10">
         <div className="absolute left-1/4 top-1/4 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 h-96 w-96 rounded-full bg-lime/10 blur-3xl" />
-        <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-150 w-150 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -169,11 +169,11 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="mb-6 font-[family-name:var(--font-heading)] text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-7xl"
+            className="mb-6 font-heading text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-7xl"
           >
             Kelola Keuanganmu,
             <br />
-            <span className="bg-gradient-to-r from-primary to-lime bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-primary to-lime bg-clip-text text-transparent">
               Tanpa Ribet.
             </span>
           </motion.h1>

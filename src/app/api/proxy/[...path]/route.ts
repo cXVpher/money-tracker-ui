@@ -102,7 +102,6 @@ async function handleProxy(
     if (isLogoutEndpoint) {
       const nextResponse = new NextResponse(response.body, {
         status: response.status,
-        headers: response.headers,
       });
       // Expire both cookie names
       const cookieOpts = "Path=/; Max-Age=0; HttpOnly; SameSite=Lax";
@@ -111,9 +110,23 @@ async function handleProxy(
       return nextResponse;
     }
 
+    const safeHeaders = new Headers();
+    response.headers.forEach((value, key) => {
+      const lower = key.toLowerCase();
+      if (
+        lower === "content-type" ||
+        lower === "content-length" ||
+        lower === "cache-control" ||
+        lower === "etag" ||
+        lower === "last-modified"
+      ) {
+        safeHeaders.set(key, value);
+      }
+    });
+
     return new NextResponse(response.body, {
       status: response.status,
-      headers: response.headers,
+      headers: safeHeaders,
     });
   } catch (error) {
     console.error("Proxy error:", error);

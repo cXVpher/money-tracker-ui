@@ -23,7 +23,7 @@ export default function LoginPage() {
 
     return new URLSearchParams(window.location.search).get("next");
   }, []);
-  const [phone, setPhone] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
@@ -31,15 +31,15 @@ export default function LoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!phone.trim() || !password.trim()) {
-      toast.error("Nomor telepon dan password wajib diisi.");
+    if (!identifier.trim() || !password.trim()) {
+      toast.error("Identifier dan password wajib diisi.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await login({ password, phone });
+      await login({ identifier, password });
       toast.success("Login berhasil.");
       router.push(nextPath || "/dashboard");
     } catch (error) {
@@ -67,14 +67,14 @@ export default function LoginPage() {
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
-          <Label htmlFor="phone">Nomor WhatsApp</Label>
+          <Label htmlFor="identifier">Email / Nomor WhatsApp</Label>
           <Input
-            id="phone"
-            type="tel"
-            placeholder="628123456789"
+            id="identifier"
+            type="text"
+            placeholder="Masukkan no. HP atau Email anda"
             className="h-11"
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
+            value={identifier}
+            onChange={(event) => setIdentifier(event.target.value)}
           />
         </div>
         <div className="space-y-2">

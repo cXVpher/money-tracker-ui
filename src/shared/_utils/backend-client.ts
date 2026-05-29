@@ -133,8 +133,8 @@ export type UpdateProfileInput = {
 };
 
 export type LoginInput = {
+  identifier: string;
   password: string;
-  phone: string;
 };
 
 export type RegisterInput = {
@@ -188,7 +188,7 @@ export const backendTransactionCategories = [
 
 export async function login(input: LoginInput) {
   return apiRequest<AuthResponse>("/api/auth/login", {
-    body: JSON.stringify(input),
+    body: JSON.stringify({ identifier: input.identifier, password: input.password }),
     method: "POST",
     skipAuthRefresh: true,
     skipAuthToken: true,
