@@ -11,8 +11,13 @@ import { OAuthButton } from "@/features/auth/_components/oauth-button";
 import { Button } from "@/shared/_components/ui/button";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
+import { PhoneInput } from "@/shared/_components/ui/phone-input";
 import { ApiClientError } from "@/shared/_utils/api-client";
-import { register } from "@/shared/_utils/backend-client";
+import { register } from "@/services/auth.service";
+import {
+  DEFAULT_COUNTRY_CODE,
+  type CountryCode,
+} from "@/shared/_constants/country-codes";
 
 type RegisterField = "email" | "name" | "password" | "phone" | "referralCode";
 type RegisterFieldErrors = Partial<Record<RegisterField, string>>;
@@ -44,6 +49,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY_CODE);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [referralCode, setReferralCode] = useState("");
@@ -59,6 +65,11 @@ export default function RegisterPage() {
     phone,
     referralCode,
   };
+
+  // Compose the full phone number with country dial code
+  function getFullPhone() {
+    return phone.trim() ? `${countryCode.dialCode}${phone.trim()}` : "";
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,7 +91,7 @@ export default function RegisterPage() {
         email,
         name,
         password,
-        phone,
+        phone: getFullPhone(),
         referralCode,
       });
       toast.success("Registrasi berhasil.");
@@ -172,14 +183,14 @@ export default function RegisterPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone">Nomor WhatsApp</Label>
-          <Input
+          <PhoneInput
             id="phone"
-            type="tel"
-            placeholder="628123456789"
-            className="h-11"
             value={phone}
+            countryCode={countryCode}
+            onCountryChange={setCountryCode}
+            onChange={(localNumber) => updateField("phone", localNumber)}
             onBlur={() => validateField("phone")}
-            onChange={(event) => updateField("phone", event.target.value)}
+            placeholder="85873427"
             aria-describedby={fieldErrors.phone ? "phone-error" : undefined}
             aria-invalid={Boolean(fieldErrors.phone)}
           />
@@ -299,8 +310,9 @@ function validateRegisterField(field: RegisterField, value: string) {
       return "Nomor WhatsApp wajib diisi.";
     }
 
-    if (!/^628\d+$/.test(trimmedValue)) {
-      return "Gunakan format 628xxx, contoh 628123456789.";
+    // Now we just validate the local number (digits only, no country code prefix required)
+    if (!/^\d{4,15}$/.test(trimmedValue)) {
+      return "Masukkan nomor telepon yang valid (hanya angka).";
     }
   }
 
@@ -360,4 +372,5 @@ function FieldError({ id, message }: { id: string; message?: string }) {
     </p>
   );
 }
+
 

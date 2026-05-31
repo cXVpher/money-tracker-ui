@@ -9,7 +9,7 @@ type ApiEnvelope<T> = {
   message: string;
 };
 
-// removed global mock typings
+
 
 export class ApiClientError extends Error {
   details: unknown;
@@ -23,7 +23,7 @@ export class ApiClientError extends Error {
   }
 }
 
-const REFRESH_PATH = "/api/auth/refresh";
+
 
 export type ApiFetchOptions = RequestInit & {
   skipAuthRefresh?: boolean;
@@ -38,6 +38,13 @@ export async function apiRequest<T>(
   const payload = (await safeJson<ApiEnvelope<T>>(response)) ?? null;
 
   if (!response.ok) {
+    if ((response.status === 401 || response.status === 403) && typeof window !== "undefined") {
+      const pathname = window.location.pathname;
+      if (pathname !== "/login" && pathname !== "/register") {
+        window.location.href = "/login";
+      }
+    }
+
     throw new ApiClientError(
       payload?.message ?? "Terjadi kesalahan saat menghubungi server.",
       response.status,
@@ -59,7 +66,7 @@ async function apiFetch(
   return fetchWithDefaults(path, init);
 }
 
-// removed mock simulation runs
+
 
 async function fetchWithDefaults(path: string, init: ApiFetchOptions) {
   const headers = buildHeaders(init);
@@ -91,10 +98,6 @@ function buildHeaders(init: ApiFetchOptions) {
   return headers;
 }
 
-function isRefreshRequest(path: string) {
-  return path === REFRESH_PATH || path.endsWith(REFRESH_PATH);
-}
-
 async function safeJson<T>(response: Response): Promise<T | null> {
   try {
     return (await response.json()) as T;
@@ -102,14 +105,3 @@ async function safeJson<T>(response: Response): Promise<T | null> {
     return null;
   }
 }
-
-function createJsonResponse(payload: unknown, status: number) {
-  return new Response(JSON.stringify(payload), {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    status,
-  });
-}
-
-// removed window global assignments

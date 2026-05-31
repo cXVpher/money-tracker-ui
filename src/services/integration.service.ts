@@ -99,18 +99,18 @@ export type ReferralGenerateResponse = {
 };
 
 export async function listTokens() {
-  return apiRequest<ApiTokenData[]>("/api/tokens");
+  return apiRequest<ApiTokenData[]>("/tokens");
 }
 
 export async function createToken(name: string) {
-  return apiRequest<ApiTokenData>("/api/tokens", {
+  return apiRequest<ApiTokenData>("/tokens", {
     body: JSON.stringify({ name }),
     method: "POST",
   });
 }
 
 export async function deleteToken(id: string) {
-  return apiRequest<null>(`/api/tokens/${id}`, {
+  return apiRequest<null>(`/tokens/${id}`, {
     method: "DELETE",
   });
 }
@@ -122,7 +122,7 @@ export async function listPayments(status?: string) {
     query.set("status", status);
   }
 
-  const path = query.size ? `/api/payments?${query.toString()}` : "/api/payments";
+  const path = query.size ? `/payments?${query.toString()}` : "/payments";
   return apiRequest<PaginatedResponse<PaymentItem>>(path);
 }
 
@@ -141,25 +141,25 @@ export async function createTopup(input: {
     formData.set("proof", input.proof);
   }
 
-  return apiRequest<TopupResponse>("/api/payments/topup", {
+  return apiRequest<TopupResponse>("/payments/topup", {
     body: formData,
     method: "POST",
   });
 }
 
 export async function listGroups() {
-  return apiRequest<GroupListItem[]>("/api/groups");
+  return apiRequest<GroupListItem[]>("/groups");
 }
 
 export async function createGroup(name: string) {
-  return apiRequest<GroupCreateResponse>("/api/groups", {
+  return apiRequest<GroupCreateResponse>("/groups", {
     body: JSON.stringify({ name }),
     method: "POST",
   });
 }
 
 export async function inviteGroupMember(groupId: string, phone: string) {
-  return apiRequest<GroupMember>(`/api/groups/${groupId}/invite`, {
+  return apiRequest<GroupMember>(`/groups/${groupId}/invite`, {
     body: JSON.stringify({ phone }),
     method: "POST",
   });
@@ -172,7 +172,7 @@ export async function createGroupTransaction(input: {
   groupId: string;
   transactionType: "IN" | "OUT";
 }) {
-  return apiRequest<GroupTransactionResponse>(`/api/groups/${input.groupId}/transaction`, {
+  return apiRequest<GroupTransactionResponse>(`/groups/${input.groupId}/transaction`, {
     body: JSON.stringify({
       deskripsi: input.description.trim(),
       jumlah: input.amount,
@@ -185,16 +185,16 @@ export async function createGroupTransaction(input: {
 
 export async function getGroupReport(groupId: string, month: string) {
   return apiRequest<GroupReportResponse>(
-    `/api/groups/${groupId}/report?month=${encodeURIComponent(month)}`
+    `/groups/${groupId}/report?month=${encodeURIComponent(month)}`
   );
 }
 
 export async function getReferralSummary() {
-  return apiRequest<ReferralSummary>("/api/referral");
+  return apiRequest<ReferralSummary>("/referral");
 }
 
 export async function generateReferralCode() {
-  return apiRequest<ReferralGenerateResponse>("/api/referral/generate", {
+  return apiRequest<ReferralGenerateResponse>("/referral/generate", {
     method: "POST",
   });
 }

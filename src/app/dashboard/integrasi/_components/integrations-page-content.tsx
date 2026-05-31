@@ -29,7 +29,7 @@ import {
   type GroupReportResponse,
   type PaymentItem,
   type ReferralSummary,
-} from "@/shared/_utils/backend-user-modules-client";
+} from "@/services/integration.service";
 
 const emptyReferralSummary: ReferralSummary = {
   active_referrals: 0,

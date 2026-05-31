@@ -12,7 +12,7 @@ import {
   deleteTransaction,
   getTransaction,
   getTransactions,
-} from "@/shared/_utils/backend-client";
+} from "@/services/transaction.service";
 
 const transactionListQueryKey = ["transactions", { page: 1, perPage: 50 }] as const;
 

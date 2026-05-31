@@ -1,5 +1,7 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { NextRequest } from "next/server";
+import { handleProxy } from "../../[...path]/route";
 
 export const authOptions: NextAuthOptions = {
   callbacks: {
@@ -31,4 +33,22 @@ export const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+async function customHandler(
+  request: NextRequest,
+  context: { params: Promise<{ nextauth: string[] }> }
+) {
+  const resolvedParams = await context.params;
+  const nextauthParams = resolvedParams?.nextauth || [];
+  const action = nextauthParams[0];
+
+  if (["login", "register", "refresh", "logout"].includes(action)) {
+    const wrappedParams = Promise.resolve({
+      path: ["auth", ...nextauthParams],
+    });
+    return handleProxy(request, { params: wrappedParams });
+  }
+
+  return handler(request, context);
+}
+
+export { customHandler as GET, customHandler as POST };

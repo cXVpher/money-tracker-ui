@@ -10,7 +10,7 @@ import { Button } from "@/shared/_components/ui/button";
 import {
   type CreateTransactionInput,
   createTransaction,
-} from "@/shared/_utils/backend-client";
+} from "@/services/transaction.service";
 import {
   Dialog,
   DialogClose,

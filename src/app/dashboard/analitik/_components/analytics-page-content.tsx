@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/u
 import {
   type DashboardOverviewData,
   getDashboardOverviewData,
-} from "@/shared/_utils/backend-client";
+} from "@/services/dashboard.service";
 import {
   accountBalanceSeries,
   incomeSourceBreakdown,

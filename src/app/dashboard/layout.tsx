@@ -1,12 +1,28 @@
 import { DashboardShell } from "@/features/dashboard-shell/_components/dashboard-shell";
 
+import { getUserRoleFromCookie } from "@/shared/_utils/jwt-server";
 
-export default function DashboardLayout({
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <DashboardShell>{children}</DashboardShell>
-  );
+  const cookieStore = await cookies();
+  const hasAccessToken = cookieStore.has("user_access_token");
+  const hasRefreshToken = cookieStore.has("user_refresh_token");
+
+  if (!hasAccessToken && !hasRefreshToken) {
+    redirect("/login");
+  }
+
+  const role = await getUserRoleFromCookie();
+
+  if (role === "admin" || role === "super_admin") {
+    return <>{children}</>;
+  }
+
+  return <DashboardShell>{children}</DashboardShell>;
 }

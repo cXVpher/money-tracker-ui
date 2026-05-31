@@ -25,7 +25,8 @@ import {
   dashboardIcons,
   type DashboardIconName,
 } from "@/features/dashboard-shell/_utils/icon-map";
-import { getBalance, logout as logoutRequest } from "@/shared/_utils/backend-client";
+import { logout as logoutRequest } from "@/services/auth.service";
+import { getBalance } from "@/services/balance.service";
 
 type SidebarProps = {
   isCollapsed: boolean;

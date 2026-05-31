@@ -76,7 +76,7 @@ export function stopPeriodicRefresh() {
 
 async function runRefreshRequest(): Promise<RefreshResult> {
   try {
-    const response = await fetch(`${FRONTEND_API_BASE_URL}/api/auth/refresh`, {
+    const response = await fetch(`${FRONTEND_API_BASE_URL}/auth/refresh`, {
       credentials: "include",
       headers: {
         Accept: "application/json",

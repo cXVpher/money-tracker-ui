@@ -9,7 +9,7 @@ import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 
 import { ApiClientError } from "@/shared/_utils/api-client";
-import { changePassword } from "@/shared/_utils/backend-client";
+import { changePassword } from "@/services/profile.service";
 
 export function PasswordSettingsCard() {
   const [currentPassword, setCurrentPassword] = useState("");

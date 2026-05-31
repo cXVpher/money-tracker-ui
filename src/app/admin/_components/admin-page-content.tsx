@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bell,
   Check,
@@ -42,20 +42,16 @@ import {
   type AdminLogItem,
   type AdminPaymentItem,
   type AdminRevenue,
-  type AdminSession,
   type AdminUserDetail,
   type AdminUserListItem,
   type AdminUserListParams,
-} from "@/shared/_utils/backend-admin-client";
+} from "@/services/admin.service";
 
 const ADMIN_USER_PER_PAGE = 5;
 
 export function AdminPageContent() {
   const currentMonth = useMemo(() => new Date().toISOString().slice(0, 7), []);
   const { resolvedTheme, setTheme } = useTheme();
-  const [session, setSession] = useState<AdminSession | null>(null);
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin12345");
   const [userSearch, setUserSearch] = useState("");
   const [userStatus, setUserStatus] =
     useState<AdminUserListParams["status"]>("");
@@ -82,29 +78,14 @@ export function AdminPageContent() {
   const pendingPayments = payments.filter((payment) => payment.status === "pending");
   const isDarkMode = resolvedTheme === "dark";
 
-  async function handleAdminLogin() {
-    if (!username.trim() || !password.trim()) {
-      toast.error("Username dan password admin wajib diisi.");
-      return;
-    }
-
-    try {
-      const nextSession = await adminLogin(username.trim(), password.trim());
-      setSession(nextSession);
-      toast.success("Masuk sebagai admin.");
-      await loadAdminData({ page: 1 });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Login admin gagal.");
-    }
-  }
+  useEffect(() => {
+    void loadAdminData({ page: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function loadAdminData(
     userListParams: Partial<AdminUserListParams> = {}
   ) {
-    if (!session) {
-      return;
-    }
-
     setIsLoadingData(true);
 
     try {
@@ -142,15 +123,11 @@ export function AdminPageContent() {
   }
 
   async function handleSearchUsers() {
-    if (!session) {
-      return;
-    }
-
     await loadAdminData({ page: 1 });
   }
 
   async function handleUserPageChange(nextPage: number) {
-    if (!session || nextPage < 1 || nextPage > userPageCount) {
+    if (nextPage < 1 || nextPage > userPageCount) {
       return;
     }
 
@@ -158,10 +135,6 @@ export function AdminPageContent() {
   }
 
   async function handleSelectUser(userId: string) {
-    if (!session) {
-      return;
-    }
-
     try {
       const detail = await getAdminUserDetail(userId);
       setSelectedUserDetail(detail);
@@ -171,10 +144,6 @@ export function AdminPageContent() {
   }
 
   async function handleToggleUser(user: AdminUserListItem) {
-    if (!session) {
-      return;
-    }
-
     const reason = window.prompt(
       user.is_active ? "Kenapa user ini dinonaktifkan?" : "Catatan aktivasi user?"
     );
@@ -211,10 +180,6 @@ export function AdminPageContent() {
   }
 
   async function handleAddBalance(user: AdminUserListItem) {
-    if (!session) {
-      return;
-    }
-
     const amountInput = window.prompt("Nominal saldo yang mau ditambahkan?");
     if (!amountInput) {
       return;
@@ -249,10 +214,6 @@ export function AdminPageContent() {
   }
 
   async function handleVerifyPayment(paymentId: string) {
-    if (!session) {
-      return;
-    }
-
     try {
       await verifyAdminPayment(paymentId);
       setPayments((current) =>
@@ -267,10 +228,6 @@ export function AdminPageContent() {
   }
 
   async function handleRejectPayment(paymentId: string) {
-    if (!session) {
-      return;
-    }
-
     const reason = window.prompt("Alasan pembayaran ditolak?");
     if (reason == null) {
       return;
@@ -290,10 +247,6 @@ export function AdminPageContent() {
   }
 
   async function handleCreateReferralPayout() {
-    if (!session) {
-      return;
-    }
-
     if (!payoutCode.trim() || !payoutPeriod.trim()) {
       toast.error("Kode referral dan periode payout wajib diisi.");
       return;
@@ -357,58 +310,26 @@ export function AdminPageContent() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Shield className="h-4 w-4" />
-                  Masuk Admin
+                  Menu Admin
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-username">Username</Label>
-                    <Input
-                      id="admin-username"
-                      value={username}
-                      onChange={(event) => setUsername(event.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-password">Password</Label>
-                    <Input
-                      id="admin-password"
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Button className="rounded-full" onClick={handleAdminLogin}>
-                    {session ? "Masuk ulang" : "Masuk"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="rounded-full"
-                    disabled={!session || isLoadingData}
-                    onClick={() => void loadAdminData()}
-                  >
-                    {isLoadingData ? "Memuat..." : "Refresh data"}
-                  </Button>
-                </div>
-                {session ? (
-                  <p className="text-xs text-muted-foreground">
-                    Login sebagai {session.admin.username} ({session.admin.role}).
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Isi kredensial admin dulu untuk membuka data operasional.
-                  </p>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  Akses operasional aman dengan session aktif Anda.
+                </p>
+                <Button
+                  className="rounded-full w-full"
+                  disabled={isLoadingData}
+                  onClick={() => void loadAdminData()}
+                >
+                  {isLoadingData ? "Memuat..." : "Refresh Semua Data"}
+                </Button>
               </CardContent>
             </Card>
           </div>
         </section>
 
-        {session ? (
-          <Tabs defaultValue="overview" className="space-y-5">
+        <Tabs defaultValue="overview" className="space-y-5">
             <TabsList variant="line" className="overflow-x-auto">
               <TabsTrigger value="overview">Ringkasan</TabsTrigger>
               <TabsTrigger value="users">User</TabsTrigger>
@@ -668,15 +589,6 @@ export function AdminPageContent() {
               </Card>
             </TabsContent>
           </Tabs>
-        ) : (
-          <Card>
-            <CardContent className="grid gap-4 p-6 text-sm text-muted-foreground md:grid-cols-3">
-              <MiniGuide title="1. Masuk admin" text="Gunakan akun admin. Di mode demo, kredensial default sudah terisi." />
-              <MiniGuide title="2. Cek antrean" text="Mulai dari pembayaran pending dan user yang butuh bantuan." />
-              <MiniGuide title="3. Ambil aksi" text="Approve payment, tambah saldo, suspend user, atau catat payout." />
-            </CardContent>
-          </Card>
-        )}
       </div>
     </main>
   );

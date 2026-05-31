@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/u
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { ApiClientError } from "@/shared/_utils/api-client";
-import { getProfile, updateProfile } from "@/shared/_utils/backend-client";
+import { getProfile, updateProfile } from "@/services/profile.service";
 
 
 const emptyProfileSettings = {

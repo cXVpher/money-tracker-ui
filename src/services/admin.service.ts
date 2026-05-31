@@ -1,13 +1,6 @@
 "use client";
 
-import { FRONTEND_API_BASE_URL } from "@/shared/_config/runtime";
-import { ApiClientError } from "@/shared/_utils/api-client";
-
-type ApiEnvelope<T> = {
-  code: number;
-  data: T;
-  message: string;
-};
+import { apiRequest } from "@/shared/_utils/api-client";
 
 export type PaginatedResponse<T> = {
   items: T[] | null;
@@ -132,12 +125,14 @@ export type AdminLogListParams = {
 };
 
 export async function adminLogin(username: string, password: string) {
-  const data = await adminRequest<{
+  const data = await apiRequest<{
     admin: AdminSession["admin"];
     expires_in: number;
-  }>("/api/admin/auth/login", {
+  }>("/admin/auth/login", {
     body: JSON.stringify({ password, username }),
     method: "POST",
+    skipAuthRefresh: true,
+    skipAuthToken: true,
   });
 
   return {
@@ -149,7 +144,7 @@ export async function adminLogin(username: string, password: string) {
 export async function getAdminDashboard() {
 
 
-  return adminRequest<AdminDashboardStats>("/api/admin/dashboard");
+  return apiRequest<AdminDashboardStats>("/admin/dashboard");
 }
 
 export async function listAdminUsers(
@@ -180,14 +175,14 @@ export async function listAdminUsers(
     query.set("per_page", String(params.perPage));
   }
 
-  const path = query.size ? `/api/admin/users?${query.toString()}` : "/api/admin/users";
-  return adminRequest<PaginatedResponse<AdminUserListItem>>(path);
+  const path = query.size ? `/admin/users?${query.toString()}` : "/admin/users";
+  return apiRequest<PaginatedResponse<AdminUserListItem>>(path);
 }
 
 export async function getAdminUserDetail(userId: string) {
 
 
-  return adminRequest<AdminUserDetail>(`/api/admin/users/${userId}`);
+  return apiRequest<AdminUserDetail>(`/admin/users/${userId}`);
 }
 
 export async function updateAdminUserStatus(
@@ -195,8 +190,8 @@ export async function updateAdminUserStatus(
 ) {
 
 
-  return adminRequest<{ is_active: boolean }>(
-    `/api/admin/users/${input.userId}/status`,
+  return apiRequest<{ is_active: boolean }>(
+    `/admin/users/${input.userId}/status`,
     {
       body: JSON.stringify({
         is_active: input.isActive,
@@ -212,8 +207,8 @@ export async function addAdminUserBalance(
 ) {
 
 
-  return adminRequest<{ new_balance: number }>(
-    `/api/admin/users/${input.userId}/balance`,
+  return apiRequest<{ new_balance: number }>(
+    `/admin/users/${input.userId}/balance`,
     {
       body: JSON.stringify({
         amount: input.amount,
@@ -244,19 +239,19 @@ export async function listAdminPayments(
   }
 
   const path = query.size
-    ? `/api/admin/payments?${query.toString()}`
-    : "/api/admin/payments";
-  return adminRequest<PaginatedResponse<AdminPaymentItem>>(path);
+    ? `/admin/payments?${query.toString()}`
+    : "/admin/payments";
+  return apiRequest<PaginatedResponse<AdminPaymentItem>>(path);
 }
 
 export async function verifyAdminPayment(paymentId: string) {
 
 
-  return adminRequest<{
+  return apiRequest<{
     expires_at?: string | null;
     new_balance: number;
     payment_id: string;
-  }>(`/api/admin/payments/${paymentId}/verify`, {
+  }>(`/admin/payments/${paymentId}/verify`, {
     method: "PUT",
   });
 }
@@ -266,7 +261,7 @@ export async function rejectAdminPayment(
 ) {
 
 
-  return adminRequest<null>(`/api/admin/payments/${input.paymentId}/reject`, {
+  return apiRequest<null>(`/admin/payments/${input.paymentId}/reject`, {
     body: JSON.stringify({ reason: input.reason }),
     method: "PUT",
   });
@@ -275,15 +270,15 @@ export async function rejectAdminPayment(
 export async function getAdminRevenue(month: string) {
 
 
-  return adminRequest<AdminRevenue>(
-    `/api/admin/revenue?month=${encodeURIComponent(month)}`
+  return apiRequest<AdminRevenue>(
+    `/admin/revenue?month=${encodeURIComponent(month)}`
   );
 }
 
 export async function getAdminReferralOverview() {
 
 
-  return adminRequest<Record<string, unknown>>("/api/admin/referrals");
+  return apiRequest<Record<string, unknown>>("/admin/referrals");
 }
 
 export async function createAdminReferralPayout(
@@ -291,7 +286,7 @@ export async function createAdminReferralPayout(
 ) {
 
 
-  return adminRequest<Record<string, unknown>>("/api/admin/referrals/payout", {
+  return apiRequest<Record<string, unknown>>("/admin/referrals/payout", {
     body: JSON.stringify({
       period: input.period,
       referral_code: input.referralCode,
@@ -318,44 +313,6 @@ export async function getAdminLogs(params: AdminLogListParams = {}) {
     query.set("per_page", String(params.perPage));
   }
 
-  const path = query.size ? `/api/admin/logs?${query.toString()}` : "/api/admin/logs";
-  return adminRequest<PaginatedResponse<AdminLogItem>>(path);
-}
-
-async function adminRequest<T>(
-  path: string,
-  init?: RequestInit
-) {
-  const response = await fetch(`${FRONTEND_API_BASE_URL}${path}`, {
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-      ...(init?.body instanceof FormData
-        ? {}
-        : { "Content-Type": "application/json" }),
-      ...init?.headers,
-    },
-    ...init,
-  });
-
-  let payload: ApiEnvelope<T> | null = null;
-
-  try {
-    payload = (await response.json()) as ApiEnvelope<T>;
-  } catch {
-    payload = null;
-  }
-
-  if (!response.ok) {
-    throw new ApiClientError(
-      payload?.message ?? "Terjadi kesalahan saat menghubungi admin API.",
-      response.status
-    );
-  }
-
-  if (!payload) {
-    throw new ApiClientError("Respons admin API tidak valid.", response.status);
-  }
-
-  return payload.data;
+  const path = query.size ? `/admin/logs?${query.toString()}` : "/admin/logs";
+  return apiRequest<PaginatedResponse<AdminLogItem>>(path);
 }

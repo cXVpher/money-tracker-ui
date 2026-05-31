@@ -15,7 +15,7 @@ import {
   SheetTrigger,
 } from "@/shared/_components/ui/sheet";
 import { DASHBOARD_NAV } from "@/features/dashboard-shell/_utils/navigation";
-import { logout as logoutRequest } from "@/shared/_utils/backend-client";
+import { logout as logoutRequest } from "@/services/auth.service";
 import { cn } from "@/shared/_utils/cn";
 import {
   dashboardIcons,

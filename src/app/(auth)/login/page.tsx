@@ -11,8 +11,15 @@ import { OAuthButton } from "@/features/auth/_components/oauth-button";
 import { Button } from "@/shared/_components/ui/button";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
+import { PhoneInput } from "@/shared/_components/ui/phone-input";
 import { ApiClientError } from "@/shared/_utils/api-client";
-import { login } from "@/shared/_utils/backend-client";
+import { login } from "@/services/auth.service";
+import {
+  DEFAULT_COUNTRY_CODE,
+  type CountryCode,
+} from "@/shared/_constants/country-codes";
+
+type LoginMode = "email" | "phone";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,15 +30,28 @@ export default function LoginPage() {
 
     return new URLSearchParams(window.location.search).get("next");
   }, []);
-  const [identifier, setIdentifier] = useState("");
+
+  const [loginMode, setLoginMode] = useState<LoginMode>("phone");
+  const [emailValue, setEmailValue] = useState("");
+  const [phoneValue, setPhoneValue] = useState("");
+  const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY_CODE);
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
+  function getIdentifier() {
+    if (loginMode === "phone") {
+      return phoneValue.trim() ? `${countryCode.dialCode}${phoneValue.trim()}` : "";
+    }
+    return emailValue.trim();
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!identifier.trim() || !password.trim()) {
+    const identifier = getIdentifier();
+
+    if (!identifier || !password.trim()) {
       toast.error("Identifier dan password wajib diisi.");
       return;
     }
@@ -67,15 +87,38 @@ export default function LoginPage() {
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
-          <Label htmlFor="identifier">Email / Nomor WhatsApp</Label>
-          <Input
-            id="identifier"
-            type="text"
-            placeholder="Masukkan no. HP atau Email anda"
-            className="h-11"
-            value={identifier}
-            onChange={(event) => setIdentifier(event.target.value)}
-          />
+          <div className="flex items-center justify-between">
+            <Label htmlFor="identifier">
+              {loginMode === "phone" ? "Nomor WhatsApp" : "Email"}
+            </Label>
+            <button
+              type="button"
+              className="text-xs font-medium text-primary hover:underline"
+              onClick={() => setLoginMode(loginMode === "phone" ? "email" : "phone")}
+            >
+              {loginMode === "phone" ? "Gunakan email" : "Gunakan no. HP"}
+            </button>
+          </div>
+
+          {loginMode === "phone" ? (
+            <PhoneInput
+              id="identifier"
+              value={phoneValue}
+              countryCode={countryCode}
+              onCountryChange={setCountryCode}
+              onChange={setPhoneValue}
+              placeholder="85873427"
+            />
+          ) : (
+            <Input
+              id="identifier"
+              type="email"
+              placeholder="nama@email.com"
+              className="h-11"
+              value={emailValue}
+              onChange={(event) => setEmailValue(event.target.value)}
+            />
+          )}
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -130,4 +173,3 @@ export default function LoginPage() {
     </AuthCard>
   );
 }
-

@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/shared/_components/ui/avatar";
 import { Button } from "@/shared/_components/ui/button";
 import { Input } from "@/shared/_components/ui/input";
 import { useTheme } from "@/shared/_components/providers/theme-provider";
-import { getProfile } from "@/shared/_utils/backend-client";
+import { getProfile } from "@/services/profile.service";
 
 const DEFAULT_PROFILE_NAME = "Dashboard Keuangan";
 const DEFAULT_INITIALS = "DK";
