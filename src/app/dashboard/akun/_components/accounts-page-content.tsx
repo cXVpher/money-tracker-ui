@@ -1,15 +1,117 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeftRight } from "@/shared/_components/icons/phosphor";
+import { toast } from "sonner";
+import { APP_ICON_OPTIONS } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/_components/ui/dialog";
+import { Input } from "@/shared/_components/ui/input";
+import { Label } from "@/shared/_components/ui/label";
 import type { Account } from "@/shared/_types/finance";
+import {
+  createAccount,
+  deleteAccount,
+  getAccounts,
+  updateAccount,
+  type CreateAccountInput,
+} from "@/services/account.service";
 import { AccountCard } from "./account-card";
 import { AccountTotalCard } from "./account-total-card";
 
+const accountsQueryKey = ["accounts"] as const;
+
+const emptyAccountForm: CreateAccountInput = {
+  balance: 0,
+  color: "#0066AE",
+  icon: "bank",
+  name: "",
+  type: "bank",
+};
+
 export function AccountsPageContent() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const totalBalance = 0;
+  const queryClient = useQueryClient();
+  const [accountEditor, setAccountEditor] =
+    useState<(CreateAccountInput & { id?: string }) | null>(null);
+
+  const accountsQuery = useQuery({
+    queryFn: getAccounts,
+    queryKey: accountsQueryKey,
+  });
+
+  const saveAccountMutation = useMutation({
+    mutationFn: async (input: CreateAccountInput & { id?: string }) =>
+      input.id
+        ? updateAccount({
+            color: input.color,
+            icon: input.icon,
+            id: input.id,
+            name: input.name,
+          })
+        : createAccount(input),
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Gagal menyimpan akun.");
+    },
+    onSuccess: () => {
+      setAccountEditor(null);
+      toast.success("Akun berhasil disimpan.");
+      void queryClient.invalidateQueries({ queryKey: accountsQueryKey });
+    },
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: deleteAccount,
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus akun.");
+    },
+    onSuccess: () => {
+      toast.success("Akun berhasil dihapus.");
+      void queryClient.invalidateQueries({ queryKey: accountsQueryKey });
+    },
+  });
+
+  const accounts = accountsQuery.data ?? [];
+  const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
+
+  function openCreateDialog() {
+    setAccountEditor(emptyAccountForm);
+  }
+
+  function openEditDialog(account: Account) {
+    setAccountEditor({
+      balance: account.balance,
+      color: account.color,
+      icon: account.icon,
+      id: account.id,
+      name: account.name,
+      type: account.type,
+    });
+  }
+
+  function handleSaveAccount() {
+    if (!accountEditor?.name.trim()) {
+      toast.error("Nama akun wajib diisi.");
+      return;
+    }
+
+    saveAccountMutation.mutate(accountEditor);
+  }
+
+  function handleDeleteAccount(account: Account) {
+    if (!window.confirm(`Hapus akun "${account.name}"?`)) {
+      return;
+    }
+
+    deleteAccountMutation.mutate(account.id);
+  }
 
   return (
     <div className="space-y-6">
@@ -29,27 +131,158 @@ export function AccountsPageContent() {
             <ArrowLeftRight className="h-4 w-4" />
             Transfer
           </Button>
-          <Button className="rounded-full" disabled>
+          <Button className="rounded-full" onClick={openCreateDialog}>
             Tambah Akun
           </Button>
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-        Akun finansial belum tersedia untuk akun ini.
-      </div>
+      {accountsQuery.isLoading ? (
+        <p className="text-sm text-muted-foreground">Memuat akun...</p>
+      ) : null}
+      {accountsQuery.isError ? (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {accountsQuery.error instanceof Error
+            ? accountsQuery.error.message
+            : "Gagal memuat akun."}
+        </div>
+      ) : null}
 
       <AccountTotalCard accountCount={accounts.length} totalBalance={totalBalance} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {accounts.length ? accounts.map((account) => (
-          <AccountCard key={account.id} account={account} />
+          <AccountCard
+            key={account.id}
+            account={account}
+            onDelete={() => handleDeleteAccount(account)}
+            onEdit={() => openEditDialog(account)}
+          />
         )) : (
           <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground md:col-span-2 xl:col-span-3">
             Belum ada akun finansial.
           </div>
         )}
       </div>
+
+      <Dialog
+        open={accountEditor !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAccountEditor(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {accountEditor?.id ? "Edit Akun" : "Tambah Akun"}
+            </DialogTitle>
+          </DialogHeader>
+          {accountEditor ? (
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="account-name">Nama akun</Label>
+                <Input
+                  id="account-name"
+                  value={accountEditor.name}
+                  onChange={(event) =>
+                    setAccountEditor((current) =>
+                      current ? { ...current, name: event.target.value } : current
+                    )
+                  }
+                />
+              </div>
+              {!accountEditor.id ? (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="account-type">Tipe</Label>
+                    <select
+                      id="account-type"
+                      className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+                      value={accountEditor.type}
+                      onChange={(event) =>
+                        setAccountEditor((current) =>
+                          current
+                            ? {
+                                ...current,
+                                type: event.target.value as Account["type"],
+                              }
+                            : current
+                        )
+                      }
+                    >
+                      <option value="bank">Bank</option>
+                      <option value="ewallet">E-wallet</option>
+                      <option value="cash">Tunai</option>
+                      <option value="credit_card">Kartu kredit</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="account-balance">Saldo awal</Label>
+                    <Input
+                      id="account-balance"
+                      min={0}
+                      type="number"
+                      value={accountEditor.balance}
+                      onChange={(event) =>
+                        setAccountEditor((current) =>
+                          current
+                            ? { ...current, balance: Number(event.target.value) }
+                            : current
+                        )
+                      }
+                    />
+                  </div>
+                </>
+              ) : null}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="account-icon">Icon</Label>
+                  <select
+                    id="account-icon"
+                    className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
+                    value={accountEditor.icon}
+                    onChange={(event) =>
+                      setAccountEditor((current) =>
+                        current ? { ...current, icon: event.target.value } : current
+                      )
+                    }
+                  >
+                    {APP_ICON_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="account-color">Warna</Label>
+                  <Input
+                    id="account-color"
+                    type="color"
+                    value={accountEditor.color}
+                    onChange={(event) =>
+                      setAccountEditor((current) =>
+                        current ? { ...current, color: event.target.value } : current
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Batal</DialogClose>
+            <Button
+              disabled={saveAccountMutation.isPending}
+              onClick={handleSaveAccount}
+            >
+              {saveAccountMutation.isPending ? "Menyimpan..." : "Simpan Akun"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

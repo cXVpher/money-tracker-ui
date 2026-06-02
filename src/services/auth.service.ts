@@ -1,7 +1,6 @@
 "use client";
 
 import { apiRequest } from "@/shared/_utils/api-client";
-import { clearAccessToken } from "@/features/auth/_utils/jwt-session";
 
 type BackendBalance = {
   balance: number;
@@ -72,11 +71,7 @@ export async function register(input: RegisterInput) {
 }
 
 export async function logout() {
-  try {
-    return await apiRequest<null>("/auth/logout", {
-      method: "POST",
-    });
-  } finally {
-    clearAccessToken();
-  }
+  return apiRequest<null>("/auth/logout", {
+    method: "POST",
+  });
 }

@@ -24,7 +24,7 @@ import {
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { Textarea } from "@/shared/_components/ui/textarea";
-import type { Transaction } from "@/shared/_types/finance";
+import type { Account, Transaction } from "@/shared/_types/finance";
 
 type TransactionFormProps = {
   categoryOptions: ReadonlyArray<{
@@ -32,65 +32,64 @@ type TransactionFormProps = {
     icon: string;
     name: string;
   }>;
+  accounts?: Account[];
   onTransactionCreated?: (transaction: Transaction) => void;
 };
 
-type TransactionFormValues = {
-  amount: string;
-  description: string;
-  selectedCategoryName: string;
-  transactionType: Transaction["type"];
-};
+const transactionFormSchema = z
+  .object({
+    amount: z
+      .string()
+      .trim()
+      .refine((value) => {
+        const parsedAmount = Number(value);
+        return !Number.isNaN(parsedAmount) && parsedAmount > 0;
+      }, "Nominal transaksi harus lebih besar dari 0."),
+    description: z
+      .string()
+      .trim()
+      .min(1, "Deskripsi transaksi wajib diisi."),
+    selectedCategoryName: z.string().min(1, "Kategori transaksi wajib dipilih."),
+    transactionType: z.enum(["expense", "income", "transfer"]),
+    selectedAccountId: z.string().optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.transactionType === "transfer") {
+      context.addIssue({
+        code: "custom",
+        message: "Transaksi transfer belum tersedia.",
+        path: ["transactionType"],
+      });
+    }
+  });
 
-function createTransactionFormSchema() {
-  return z
-    .object({
-      amount: z
-        .string()
-        .trim()
-        .refine((value) => {
-          const parsedAmount = Number(value);
-          return !Number.isNaN(parsedAmount) && parsedAmount > 0;
-        }, "Nominal transaksi harus lebih besar dari 0."),
-      description: z
-        .string()
-        .trim()
-        .min(1, "Deskripsi transaksi wajib diisi."),
-      selectedCategoryName: z.string().min(1, "Kategori transaksi wajib dipilih."),
-      transactionType: z.enum(["expense", "income", "transfer"]),
-    })
-    .superRefine((value, context) => {
-      if (value.transactionType === "transfer") {
-        context.addIssue({
-          code: "custom",
-          message: "Transaksi transfer belum tersedia.",
-          path: ["transactionType"],
-        });
-      }
-    });
-}
+type TransactionFormValues = z.infer<typeof transactionFormSchema>;
 
 function getDefaultFormValues({
   categoryOptions,
+  accounts = [],
 }: {
   categoryOptions: TransactionFormProps["categoryOptions"];
+  accounts?: Account[];
 }): TransactionFormValues {
   return {
     amount: "",
     description: "",
     selectedCategoryName: categoryOptions[0]?.name ?? "",
     transactionType: "expense",
+    selectedAccountId: accounts[0]?.id ?? "",
   };
 }
 
 export function TransactionForm({
   categoryOptions,
+  accounts = [],
   onTransactionCreated,
 }: TransactionFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const form = useForm<TransactionFormValues>({
-    defaultValues: getDefaultFormValues({ categoryOptions }),
-    resolver: zodResolver(createTransactionFormSchema()),
+    defaultValues: getDefaultFormValues({ categoryOptions, accounts }),
+    resolver: zodResolver(transactionFormSchema),
   });
   const transactionType = useWatch({
     control: form.control,
@@ -98,7 +97,7 @@ export function TransactionForm({
   });
 
   function resetForm() {
-    form.reset(getDefaultFormValues({ categoryOptions }));
+    form.reset(getDefaultFormValues({ categoryOptions, accounts }));
   }
 
   async function handleSaveTransaction(values: TransactionFormValues) {
@@ -123,6 +122,7 @@ export function TransactionForm({
         categoryName: selectedCategory.name,
         description: values.description.trim(),
         transactionType: values.transactionType as CreateTransactionInput["transactionType"],
+        walletId: values.selectedAccountId || undefined,
       });
       onTransactionCreated?.(transaction);
       toast.success("Transaksi berhasil ditambahkan.");
@@ -226,6 +226,25 @@ export function TransactionForm({
               </select>
             </div>
           </div>
+
+          {accounts && accounts.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="account">Dompet / Rekening Finansial</Label>
+              <select
+                id="account"
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 animate-in fade-in slide-in-from-top-1 duration-200"
+                disabled={form.formState.isSubmitting}
+                {...form.register("selectedAccountId")}
+              >
+                <option value="">-- Pilih Rekening (Opsional) --</option>
+                {accounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.icon} {account.name} (Saldo: Rp{account.balance.toLocaleString("id-ID")})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">Deskripsi</Label>

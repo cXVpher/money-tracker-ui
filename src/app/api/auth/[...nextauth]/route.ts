@@ -1,7 +1,7 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { NextRequest } from "next/server";
-import { handleProxy } from "../../[...path]/route";
+import type { NextRequest } from "next/server";
+import { handleApiProxy } from "@/server/auth/proxy";
 
 export const authOptions: NextAuthOptions = {
   callbacks: {
@@ -45,7 +45,7 @@ async function customHandler(
     const wrappedParams = Promise.resolve({
       path: ["auth", ...nextauthParams],
     });
-    return handleProxy(request, { params: wrappedParams });
+    return handleApiProxy(request, { params: wrappedParams });
   }
 
   return handler(request, context);

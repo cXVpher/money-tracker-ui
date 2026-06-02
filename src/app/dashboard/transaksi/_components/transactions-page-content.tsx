@@ -8,18 +8,31 @@ import { TransactionTable } from "@/features/transactions/_components/transactio
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/_components/ui/dialog";
 import type { Transaction } from "@/shared/_types/finance";
 import {
-  backendTransactionCategories,
   deleteTransaction,
   getTransaction,
   getTransactions,
 } from "@/services/transaction.service";
+import { getCategories } from "@/services/category.service";
+import { getAccounts } from "@/services/account.service";
 
 const transactionListQueryKey = ["transactions", { page: 1, perPage: 50 }] as const;
 
 export function TransactionsPageContent() {
   const queryClient = useQueryClient();
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  const categoryOptions = backendTransactionCategories;
+
+  const categoriesQuery = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+
+  const accountsQuery = useQuery({
+    queryKey: ["accounts"],
+    queryFn: getAccounts,
+  });
+
+  const categoryOptions = categoriesQuery.data ?? [];
+  const accounts = accountsQuery.data ?? [];
 
   const transactionsQuery = useQuery({
     queryFn: async () => {
@@ -57,7 +70,7 @@ export function TransactionsPageContent() {
       await queryClient.cancelQueries({ queryKey: transactionListQueryKey });
 
       const previousTransactions =
-        queryClient.getQueryData<Transaction[]>(transactionListQueryKey);
+         queryClient.getQueryData<Transaction[]>(transactionListQueryKey);
 
       queryClient.setQueryData<Transaction[]>(
         transactionListQueryKey,
@@ -69,6 +82,8 @@ export function TransactionsPageContent() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: transactionListQueryKey });
+      void queryClient.invalidateQueries({ queryKey: ["budgets"] }); // also invalidate budgets
+      void queryClient.invalidateQueries({ queryKey: ["accounts"] }); // and accounts balance
     },
     onSuccess: () => {
       toast.success("Transaksi berhasil dihapus.");
@@ -105,12 +120,13 @@ export function TransactionsPageContent() {
   }
 
   function handleTransactionCreated(transaction: Transaction) {
-
     queryClient.setQueryData<Transaction[]>(
       transactionListQueryKey,
       (currentTransactions = []) => [transaction, ...currentTransactions]
     );
     void queryClient.invalidateQueries({ queryKey: transactionListQueryKey });
+    void queryClient.invalidateQueries({ queryKey: ["budgets"] }); // also invalidate budgets
+    void queryClient.invalidateQueries({ queryKey: ["accounts"] }); // and accounts balance
   }
 
   return (
@@ -124,6 +140,7 @@ export function TransactionsPageContent() {
         </div>
         <TransactionForm
           categoryOptions={categoryOptions}
+          accounts={accounts}
           onTransactionCreated={handleTransactionCreated}
         />
       </div>
@@ -136,12 +153,13 @@ export function TransactionsPageContent() {
         <p className="text-sm text-muted-foreground">Memuat transaksi...</p>
       ) : null}
       <TransactionTable
-        accounts={[]}
+        accounts={accounts}
         deletingTransactionId={deletingTransactionId}
         onDeleteTransaction={handleDeleteTransaction}
         onViewTransaction={handleViewTransaction}
         transactions={transactions}
       />
+
       <Dialog
         open={selectedTransaction !== null}
         onOpenChange={(open) => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tags } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import {
@@ -25,61 +26,102 @@ import {
 } from "@/shared/_components/ui/dialog";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
-import type {
-  CategoryConfig,
-  CategoryGroup,
-} from "@/features/settings/_types/settings";
+import {
+  createCategory,
+  deleteCategory,
+  getCategories,
+  updateCategory,
+  type TransactionCategory,
+} from "@/services/category.service";
 
 type CategoryEditorState = {
-  group: CategoryGroup;
-  index: number | null;
-  values: CategoryConfig;
-};
-
-const emptyCategoryDraft: CategoryConfig = {
-  color: "#22c55e",
-  icon: "other",
-  name: "",
-};
-
-type CategorySettings = {
-  expense: CategoryConfig[];
-  income: CategoryConfig[];
-};
-
-const emptyCategorySettings: CategorySettings = {
-  expense: [],
-  income: [],
+  id?: string;
+  name: string;
+  icon: string;
+  color: string;
 };
 
 export function CategorySettingsCard() {
-  const [categorySettings, setCategorySettings] = useState(emptyCategorySettings);
-  const [categoryEditor, setCategoryEditor] = useState<CategoryEditorState | null>(
-    null
-  );
+  const queryClient = useQueryClient();
+  const [categoryEditor, setCategoryEditor] = useState<CategoryEditorState | null>(null);
 
-  const categoryRows = useMemo(
-    () =>
-      (["expense", "income"] as const).flatMap((group) =>
-        categorySettings[group].map((category, index) => ({
-          category,
-          group,
-          index,
-        }))
-      ),
-    [categorySettings]
-  );
+  const categoriesQuery = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
 
-  function openCategoryEditor(
-    group: CategoryGroup,
-    category?: CategoryConfig,
-    index?: number
-  ) {
-    toast.error("Pengaturan kategori belum tersedia.");
+  const saveCategoryMutation = useMutation({
+    mutationFn: async (input: CategoryEditorState) => {
+      if (input.id) {
+        return updateCategory({
+          id: input.id,
+          color: input.color,
+          icon: input.icon,
+          description: input.name,
+        });
+      } else {
+        return createCategory({
+          name: input.name.trim(),
+          icon: input.icon,
+          color: input.color,
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Gagal menyimpan kategori.");
+    },
+    onSuccess: () => {
+      setCategoryEditor(null);
+      toast.success("Kategori berhasil disimpan.");
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: deleteCategory,
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Gagal menghapus kategori.");
+    },
+    onSuccess: () => {
+      toast.success("Kategori berhasil dihapus.");
+      void queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+
+  const categories = categoriesQuery.data ?? [];
+
+  function openCreateDialog() {
+    setCategoryEditor({
+      name: "",
+      icon: "other",
+      color: "#22c55e",
+    });
+  }
+
+  function openEditDialog(category: TransactionCategory) {
+    setCategoryEditor({
+      id: category.id,
+      name: category.name,
+      icon: category.icon,
+      color: category.color,
+    });
   }
 
   function handleSaveCategory() {
-    toast.error("Pengaturan kategori belum tersedia.");
+    if (!categoryEditor?.name.trim()) {
+      toast.error("Nama kategori wajib diisi.");
+      return;
+    }
+
+    saveCategoryMutation.mutate(categoryEditor);
+  }
+
+  function handleDeleteCategory(category: TransactionCategory) {
+    if (!window.confirm(`Hapus kategori "${category.name}"?`)) {
+      return;
+    }
+
+    deleteCategoryMutation.mutate(category.id);
   }
 
   return (
@@ -91,34 +133,31 @@ export function CategorySettingsCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          Pengaturan kategori belum tersedia untuk akun ini.
-        </div>
+        {categoriesQuery.isLoading ? (
+          <p className="text-sm text-muted-foreground">Memuat kategori...</p>
+        ) : null}
+
+        {categoriesQuery.isError ? (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {categoriesQuery.error instanceof Error ? categoriesQuery.error.message : "Gagal memuat kategori."}
+          </div>
+        ) : null}
 
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
-            disabled
-            onClick={() => openCategoryEditor("expense")}
+            onClick={openCreateDialog}
           >
-            Tambah Kategori Pengeluaran
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            onClick={() => openCategoryEditor("income")}
-          >
-            Tambah Kategori Pemasukan
+            Tambah Kategori Baru
           </Button>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {categoryRows.length ? categoryRows.map(({ category, group, index }) => (
+          {categories.length ? categories.map((category) => (
             <div
-              key={`${group}-${category.name}-${index}`}
-              className="flex items-center justify-between rounded-lg border border-border p-3"
+              key={category.id}
+              className="flex items-center justify-between rounded-lg border border-border p-3 bg-card"
             >
               <span className="flex items-center gap-2 text-sm">
                 <span
@@ -127,21 +166,39 @@ export function CategorySettingsCard() {
                 >
                   <AppIcon name={category.icon} size={16} weight="fill" />
                 </span>
-                {category.name}
+                <span className="font-medium">{category.name}</span>
+                {category.isDefault && (
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground font-normal">
+                    Sistem
+                  </span>
+                )}
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => openCategoryEditor(group, category, index)}
-              >
-                Edit
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => openEditDialog(category)}
+                >
+                  Edit
+                </Button>
+                {!category.isDefault && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10"
+                    disabled={deleteCategoryMutation.isPending}
+                    onClick={() => handleDeleteCategory(category)}
+                  >
+                    Hapus
+                  </Button>
+                )}
+              </div>
             </div>
-          )) : (
+          )) : !categoriesQuery.isLoading ? (
             <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground sm:col-span-2 lg:col-span-3">
               Belum ada kategori.
             </div>
-          )}
+          ) : null}
         </div>
       </CardContent>
 
@@ -156,10 +213,10 @@ export function CategorySettingsCard() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {categoryEditor?.index === null ? "Tambah Kategori" : "Edit Kategori"}
+              {categoryEditor?.id ? "Edit Kategori" : "Tambah Kategori"}
             </DialogTitle>
             <DialogDescription>
-              Perubahan kategori disimpan di perangkat ini.
+              Kategori ini dapat digunakan untuk transaksi dan anggaran belanja Anda.
             </DialogDescription>
           </DialogHeader>
 
@@ -169,38 +226,24 @@ export function CategorySettingsCard() {
                 <Label htmlFor="category-name">Nama kategori</Label>
                 <Input
                   id="category-name"
-                  value={categoryEditor.values.name}
+                  value={categoryEditor.name}
                   onChange={(event) =>
                     setCategoryEditor((current) =>
-                      current
-                        ? {
-                            ...current,
-                            values: {
-                              ...current.values,
-                              name: event.target.value,
-                            },
-                          }
-                        : current
+                      current ? { ...current, name: event.target.value } : current
                     )
                   }
+                  disabled={categoryEditor.id !== undefined && categories.find(c => c.id === categoryEditor.id)?.isDefault}
+                  placeholder="e.g. Makanan Sehat"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category-icon">Icon</Label>
                 <select
                   id="category-icon"
-                  value={categoryEditor.values.icon}
+                  value={categoryEditor.icon}
                   onChange={(event) =>
                     setCategoryEditor((current) =>
-                      current
-                        ? {
-                            ...current,
-                            values: {
-                              ...current.values,
-                              icon: event.target.value,
-                            },
-                          }
-                        : current
+                      current ? { ...current, icon: event.target.value } : current
                     )
                   }
                   className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -217,18 +260,10 @@ export function CategorySettingsCard() {
                 <Input
                   id="category-color"
                   type="color"
-                  value={categoryEditor.values.color}
+                  value={categoryEditor.color}
                   onChange={(event) =>
                     setCategoryEditor((current) =>
-                      current
-                        ? {
-                            ...current,
-                            values: {
-                              ...current.values,
-                              color: event.target.value,
-                            },
-                          }
-                        : current
+                      current ? { ...current, color: event.target.value } : current
                     )
                   }
                 />
@@ -238,11 +273,15 @@ export function CategorySettingsCard() {
 
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>Batal</DialogClose>
-            <Button onClick={handleSaveCategory}>Simpan Kategori</Button>
+            <Button
+              disabled={saveCategoryMutation.isPending}
+              onClick={handleSaveCategory}
+            >
+              {saveCategoryMutation.isPending ? "Menyimpan..." : "Simpan Kategori"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </Card>
   );
 }
-

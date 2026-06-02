@@ -8,9 +8,12 @@ import { getGoalProgress } from "../_utils/goal-progress";
 
 interface GoalCardProps {
   goal: Goal;
+  onContribute?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export function GoalCard({ goal }: GoalCardProps) {
+export function GoalCard({ goal, onContribute, onEdit, onDelete }: GoalCardProps) {
   const progress = getGoalProgress(goal);
 
   return (
@@ -27,7 +30,15 @@ export function GoalCard({ goal }: GoalCardProps) {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm">Kontribusi</Button>
+        <div className="flex items-center gap-1">
+          {onContribute && (
+            <Button variant="outline" size="sm" onClick={onContribute}>
+              Kontribusi
+            </Button>
+          )}
+          {onEdit && <Button variant="ghost" size="sm" onClick={onEdit}>Edit</Button>}
+          {onDelete && <Button variant="ghost" size="sm" onClick={onDelete}>Hapus</Button>}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="mb-3 flex items-center justify-between text-sm">
@@ -42,3 +53,4 @@ export function GoalCard({ goal }: GoalCardProps) {
     </Card>
   );
 }
+

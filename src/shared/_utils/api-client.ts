@@ -1,7 +1,6 @@
 "use client";
 
 import { FRONTEND_API_BASE_URL } from "@/shared/_config/runtime";
-import { getAuthHeaders } from "@/features/auth/_utils/jwt-session";
 
 type ApiEnvelope<T> = {
   code: number;
@@ -85,14 +84,6 @@ function buildHeaders(init: ApiFetchOptions) {
 
   if (!(init.body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
-  }
-
-  if (!init.skipAuthToken) {
-    const authHeaders = getAuthHeaders();
-
-    Object.entries(authHeaders).forEach(([key, value]) => {
-      headers.set(key, value);
-    });
   }
 
   return headers;

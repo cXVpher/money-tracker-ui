@@ -6,9 +6,11 @@ import { formatRupiah } from "@/shared/_utils/formatters";
 
 interface AccountCardProps {
   account: Account;
+  onDelete?: () => void;
+  onEdit?: () => void;
 }
 
-export function AccountCard({ account }: AccountCardProps) {
+export function AccountCard({ account, onDelete, onEdit }: AccountCardProps) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
@@ -23,7 +25,10 @@ export function AccountCard({ account }: AccountCardProps) {
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="sm">Edit</Button>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="sm" onClick={onEdit}>Edit</Button>
+          <Button variant="ghost" size="sm" onClick={onDelete}>Hapus</Button>
+        </div>
       </CardHeader>
       <CardContent>
         <p className={account.balance < 0 ? "text-2xl font-bold text-destructive" : "text-2xl font-bold"}>

@@ -1,21 +1,27 @@
 ## feat:
-- (auth): add country code dropdown (+62 default) to phone inputs in register and login. added toggle between email/phone login.
-- (dashboard): merge user and admin dashboard into a single `/dashboard` route with role-based rendering by decoding JWT in the server.
+- **Goals Service**: full CRUD for savings goals: create/edit/delete/contribute with dialog, validations, react-query mutations, loading & error states (`goals-page-content.tsx`)
+- **Budget Service**: created `src/services/budget.service.ts` to implement full CRUD operations (GET `/budgets`, POST `/budgets`, PUT `/budgets/:id`, DELETE `/budgets/:id`) with automatic category-to-style metadata mapping.
+- **Categories Integration**: connected Settings Categories page (`src/app/dashboard/pengaturan/_components/category-settings-card.tsx`) to `/categories` endpoints for real-time creation, editing, and deletion of custom categories.
+- **Budgets Integration**: connected `src/app/dashboard/budget/_components/budget-page-content.tsx` to `/budgets` API. Added an interactive Month picker and built a fully functional Budget Configuration Dialog.
+- **Transactions Page Dynamic Options**: updated `src/app/dashboard/transaksi/_components/transactions-page-content.tsx` to load accounts and transaction categories dynamically.
+- **Transaction Wallet Linking**: updated `src/features/transactions/_components/transaction-form.tsx` to render a wallet selector and link transactions directly to banking/e-wallet accounts.
 
 ## fix:
-- (auth): resolve refresh token error by rewriting the `Path` attribute of the `user_refresh_token` cookie in proxy `route.ts`.
-- (auth): enforce automatic redirection to `/login` if session cookies are missing on the server-side, or if a main backend API data request returns a 401/403 unauthorized response on the client-side.
+- **Saving Target callbacks**: fixed missing interactive callback props (`onContribute`, `onEdit`, `onDelete`) inside `src/app/dashboard/target/_components/goal-card.tsx`.
+- **Form Zod Resolver Type Safety**: resolved React Hook Form & Zod type mismatches in `src/features/transactions/_components/transaction-form.tsx` by migrating to static schema constants and Zod type inference.
+- **Null API response fallback**: added safeguarding array fallbacks `(data ?? [])` across API services (`account`, `category`, `budget`, `goal`) to prevent crashes when the user has no custom records yet.
+
 
 ## refactor:
-- (api): split monolithic backend clients into modular service files in `src/services/` and updated all consumers.
-- (api): remove `/api` prefix from all frontend service path requests, having the API proxy automatically prepend `/api` when forwarding to the backend.
-- (api): consolidate the API proxy into a single global `/api/[...path]/route.ts` handler, removing the confusing `/api/proxy` prefix and complex cookie path rewriting in favor of standard browser-level cookie path matching.
-- (admin): remove internal login form and state from `AdminPageContent`, relying entirely on the main JWT cookie to auto-load admin data.
+- **Auth**: Extract proxy handler into @/server/auth/proxy; route files are now thin re-exports (handleApiProxy)
+- Replace startPeriodicRefresh with startPeriodicAuthRefresh from @/client/auth-refresh in dashboard shell
+- Drop getAuthHeaders() from api-client and clearAccessToken() from logout — no longer needed with httpOnly cookie auth
+- Delete src/features/auth/_utils/jwt-session.ts (dead code)
+- **BudgetCard Actions**: refactored `src/app/dashboard/budget/_components/budget-card.tsx` to render action buttons (Edit, Delete) in the header, mirroring the Account Card style.
 
 ## docs:
 
 ## style:
-- (dashboard): disable slide and fade page transitions (`framer-motion` PageTransition) when changing paths/menus to provide an instantaneous, native feel.
 
 ## chore:
 

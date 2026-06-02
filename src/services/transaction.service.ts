@@ -15,6 +15,7 @@ type BackendTransaction = {
   source: string;
   tipe: "IN" | "OUT";
   user_id: string;
+  wallet_id?: string | null;
 };
 
 type PaginatedResponse<T> = {
@@ -49,6 +50,7 @@ export type TransactionListFilters = {
   search?: string;
   tipe?: "IN" | "OUT";
   to?: string;
+  walletId?: string;
 };
 
 export type CreateTransactionInput = {
@@ -56,6 +58,7 @@ export type CreateTransactionInput = {
   description: string;
   transactionType: "expense" | "income";
   amount: number;
+  walletId?: string;
 };
 
 export const backendTransactionCategories = [
@@ -86,8 +89,8 @@ function mapBackendTransactionToUi(transaction: BackendTransaction): Transaction
   };
 
   return {
-    accountId: "backend",
-    accountName: "DuitKu",
+    accountId: transaction.wallet_id ?? "backend",
+    accountName: transaction.wallet_id ? "Akun terhubung" : "DuitKu",
     amount: transaction.jumlah,
     categoryIcon: category.icon,
     categoryId: `backend-${normalizeKey(transaction.kategori)}`,
@@ -137,6 +140,9 @@ export async function getTransactions(filters: TransactionListFilters = {}) {
   if (filters.to) {
     query.set("to", filters.to);
   }
+  if (filters.walletId) {
+    query.set("wallet_id", filters.walletId);
+  }
 
   const path = query.size
     ? `/transactions?${query.toString()}`
@@ -170,6 +176,7 @@ export async function createTransaction(input: CreateTransactionInput) {
       jumlah: input.amount,
       kategori: input.categoryName,
       tipe: input.transactionType === "income" ? "IN" : "OUT",
+      wallet_id: input.walletId || null,
     }),
     method: "POST",
   });
