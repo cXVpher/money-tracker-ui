@@ -3,18 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { GOAL_ICON_OPTIONS } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/_components/ui/dialog";
-import { Input } from "@/shared/_components/ui/input";
-import { Label } from "@/shared/_components/ui/label";
 import type { Goal } from "@/shared/_types/finance";
 import {
   contributeGoal,
@@ -24,7 +13,12 @@ import {
   updateGoal,
   type CreateGoalInput,
 } from "@/services/goal.service";
+import { getCategories, createCategory } from "@/services/category.service";
+import { createTransaction, getTransactions, deleteTransaction } from "@/services/transaction.service";
 import { GoalCard } from "./goal-card";
+import { GoalEditorDialog } from "./goal-editor-dialog";
+import { GoalContributionDialog } from "./goal-contribution-dialog";
+import { GoalDeleteConfirmationDialog } from "./goal-delete-confirmation-dialog";
 
 const goalsQueryKey = ["goals"] as const;
 
@@ -40,6 +34,13 @@ export function GoalsPageContent() {
   const queryClient = useQueryClient();
   const [goalEditor, setGoalEditor] =
     useState<(CreateGoalInput & { id?: string }) | null>(null);
+  const [contributionEditor, setContributionEditor] = useState<{
+    id: string;
+    name: string;
+    amount: number;
+  } | null>(null);
+  const [isContributing, setIsContributing] = useState(false);
+  const [deleteTargetConfirmation, setDeleteTargetConfirmation] = useState<Goal | null>(null);
 
   const goalsQuery = useQuery({
     queryFn: getGoals,
@@ -55,28 +56,6 @@ export function GoalsPageContent() {
     onSuccess: () => {
       setGoalEditor(null);
       toast.success("Target berhasil disimpan.");
-      void queryClient.invalidateQueries({ queryKey: goalsQueryKey });
-    },
-  });
-
-  const contributeGoalMutation = useMutation({
-    mutationFn: contributeGoal,
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Gagal menambah kontribusi.");
-    },
-    onSuccess: () => {
-      toast.success("Kontribusi berhasil disimpan.");
-      void queryClient.invalidateQueries({ queryKey: goalsQueryKey });
-    },
-  });
-
-  const deleteGoalMutation = useMutation({
-    mutationFn: deleteGoal,
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Gagal menghapus target.");
-    },
-    onSuccess: () => {
-      toast.success("Target berhasil dihapus.");
       void queryClient.invalidateQueries({ queryKey: goalsQueryKey });
     },
   });
@@ -118,26 +97,113 @@ export function GoalsPageContent() {
   }
 
   function handleContribute(goal: Goal) {
-    const value = window.prompt(`Tambah kontribusi untuk "${goal.name}"?`);
-    if (!value) {
+    setContributionEditor({
+      id: goal.id,
+      name: goal.name,
+      amount: 0,
+    });
+  }
+
+  async function handleSaveContribution() {
+    if (!contributionEditor) return;
+    if (contributionEditor.amount <= 0) {
+      toast.error("Nominal kontribusi harus lebih besar dari Rp0.");
       return;
     }
 
-    const amount = Number(value);
-    if (!Number.isFinite(amount) || amount === 0) {
-      toast.error("Nominal kontribusi tidak valid.");
-      return;
-    }
+    setIsContributing(true);
+    const targetCategoryName = `Kontribusi ${contributionEditor.name}`;
 
-    contributeGoalMutation.mutate({ amount, id: goal.id });
+    try {
+      // 1. Get existing categories to check if we need to create it
+      const currentCategories = await getCategories();
+      const exists = currentCategories.some(
+        (cat) => cat.name.toLowerCase() === targetCategoryName.toLowerCase()
+      );
+
+      // 2. Create the category if it doesn't exist
+      if (!exists) {
+        await createCategory({
+          name: targetCategoryName,
+          icon: "target",
+          color: "#6366F1",
+          description: `Kategori otomatis untuk tabungan ${contributionEditor.name}`,
+        });
+        // Invalidate categories query so the settings page or forms show it
+        void queryClient.invalidateQueries({ queryKey: ["categories"] });
+      }
+
+      // 3. Create the expense transaction
+      await createTransaction({
+        amount: contributionEditor.amount,
+        categoryName: targetCategoryName,
+        description: `Setoran tabungan untuk ${contributionEditor.name}`,
+        transactionType: "expense",
+      });
+      // Invalidate transactions query
+      void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+
+      // 4. Contribute to the savings goal
+      await contributeGoal({
+        amount: contributionEditor.amount,
+        id: contributionEditor.id,
+      });
+
+      toast.success("Kontribusi berhasil dan otomatis dicatat sebagai transaksi pengeluaran.");
+      void queryClient.invalidateQueries({ queryKey: goalsQueryKey });
+      setContributionEditor(null);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Gagal menyelesaikan proses kontribusi."
+      );
+    } finally {
+      setIsContributing(false);
+    }
   }
 
   function handleDeleteGoal(goal: Goal) {
-    if (!window.confirm(`Hapus target "${goal.name}"?`)) {
-      return;
-    }
+    setDeleteTargetConfirmation(goal);
+  }
 
-    deleteGoalMutation.mutate(goal.id);
+  async function handleConfirmDeleteGoal() {
+    if (!deleteTargetConfirmation) return;
+    const goal = deleteTargetConfirmation;
+    setDeleteTargetConfirmation(null);
+
+    const targetCategoryName = `Kontribusi ${goal.name}`;
+
+    try {
+      toast.loading("Sedang menghapus target dan menyelaraskan riwayat transaksi...");
+
+      // 1. Fetch transactions to find ones associated with this target's category
+      const response = await getTransactions({ page: 1, perPage: 500 });
+      const associatedTx = (response.items ?? []).filter(
+        (tx) => tx.categoryName.toLowerCase() === targetCategoryName.toLowerCase()
+      );
+
+      // 2. Delete all associated transactions
+      if (associatedTx.length > 0) {
+        await Promise.all(
+          associatedTx.map((tx) => deleteTransaction(tx.id))
+        );
+        // Invalidate transactions query
+        void queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      }
+
+      // 3. Delete the savings goal itself
+      await deleteGoal(goal.id);
+
+      toast.dismiss();
+      toast.success("Target tabungan dan transaksi kontribusi terkait berhasil dihapus.");
+      void queryClient.invalidateQueries({ queryKey: goalsQueryKey });
+      void queryClient.invalidateQueries({ queryKey: ["budgets"] }); // also refresh budget spent if category was tracked
+      void queryClient.invalidateQueries({ queryKey: ["accounts"] }); // refresh wallets balance
+    } catch (error) {
+      toast.dismiss();
+      toast.error(
+        error instanceof Error ? error.message : "Gagal menghapus target dan transaksi terkait."
+      );
+    }
   }
 
   return (
@@ -174,116 +240,37 @@ export function GoalsPageContent() {
             onDelete={() => handleDeleteGoal(goal)}
             onEdit={() => openEditDialog(goal)}
           />
-        )) : (
+        )) : !goalsQuery.isLoading ? (
           <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground md:col-span-2">
             Belum ada target tabungan.
           </div>
-        )}
+        ) : null}
       </div>
 
-      <Dialog
-        open={goalEditor !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setGoalEditor(null);
-          }
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {goalEditor?.id ? "Edit Target" : "Target Baru"}
-            </DialogTitle>
-          </DialogHeader>
-          {goalEditor ? (
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="goal-name">Nama target</Label>
-                <Input
-                  id="goal-name"
-                  value={goalEditor.name}
-                  onChange={(event) =>
-                    setGoalEditor((current) =>
-                      current ? { ...current, name: event.target.value } : current
-                    )
-                  }
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="goal-amount">Nominal target</Label>
-                  <Input
-                    id="goal-amount"
-                    min={1}
-                    type="number"
-                    value={goalEditor.targetAmount}
-                    onChange={(event) =>
-                      setGoalEditor((current) =>
-                        current
-                          ? { ...current, targetAmount: Number(event.target.value) }
-                          : current
-                      )
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="goal-deadline">Deadline</Label>
-                  <Input
-                    id="goal-deadline"
-                    type="date"
-                    value={goalEditor.deadline}
-                    onChange={(event) =>
-                      setGoalEditor((current) =>
-                        current ? { ...current, deadline: event.target.value } : current
-                      )
-                    }
-                  />
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="goal-icon">Icon</Label>
-                  <select
-                    id="goal-icon"
-                    className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm"
-                    value={goalEditor.icon}
-                    onChange={(event) =>
-                      setGoalEditor((current) =>
-                        current ? { ...current, icon: event.target.value } : current
-                      )
-                    }
-                  >
-                    {GOAL_ICON_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="goal-color">Warna</Label>
-                  <Input
-                    id="goal-color"
-                    type="color"
-                    value={goalEditor.color}
-                    onChange={(event) =>
-                      setGoalEditor((current) =>
-                        current ? { ...current, color: event.target.value } : current
-                      )
-                    }
-                  />
-                </div>
-              </div>
-            </div>
-          ) : null}
-          <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>Batal</DialogClose>
-            <Button disabled={saveGoalMutation.isPending} onClick={handleSaveGoal}>
-              {saveGoalMutation.isPending ? "Menyimpan..." : "Simpan Target"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <GoalEditorDialog
+        isOpen={goalEditor !== null}
+        onClose={() => setGoalEditor(null)}
+        goalEditor={goalEditor}
+        setGoalEditor={setGoalEditor}
+        onSave={handleSaveGoal}
+        isPending={saveGoalMutation.isPending}
+      />
+
+      <GoalContributionDialog
+        isOpen={contributionEditor !== null}
+        onClose={() => setContributionEditor(null)}
+        contributionEditor={contributionEditor}
+        setContributionEditor={setContributionEditor}
+        onSave={handleSaveContribution}
+        isPending={isContributing}
+      />
+
+      <GoalDeleteConfirmationDialog
+        isOpen={deleteTargetConfirmation !== null}
+        onClose={() => setDeleteTargetConfirmation(null)}
+        deleteTargetConfirmation={deleteTargetConfirmation}
+        onConfirm={handleConfirmDeleteGoal}
+      />
     </div>
   );
 }
