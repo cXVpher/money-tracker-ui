@@ -1,6 +1,6 @@
 "use client";
 
-import type { Transaction } from "@/shared/_types/finance";
+import type { Transaction } from "@/shared/_types";
 import { apiRequest } from "@/shared/_utils/api-client";
 
 type BackendTransaction = {

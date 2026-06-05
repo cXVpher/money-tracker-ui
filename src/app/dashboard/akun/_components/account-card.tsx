@@ -1,4 +1,4 @@
-import type { Account } from "@/shared/_types/finance";
+import type { Account } from "@/shared/_types";
 import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";

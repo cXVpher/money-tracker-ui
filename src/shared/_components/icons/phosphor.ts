@@ -33,6 +33,7 @@ import {
   Microphone,
   Moon as MoonIcon,
   Password,
+  PencilSimple,
   PiggyBank as PiggyBankIcon,
   Plus as PlusIcon,
   Robot,
@@ -92,6 +93,7 @@ export const Menu = List;
 export const Mic = Microphone;
 export const Moon = MoonIcon;
 export const PieChart = ChartPieSlice;
+export const Pencil = PencilSimple;
 export const PiggyBank = PiggyBankIcon;
 export const Plus = PlusIcon;
 export const Search = MagnifyingGlass;

@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/_components/ui/dialog";
-import type { Goal } from "@/shared/_types/finance";
+import type { Goal } from "@/shared/_types";
 
 interface GoalDeleteConfirmationDialogProps {
   isOpen: boolean;

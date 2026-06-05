@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
-import type { Goal } from "@/shared/_types/finance";
+import type { Goal } from "@/shared/_types";
 import {
   contributeGoal,
   createGoal,

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { formatRupiahShort } from "@/shared/_utils/formatters";
-import type { Transaction } from "@/shared/_types/finance";
+import type { Transaction } from "@/shared/_types";
 
 export function SelectedDayTransactions({
   transactions,

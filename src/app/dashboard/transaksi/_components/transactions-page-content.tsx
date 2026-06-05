@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { TransactionForm } from "@/features/transactions/_components/transaction-form";
 import { TransactionTable } from "@/features/transactions/_components/transaction-table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/_components/ui/dialog";
-import type { Transaction } from "@/shared/_types/finance";
+import { Badge } from "@/shared/_components/ui/badge";
+import { AppIcon } from "@/shared/_components/icons/app-icon";
+import type { Transaction } from "@/shared/_types";
+import { formatDate, formatRupiah } from "@/shared/_utils/formatters";
 import {
   deleteTransaction,
   getTransaction,
@@ -16,6 +19,12 @@ import { getCategories } from "@/services/category.service";
 import { getAccounts } from "@/services/account.service";
 
 const transactionListQueryKey = ["transactions", { page: 1, perPage: 50 }] as const;
+
+function getTransactionTypeLabel(type: Transaction["type"]) {
+  if (type === "income") return "Pemasukan";
+  if (type === "expense") return "Pengeluaran";
+  return "Transfer";
+}
 
 export function TransactionsPageContent() {
   const queryClient = useQueryClient();
@@ -168,45 +177,90 @@ export function TransactionsPageContent() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-lg overflow-hidden p-0">
           <DialogHeader>
-            <DialogTitle>Detail Transaksi</DialogTitle>
-            <DialogDescription>
+            <div className="px-6 pt-6">
+              <DialogTitle>Detail Transaksi</DialogTitle>
+              <DialogDescription>
               Ringkasan transaksi yang dipilih.
-            </DialogDescription>
+              </DialogDescription>
+            </div>
           </DialogHeader>
           {selectedTransaction ? (
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Kategori</span>
-                <span>
-                  {selectedTransaction.categoryIcon} {selectedTransaction.categoryName}
-                </span>
+            <div className="space-y-5 px-6 pb-6">
+              <div className="rounded-lg border border-border bg-muted/30 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <AppIcon name={selectedTransaction.categoryIcon} size={24} weight="fill" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">
+                        {selectedTransaction.categoryName}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(selectedTransaction.date)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p
+                      className={
+                        selectedTransaction.type === "income"
+                          ? "text-xl font-bold text-success"
+                          : "text-xl font-bold text-destructive"
+                      }
+                    >
+                      {selectedTransaction.type === "income" ? "+" : "-"}
+                      {formatRupiah(selectedTransaction.amount)}
+                    </p>
+                    <Badge variant="outline">
+                      {getTransactionTypeLabel(selectedTransaction.type)}
+                    </Badge>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Nominal</span>
-                <span>{selectedTransaction.amount.toLocaleString("id-ID")}</span>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <TransactionDetailItem
+                  label="Akun"
+                  value={selectedTransaction.accountName}
+                />
+                <TransactionDetailItem
+                  label="Tanggal"
+                  value={formatDate(selectedTransaction.date)}
+                />
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Tipe</span>
-                <span>{selectedTransaction.type}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Akun</span>
-                <span>{selectedTransaction.accountName}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Tanggal</span>
-                <span>{selectedTransaction.date}</span>
-              </div>
-              <div className="space-y-1">
-                <span className="text-muted-foreground">Deskripsi</span>
-                <p>{selectedTransaction.description}</p>
+
+              <div className="rounded-lg border border-border p-4">
+                <p className="text-xs font-medium uppercase text-muted-foreground">
+                  Deskripsi
+                </p>
+                <p className="mt-2 leading-relaxed">
+                  {selectedTransaction.description}
+                </p>
               </div>
             </div>
           ) : null}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function TransactionDetailItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border p-4">
+      <p className="text-xs font-medium uppercase text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 truncate font-medium">{value}</p>
     </div>
   );
 }

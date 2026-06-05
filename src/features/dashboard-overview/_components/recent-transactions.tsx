@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
-import type { Transaction } from "@/shared/_types/finance";
+import type { Transaction } from "@/shared/_types";
 import { formatRelativeDate, formatRupiah } from "@/shared/_utils/formatters";
 
 type RecentTransactionsProps = {

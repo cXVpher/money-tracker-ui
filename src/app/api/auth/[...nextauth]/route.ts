@@ -1,7 +1,7 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import type { NextRequest } from "next/server";
-import { handleApiProxy } from "@/server/auth/proxy";
+import { handleApiProxy } from "@/server/api/proxy";
 
 export const authOptions: NextAuthOptions = {
   callbacks: {

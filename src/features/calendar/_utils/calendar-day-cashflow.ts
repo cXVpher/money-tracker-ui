@@ -1,4 +1,4 @@
-import type { Transaction } from "@/shared/_types/finance";
+import type { Transaction } from "@/shared/_types";
 
 export function getCalendarDayCashflow(day: number, transactions: Transaction[]) {
   const date = `2026-04-${String(day).padStart(2, "0")}`;

@@ -1,4 +1,4 @@
-import type { Transaction } from "@/shared/_types/finance";
+import type { Transaction } from "@/shared/_types";
 import type { CalendarDaySummary } from "../_types/calendar";
 
 const calendarDayNumbers = Array.from({ length: 30 }, (_, index) => index + 1);

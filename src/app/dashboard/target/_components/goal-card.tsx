@@ -1,4 +1,4 @@
-import type { Goal } from "@/shared/_types/finance";
+import type { Goal } from "@/shared/_types";
 import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
@@ -53,4 +53,3 @@ export function GoalCard({ goal, onContribute, onEdit, onDelete }: GoalCardProps
     </Card>
   );
 }
-

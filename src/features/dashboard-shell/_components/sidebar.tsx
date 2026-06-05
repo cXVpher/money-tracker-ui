@@ -97,7 +97,7 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
     >
       <div
         className={cn(
-          "mb-4 flex items-center gap-2",
+          "relative mb-4 flex h-10 items-center gap-2",
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
@@ -124,7 +124,10 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 shrink-0 rounded-full"
+          className={cn(
+            "h-9 w-9 shrink-0 rounded-full",
+            isCollapsed && "absolute right-0 top-1/2 -translate-y-1/2"
+          )}
           onClick={() => onCollapsedChange(!isCollapsed)}
           aria-label={isCollapsed ? "Buka sidebar" : "Tutup sidebar"}
         >

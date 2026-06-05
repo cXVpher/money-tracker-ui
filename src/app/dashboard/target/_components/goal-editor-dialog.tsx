@@ -1,6 +1,9 @@
 "use client";
 
-import { GOAL_ICON_OPTIONS } from "@/shared/_components/icons/app-icon";
+import {
+  AppIcon,
+  GOAL_ICON_OPTIONS,
+} from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
 import {
   Dialog,
@@ -86,23 +89,29 @@ export function GoalEditorDialog({
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="goal-icon">Icon</Label>
-                <select
-                  id="goal-icon"
-                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                  value={goalEditor.icon}
-                  onChange={(event) =>
-                    setGoalEditor((current) =>
-                      current ? { ...current, icon: event.target.value } : current
-                    )
-                  }
-                >
+                <Label>Icon</Label>
+                <div className="grid grid-cols-7 gap-2 rounded-lg border border-input bg-background p-2">
                   {GOAL_ICON_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-label={option.label}
+                      title={option.label}
+                      className={
+                        goalEditor.icon === option.value
+                          ? "flex h-10 w-10 items-center justify-center rounded-lg border border-primary bg-primary/15 text-primary ring-2 ring-primary/40"
+                          : "flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
+                      }
+                      onClick={() =>
+                        setGoalEditor((current) =>
+                          current ? { ...current, icon: option.value } : current
+                        )
+                      }
+                    >
+                      <AppIcon name={option.value} size={22} weight="fill" />
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="goal-color">Warna</Label>

@@ -1,4 +1,4 @@
-import type { Debt } from "@/shared/_types/finance";
+import type { Debt } from "@/shared/_types";
 import type { DebtBalanceSummary } from "../_types/debt";
 
 export function getDebtBalanceSummaries(debts: Debt[]): DebtBalanceSummary[] {

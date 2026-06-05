@@ -1,1 +1,1 @@
-export type { Budget } from "@/shared/_types/finance";
+export type { Budget } from "@/shared/_types/budget";

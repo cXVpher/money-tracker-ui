@@ -1,6 +1,6 @@
 "use client";
 
-import type { Goal } from "@/shared/_types/finance";
+import type { Goal } from "@/shared/_types";
 import { apiRequest } from "@/shared/_utils/api-client";
 
 type BackendGoal = {

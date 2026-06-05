@@ -1,4 +1,5 @@
 import { Badge } from "@/shared/_components/ui/badge";
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { formatDate, formatRupiah } from "@/shared/_utils/formatters";
 import type { Transaction } from "@/features/transactions/_types/transaction";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -14,7 +15,9 @@ export const transactionColumns: ColumnDef<Transaction>[] = [
     header: "Kategori",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <span className="text-lg">{row.original.categoryIcon}</span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <AppIcon name={row.original.categoryIcon} size={16} weight="fill" />
+        </span>
         <span>{row.original.categoryName}</span>
       </div>
     ),

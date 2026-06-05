@@ -1,4 +1,4 @@
-import type { Goal } from "@/shared/_types/finance";
+import type { Goal } from "@/shared/_types";
 import type { GoalProgress } from "../_types/goal";
 
 export function getGoalProgress(goal: Goal): GoalProgress {

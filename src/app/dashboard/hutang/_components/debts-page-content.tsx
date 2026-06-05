@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/shared/_components/ui/button";
-import type { Debt } from "@/shared/_types/finance";
+import type { Debt } from "@/shared/_types";
 import { DebtCard } from "./debt-card";
 import { DebtBalanceSummaryCard } from "./debt-balance-summary-card";
 import { getDebtBalanceSummaries } from "../_utils/debt-balance-summary";

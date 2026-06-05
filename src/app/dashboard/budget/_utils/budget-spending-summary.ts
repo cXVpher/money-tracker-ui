@@ -1,4 +1,4 @@
-import type { Budget } from "@/shared/_types/finance";
+import type { Budget } from "@/shared/_types";
 import type { BudgetSpendingSummary, BudgetTone } from "../_types/budget";
 
 export function getBudgetSpendingSummary(budgets: Budget[]): BudgetSpendingSummary {

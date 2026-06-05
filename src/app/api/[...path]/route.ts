@@ -1,6 +1,4 @@
-import { handleApiProxy } from "@/server/auth/proxy";
-
-export const handleProxy = handleApiProxy;
+import { handleApiProxy } from "@/server/api/proxy";
 
 export const GET = handleApiProxy;
 export const POST = handleApiProxy;

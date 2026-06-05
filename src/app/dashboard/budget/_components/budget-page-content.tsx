@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { Budget } from "@/shared/_types/finance";
+import type { Budget } from "@/shared/_types";
 import { Button } from "@/shared/_components/ui/button";
 import {
   Dialog,
@@ -31,7 +31,7 @@ import { getCategories } from "@/services/category.service";
 type BudgetEditorState = {
   id?: string;
   kategori: string;
-  limit: number;
+  limit: string;
   month: string;
 };
 
@@ -53,11 +53,11 @@ export function BudgetPageContent() {
   const saveBudgetMutation = useMutation({
     mutationFn: async (input: BudgetEditorState) => {
       if (input.id) {
-        return updateBudget({ id: input.id, limit: input.limit });
+        return updateBudget({ id: input.id, limit: Number(input.limit || 0) });
       } else {
         return createBudget({
           kategori: input.kategori,
-          limit: input.limit,
+          limit: Number(input.limit || 0),
           month: input.month,
         });
       }
@@ -95,7 +95,7 @@ export function BudgetPageContent() {
     const firstCategory = categories[0]?.name ?? "Makan";
     setBudgetEditor({
       kategori: firstCategory,
-      limit: 0,
+      limit: "",
       month: selectedMonth,
     });
   }
@@ -104,7 +104,7 @@ export function BudgetPageContent() {
     setBudgetEditor({
       id: budget.id,
       kategori: budget.categoryName,
-      limit: budget.limit,
+      limit: String(budget.limit),
       month: selectedMonth,
     });
   }
@@ -115,7 +115,7 @@ export function BudgetPageContent() {
       return;
     }
 
-    if (budgetEditor.limit <= 0) {
+    if (Number(budgetEditor.limit || 0) <= 0) {
       toast.error("Batas anggaran (limit) harus lebih besar dari Rp0.");
       return;
     }
@@ -231,7 +231,7 @@ export function BudgetPageContent() {
                 >
                   {categories.map((category) => (
                     <option key={category.id} value={category.name}>
-                      {category.icon} {category.name}
+                      {category.displayIcon} {category.name}
                     </option>
                   ))}
                 </select>
@@ -247,7 +247,7 @@ export function BudgetPageContent() {
                     value={budgetEditor.limit}
                     onChange={(event) =>
                       setBudgetEditor((current) =>
-                        current ? { ...current, limit: Number(event.target.value) } : current
+                        current ? { ...current, limit: event.target.value } : current
                       )
                     }
                     placeholder="Rp1.000.000"

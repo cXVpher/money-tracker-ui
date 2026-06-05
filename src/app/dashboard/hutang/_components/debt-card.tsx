@@ -1,4 +1,4 @@
-import type { Debt } from "@/shared/_types/finance";
+import type { Debt } from "@/shared/_types";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";

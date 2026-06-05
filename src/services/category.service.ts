@@ -6,6 +6,7 @@ import { apiRequest } from "@/shared/_utils/api-client";
 export type TransactionCategory = {
   color: string;
   description: string;
+  displayIcon: string;
   icon: AppIconName;
   id: string;
   isDefault: boolean;
@@ -70,6 +71,30 @@ const validAppIcons = new Set([
   "travel",
 ]);
 
+const displayIconByAppIcon: Record<AppIconName, string> = {
+  bank: "🏦",
+  bills: "💡",
+  bonus: "🎁",
+  cash: "💵",
+  credit_card: "💳",
+  education: "🎓",
+  entertainment: "🎮",
+  food: "🍽️",
+  freelance: "💼",
+  groceries: "🛒",
+  health: "💊",
+  internet: "🌐",
+  investment: "📈",
+  mobile: "📱",
+  other: "📌",
+  salary: "💰",
+  shield: "🛡️",
+  shopping: "🛍️",
+  target: "🎯",
+  transport: "🚗",
+  travel: "✈️",
+};
+
 function normalizeIcon(category: BackendCategory): AppIconName {
   if (validAppIcons.has(category.icon)) {
     return category.icon as AppIconName;
@@ -78,11 +103,22 @@ function normalizeIcon(category: BackendCategory): AppIconName {
   return categoryIconByName[category.name] ?? "other";
 }
 
+function normalizeDisplayIcon(category: BackendCategory, icon: AppIconName) {
+  if (category.icon && !validAppIcons.has(category.icon)) {
+    return category.icon;
+  }
+
+  return displayIconByAppIcon[icon];
+}
+
 function mapBackendCategory(category: BackendCategory): TransactionCategory {
+  const icon = normalizeIcon(category);
+
   return {
     color: category.color,
     description: category.description,
-    icon: normalizeIcon(category),
+    displayIcon: normalizeDisplayIcon(category, icon),
+    icon,
     id: category.id,
     isDefault: category.is_default,
     name: category.name,

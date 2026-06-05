@@ -11,11 +11,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronLeft, ChevronRight, Eye, Trash2 } from "@/shared/_components/icons/phosphor";
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Badge } from "@/shared/_components/ui/badge";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent } from "@/shared/_components/ui/card";
 import { Input } from "@/shared/_components/ui/input";
-import type { Account, Transaction } from "@/shared/_types/finance";
+import type { Account, Transaction } from "@/shared/_types";
 import { formatDate, formatRupiah } from "@/shared/_utils/formatters";
 
 type TransactionTableProps = {
@@ -81,7 +82,9 @@ export function TransactionTable({
         header: "Kategori",
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <span className="text-lg">{row.original.categoryIcon}</span>
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <AppIcon name={row.original.categoryIcon} size={16} weight="fill" />
+            </span>
             <span>{row.original.categoryName}</span>
           </div>
         ),

@@ -237,23 +237,31 @@ export function CategorySettingsCard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category-icon">Icon</Label>
-                <select
-                  id="category-icon"
-                  value={categoryEditor.icon}
-                  onChange={(event) =>
-                    setCategoryEditor((current) =>
-                      current ? { ...current, icon: event.target.value } : current
-                    )
-                  }
-                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
+                <Label>Icon</Label>
+                <div className="rounded-lg border border-input bg-background p-2">
+                  <div className="grid max-h-44 grid-cols-7 gap-1 overflow-y-auto pr-1">
                   {APP_ICON_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-label={option.label}
+                      title={option.label}
+                      className={
+                        categoryEditor.icon === option.value
+                          ? "flex aspect-square items-center justify-center rounded-lg bg-primary/15 text-primary ring-2 ring-primary/50"
+                          : "flex aspect-square items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }
+                      onClick={() =>
+                        setCategoryEditor((current) =>
+                          current ? { ...current, icon: option.value } : current
+                        )
+                      }
+                    >
+                      <AppIcon name={option.value} size={22} weight="fill" />
+                    </button>
                   ))}
-                </select>
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category-color">Warna</Label>

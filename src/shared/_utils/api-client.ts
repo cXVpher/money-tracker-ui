@@ -26,6 +26,7 @@ export class ApiClientError extends Error {
 
 export type ApiFetchOptions = RequestInit & {
   skipAuthRefresh?: boolean;
+  skipAuthRedirect?: boolean;
   skipAuthToken?: boolean;
 };
 
@@ -37,7 +38,12 @@ export async function apiRequest<T>(
   const payload = (await safeJson<ApiEnvelope<T>>(response)) ?? null;
 
   if (!response.ok) {
-    if ((response.status === 401 || response.status === 403) && typeof window !== "undefined") {
+    if (
+      (response.status === 401 || response.status === 403) &&
+      typeof window !== "undefined" &&
+      !init?.skipAuthRedirect &&
+      !path.startsWith("/admin")
+    ) {
       const pathname = window.location.pathname;
       if (pathname !== "/login" && pathname !== "/register") {
         window.location.href = "/login";

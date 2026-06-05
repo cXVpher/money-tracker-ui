@@ -22,12 +22,12 @@ This app can run in mock mode or use the Go backend.
 
 ```bash
 NEXT_PUBLIC_MOCK_DATA=true
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+API_BASE_URL=http://localhost:8080
 ```
 
 - Set `NEXT_PUBLIC_MOCK_DATA=true` to keep the current local mock experience.
 - Set `NEXT_PUBLIC_MOCK_DATA=false` to use the checked backend-backed frontend flows.
-- `NEXT_PUBLIC_API_BASE_URL` should point to the Go API server.
+- `API_BASE_URL` should point to the Go API server. Browser requests still go through the frontend `/api` proxy.
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 

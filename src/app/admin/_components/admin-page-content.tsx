@@ -24,9 +24,9 @@ import { Label } from "@/shared/_components/ui/label";
 import { useTheme } from "@/shared/_components/providers/theme-provider";
 
 import { cn } from "@/shared/_utils/cn";
+import { ApiClientError } from "@/shared/_utils/api-client";
 import {
   addAdminUserBalance,
-  adminLogin,
   createAdminReferralPayout,
   getAdminDashboard,
   getAdminLogs,
@@ -116,6 +116,14 @@ export function AdminPageContent() {
       setReferralOverview(referralData);
       setLogs(logData.items ?? []);
     } catch (error) {
+      if (
+        error instanceof ApiClientError &&
+        (error.status === 401 || error.status === 403)
+      ) {
+        toast.error("Session admin tidak valid. Silakan login ulang.");
+        return;
+      }
+
       toast.error(error instanceof Error ? error.message : "Gagal memuat data admin.");
     } finally {
       setIsLoadingData(false);

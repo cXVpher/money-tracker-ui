@@ -1,4 +1,4 @@
-import type { Budget } from "@/shared/_types/finance";
+import type { Budget } from "@/shared/_types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { Button } from "@/shared/_components/ui/button";
@@ -40,4 +40,3 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
     </Card>
   );
 }
-

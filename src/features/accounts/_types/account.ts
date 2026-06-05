@@ -1,1 +1,1 @@
-export type { Account } from "@/shared/_types/finance";
+export type { Account } from "@/shared/_types/account";

@@ -1,37 +1,26 @@
 ## feat:
-- **Goals Service**: full CRUD for savings goals: create/edit/delete/contribute with dialog, validations, react-query mutations, loading & error states (`goals-page-content.tsx`)
-- **Budget Service**: created `src/services/budget.service.ts` to implement full CRUD operations (GET `/budgets`, POST `/budgets`, PUT `/budgets/:id`, DELETE `/budgets/:id`) with automatic category-to-style metadata mapping.
-- **Categories Integration**: connected Settings Categories page (`src/app/dashboard/pengaturan/_components/category-settings-card.tsx`) to `/categories` endpoints for real-time creation, editing, and deletion of custom categories.
-- **Budgets Integration**: connected `src/app/dashboard/budget/_components/budget-page-content.tsx` to `/budgets` API. Added an interactive Month picker and built a fully functional Budget Configuration Dialog.
-- **Transactions Page Dynamic Options**: updated `src/app/dashboard/transaksi/_components/transactions-page-content.tsx` to load accounts and transaction categories dynamically.
-- **Transaction Wallet Linking**: updated `src/features/transactions/_components/transaction-form.tsx` to render a wallet selector and link transactions directly to banking/e-wallet accounts.
-- **Sleek Saving Contribution Modal**: replaced legacy browser prompts with a premium, custom Dialog modal for saving contributions, including dynamic "+Rp10k", "+Rp50k", "+Rp100k", "+Rp500k" quick-actions (`goals-page-content.tsx`).
-- **Saving-Transaction Orchestration**: automated creation of a custom category ("Kontribusi [nama target]") and dynamic expense transaction logging when savings goal contributions are saved.
-- **Goal Deletion Cascade**: implemented automated cascading deletion for all associated savings setoran/contribution expense transactions when a savings target is deleted.
-- **Premium Goal Deletion Dialog**: replaced legacy browser confirmations (`window.confirm`) with a beautiful, warning-themed custom Delete Confirmation Dialog modal for cascading deletions.
-
-
-
-
+- **Admin Backend Integration**: connected admin authentication through the existing `/login` flow, then let `/dashboard` read user/admin cookies server-side to route to the correct user or admin panel.
 
 ## fix:
-- **Saving Target callbacks**: fixed missing interactive callback props (`onContribute`, `onEdit`, `onDelete`) inside `src/app/dashboard/target/_components/goal-card.tsx`.
-- **Form Zod Resolver Type Safety**: resolved React Hook Form & Zod type mismatches in `src/features/transactions/_components/transaction-form.tsx` by migrating to static schema constants and Zod type inference.
-- **Null API response fallback**: added safeguarding array fallbacks `(data ?? [])` across API services (`account`, `category`, `budget`, `goal`) to prevent crashes when the user has no custom records yet.
-
+- **Category Select Icons**: preserved backend category emoji icons as `displayIcon` and used them in transaction and budget category dropdown options instead of rendering internal icon keys like `food`.
+- **Account Initial Balance Input**: changed the add-account initial balance field to start empty instead of defaulting to `0`, preventing leading zero values while still submitting empty input as zero.
+- **Budget Limit Input**: changed the new budget limit field to start empty instead of defaulting to `0`, preventing leading zero values when entering monthly limits.
+- **Profile Edit Mode**: made profile fields read-only by default and only show the save button after the pencil edit button is activated.
+- **Collapsed Sidebar Header**: kept the logo centered when the sidebar is collapsed by positioning the collapse toggle without affecting logo alignment.
+- **Transaction Category Icons**: rendered transaction category icons with `AppIcon` in transaction tables instead of showing internal icon keys like `food` or `other`.
 
 ## refactor:
-- **Auth**: Extract proxy handler into @/server/auth/proxy; route files are now thin re-exports (handleApiProxy)
-- Replace startPeriodicRefresh with startPeriodicAuthRefresh from @/client/auth-refresh in dashboard shell
-- **Goal Modals Modularization**: extracted `GoalEditorDialog`, `GoalContributionDialog`, and `GoalDeleteConfirmationDialog` into their own dedicated, type-safe React files under target components folder to simplify `goals-page-content.tsx`.
-
-- Drop getAuthHeaders() from api-client and clearAccessToken() from logout — no longer needed with httpOnly cookie auth
-- Delete src/features/auth/_utils/jwt-session.ts (dead code)
-- **BudgetCard Actions**: refactored `src/app/dashboard/budget/_components/budget-card.tsx` to render action buttons (Edit, Delete) in the header, mirroring the Account Card style.
+- **API Proxy Organization**: moved shared proxy logic from `src/server/auth/proxy.ts` to `src/server/api/proxy.ts`, updated route imports, and removed the unused `handleProxy` export from the catch-all API route.
+- **Server API Runtime Config**: moved backend `API_BASE_URL` resolution into server-only `src/server/api/runtime.ts`, leaving client code to use the frontend `/api` proxy via `FRONTEND_API_BASE_URL`.
+- **Shared Domain Types**: split `src/shared/_types/finance.ts` into domain-specific files for account, transaction, budget, goal, debt, and bill, with a shared barrel export for multi-type imports.
 
 ## docs:
+- **Environment Configuration**: updated `README.md` to use server-only `API_BASE_URL` for the Go backend and clarify that browser requests still go through the frontend `/api` proxy.
 
 ## style:
+- **Transaction Detail Dialog**: redesigned the transaction detail modal into a more scannable summary with a highlighted category header, formatted amount, transaction type badge, and compact metadata cards.
+- **Goal Icon Picker**: replaced the target icon text dropdown with an icon-only visual picker so users choose from the available icons directly.
+- **Category Icon Picker**: replaced the settings category icon text dropdown with a compact icon-only grid picker inspired by emoji panels.
 
 ## chore:
 

@@ -16,7 +16,7 @@ import {
 } from "@/shared/_components/ui/dialog";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
-import type { Account } from "@/shared/_types/finance";
+import type { Account } from "@/shared/_types";
 import {
   createAccount,
   deleteAccount,
@@ -29,8 +29,13 @@ import { AccountTotalCard } from "./account-total-card";
 
 const accountsQueryKey = ["accounts"] as const;
 
-const emptyAccountForm: CreateAccountInput = {
-  balance: 0,
+type AccountEditorState = Omit<CreateAccountInput, "balance"> & {
+  balance: string;
+  id?: string;
+};
+
+const emptyAccountForm: AccountEditorState = {
+  balance: "",
   color: "#0066AE",
   icon: "bank",
   name: "",
@@ -40,7 +45,7 @@ const emptyAccountForm: CreateAccountInput = {
 export function AccountsPageContent() {
   const queryClient = useQueryClient();
   const [accountEditor, setAccountEditor] =
-    useState<(CreateAccountInput & { id?: string }) | null>(null);
+    useState<AccountEditorState | null>(null);
 
   const accountsQuery = useQuery({
     queryFn: getAccounts,
@@ -48,7 +53,7 @@ export function AccountsPageContent() {
   });
 
   const saveAccountMutation = useMutation({
-    mutationFn: async (input: CreateAccountInput & { id?: string }) =>
+    mutationFn: async (input: AccountEditorState) =>
       input.id
         ? updateAccount({
             color: input.color,
@@ -56,7 +61,13 @@ export function AccountsPageContent() {
             id: input.id,
             name: input.name,
           })
-        : createAccount(input),
+        : createAccount({
+            balance: Number(input.balance || 0),
+            color: input.color,
+            icon: input.icon,
+            name: input.name,
+            type: input.type,
+          }),
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Gagal menyimpan akun.");
     },
@@ -87,7 +98,7 @@ export function AccountsPageContent() {
 
   function openEditDialog(account: Account) {
     setAccountEditor({
-      balance: account.balance,
+      balance: String(account.balance),
       color: account.color,
       icon: account.icon,
       id: account.id,
@@ -99,6 +110,11 @@ export function AccountsPageContent() {
   function handleSaveAccount() {
     if (!accountEditor?.name.trim()) {
       toast.error("Nama akun wajib diisi.");
+      return;
+    }
+
+    if (!accountEditor.id && Number(accountEditor.balance || 0) < 0) {
+      toast.error("Saldo awal tidak boleh negatif.");
       return;
     }
 
@@ -228,7 +244,7 @@ export function AccountsPageContent() {
                       onChange={(event) =>
                         setAccountEditor((current) =>
                           current
-                            ? { ...current, balance: Number(event.target.value) }
+                            ? { ...current, balance: event.target.value }
                             : current
                         )
                       }

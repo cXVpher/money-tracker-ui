@@ -24,11 +24,12 @@ import {
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { Textarea } from "@/shared/_components/ui/textarea";
-import type { Account, Transaction } from "@/shared/_types/finance";
+import type { Account, Transaction } from "@/shared/_types";
 
 type TransactionFormProps = {
   categoryOptions: ReadonlyArray<{
     color: string;
+    displayIcon: string;
     icon: string;
     name: string;
   }>;
@@ -220,7 +221,7 @@ export function TransactionForm({
               >
                 {categoryOptions.map((category) => (
                   <option key={category.name} value={category.name}>
-                    {category.icon} {category.name}
+                    {category.displayIcon} {category.name}
                   </option>
                 ))}
               </select>

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { API_BASE_URL } from "@/shared/_config/runtime";
+import { API_BASE_URL } from "@/server/api/runtime";
 
 const USER_ACCESS_COOKIE = "user_access_token";
 const USER_REFRESH_COOKIE = "user_refresh_token";

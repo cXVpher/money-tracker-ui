@@ -1,1 +1,1 @@
-export type { Goal } from "@/shared/_types/finance";
+export type { Goal } from "@/shared/_types/goal";

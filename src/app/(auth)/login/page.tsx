@@ -14,6 +14,7 @@ import { Label } from "@/shared/_components/ui/label";
 import { PhoneInput } from "@/shared/_components/ui/phone-input";
 import { ApiClientError } from "@/shared/_utils/api-client";
 import { login } from "@/services/auth.service";
+import { adminLogin } from "@/services/admin.service";
 import {
   DEFAULT_COUNTRY_CODE,
   type CountryCode,
@@ -63,11 +64,17 @@ export default function LoginPage() {
       toast.success("Login berhasil.");
       router.push(nextPath || "/dashboard");
     } catch (error) {
-      const message =
-        error instanceof ApiClientError
-          ? error.message
-          : "Login gagal. Coba lagi.";
-      toast.error(message);
+      try {
+        await adminLogin(identifier, password);
+        toast.success("Login berhasil.");
+        router.push(nextPath || "/dashboard");
+      } catch {
+        const message =
+          error instanceof ApiClientError
+            ? error.message
+            : "Login gagal. Coba lagi.";
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
