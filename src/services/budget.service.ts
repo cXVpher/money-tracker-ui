@@ -27,11 +27,11 @@ export type UpdateBudgetInput = {
 
 function getMetadataForCategory(name: string) {
   const norm = name.trim().toLowerCase();
-  if (norm.includes("makan")) return { icon: "food", color: "#FF5722" };
+  if (norm.includes("makan") || norm.includes("food")) return { icon: "food", color: "#FF5722" };
   if (norm.includes("transport")) return { icon: "transport", color: "#2196F3" };
-  if (norm.includes("tagihan")) return { icon: "bills", color: "#FF9800" };
-  if (norm.includes("belanja")) return { icon: "shopping", color: "#9C27B0" };
-  if (norm.includes("masuk") || norm.includes("gaji") || norm.includes("salary")) return { icon: "salary", color: "#4CAF50" };
+  if (norm.includes("tagihan") || norm.includes("bill")) return { icon: "bills", color: "#FF9800" };
+  if (norm.includes("belanja") || norm.includes("shopping")) return { icon: "shopping", color: "#9C27B0" };
+  if (norm.includes("masuk") || norm.includes("gaji") || norm.includes("salary") || norm.includes("income")) return { icon: "salary", color: "#4CAF50" };
   return { icon: "other", color: "#607D8B" };
 }
 

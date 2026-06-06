@@ -1,3 +1,4 @@
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { formatRupiah, formatRupiahShort } from "@/shared/_utils/formatters";
@@ -11,7 +12,12 @@ export function BudgetCard({ budget }: { budget: Budget }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span>{budget.categoryIcon}</span>
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-full text-primary"
+            style={{ backgroundColor: `${budget.color}1a`, color: budget.color }}
+          >
+            <AppIcon name={budget.categoryIcon} size={18} weight="fill" />
+          </span>
           {budget.categoryName}
         </CardTitle>
       </CardHeader>

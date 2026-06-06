@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ChevronLeft,
-  ChevronRight,
   LogOut,
   Wallet,
 } from "@/shared/_components/icons/phosphor";
@@ -97,17 +95,18 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
     >
       <div
         className={cn(
-          "relative mb-4 flex h-10 items-center gap-2",
+          "mb-4 flex h-10 items-center gap-2",
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
-        <Link
-          href="/"
+        <button
+          type="button"
           className={cn(
-            "flex min-w-0 items-center gap-2 rounded-xl px-1",
+            "flex min-w-0 items-center gap-2 rounded-xl px-1 text-left outline-none transition-opacity hover:opacity-85 focus-visible:ring-2 focus-visible:ring-ring",
             isCollapsed && "justify-center"
           )}
-          aria-label={APP_NAME}
+          onClick={() => onCollapsedChange(!isCollapsed)}
+          aria-label={isCollapsed ? "Buka sidebar" : "Tutup sidebar"}
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Wallet className="h-5 w-5" />
@@ -120,23 +119,7 @@ export function Sidebar({ isCollapsed, onCollapsedChange }: SidebarProps) {
           >
             {APP_NAME}
           </span>
-        </Link>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-9 w-9 shrink-0 rounded-full",
-            isCollapsed && "absolute right-0 top-1/2 -translate-y-1/2"
-          )}
-          onClick={() => onCollapsedChange(!isCollapsed)}
-          aria-label={isCollapsed ? "Buka sidebar" : "Tutup sidebar"}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </Button>
+        </button>
       </div>
 
       <ScrollArea className="min-h-0 flex-1 pr-1">

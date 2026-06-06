@@ -1,5 +1,6 @@
 ## feat:
 - **Admin Backend Integration**: connected admin authentication through the existing `/login` flow, then let `/dashboard` read user/admin cookies server-side to route to the correct user or admin panel.
+- **Admin Logout**: added a backend-connected admin logout action in the admin dashboard menu that clears the admin session and returns to `/login`.
 
 ## fix:
 - **Category Select Icons**: preserved backend category emoji icons as `displayIcon` and used them in transaction and budget category dropdown options instead of rendering internal icon keys like `food`.
@@ -8,6 +9,10 @@
 - **Profile Edit Mode**: made profile fields read-only by default and only show the save button after the pencil edit button is activated.
 - **Collapsed Sidebar Header**: kept the logo centered when the sidebar is collapsed by positioning the collapse toggle without affecting logo alignment.
 - **Transaction Category Icons**: rendered transaction category icons with `AppIcon` in transaction tables instead of showing internal icon keys like `food` or `other`.
+- **Sidebar Logo Toggle**: removed the separate sidebar chevron button and moved collapse/expand behavior onto the sidebar logo.
+- **Budget Category Icons**: rendered budget category icons with `AppIcon` in budget cards instead of showing internal icon keys like `food` or `other`.
+- **Budget Icon Mapping**: expanded budget category metadata matching so newly added English category names like `Shopping`, `Food`, `Bills`, and `Income` resolve to visual icons instead of falling back to `other`.
+- **Transaction Icon Mapping**: expanded transaction and dashboard category metadata matching so English or generated categories like `Shopping`, `Allowance`, and target contributions resolve to visual icons instead of `other`.
 
 ## refactor:
 - **API Proxy Organization**: moved shared proxy logic from `src/server/auth/proxy.ts` to `src/server/api/proxy.ts`, updated route imports, and removed the unused `handleProxy` export from the catch-all API route.

@@ -141,6 +141,13 @@ export async function adminLogin(username: string, password: string) {
   } satisfies AdminSession;
 }
 
+export async function adminLogout() {
+  return apiRequest<null>("/admin/auth/logout", {
+    method: "POST",
+    skipAuthRedirect: true,
+  });
+}
+
 export async function getAdminDashboard() {
 
 

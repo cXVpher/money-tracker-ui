@@ -1,4 +1,5 @@
 import type { Budget } from "@/shared/_types";
+import { AppIcon } from "@/shared/_components/icons/app-icon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
 import { Progress } from "@/shared/_components/ui/progress";
 import { Button } from "@/shared/_components/ui/button";
@@ -19,7 +20,12 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
-          <span>{budget.categoryIcon}</span>
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-full text-primary"
+            style={{ backgroundColor: `${budget.color}1a`, color: budget.color }}
+          >
+            <AppIcon name={budget.categoryIcon} size={18} weight="fill" />
+          </span>
           {budget.categoryName}
         </CardTitle>
         <div className="flex gap-1">

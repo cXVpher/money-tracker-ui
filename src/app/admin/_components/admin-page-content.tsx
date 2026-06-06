@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   Check,
   CreditCard,
   Gift,
+  LogOut,
   Moon,
   Search,
   Shield,
@@ -27,6 +29,7 @@ import { cn } from "@/shared/_utils/cn";
 import { ApiClientError } from "@/shared/_utils/api-client";
 import {
   addAdminUserBalance,
+  adminLogout,
   createAdminReferralPayout,
   getAdminDashboard,
   getAdminLogs,
@@ -50,8 +53,10 @@ import {
 const ADMIN_USER_PER_PAGE = 5;
 
 export function AdminPageContent() {
+  const router = useRouter();
   const currentMonth = useMemo(() => new Date().toISOString().slice(0, 7), []);
   const { resolvedTheme, setTheme } = useTheme();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [userStatus, setUserStatus] =
     useState<AdminUserListParams["status"]>("");
@@ -273,6 +278,21 @@ export function AdminPageContent() {
     }
   }
 
+  async function handleAdminLogout() {
+    setIsLoggingOut(true);
+
+    try {
+      await adminLogout();
+      toast.success("Admin logged out.");
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Admin logout failed.");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-background px-4 py-6 text-foreground sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -331,6 +351,15 @@ export function AdminPageContent() {
                   onClick={() => void loadAdminData()}
                 >
                   {isLoadingData ? "Memuat..." : "Refresh Semua Data"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full rounded-full"
+                  disabled={isLoggingOut}
+                  onClick={() => void handleAdminLogout()}
+                >
+                  <LogOut className="h-4 w-4" />
+                  {isLoggingOut ? "Logging out..." : "Logout Admin"}
                 </Button>
               </CardContent>
             </Card>

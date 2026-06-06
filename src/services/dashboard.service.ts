@@ -82,23 +82,8 @@ export type DashboardOverviewData = {
   };
 };
 
-const backendCategoryMetadata: Record<
-  string,
-  { icon: string; label: string }
-> = {
-  Belanja: { icon: "shopping", label: "Belanja" },
-  Lainnya: { icon: "other", label: "Lainnya" },
-  Makan: { icon: "food", label: "Makanan & Minuman" },
-  Pemasukan: { icon: "salary", label: "Pemasukan" },
-  Tagihan: { icon: "bills", label: "Tagihan" },
-  Transport: { icon: "transport", label: "Transportasi" },
-};
-
 function mapBackendTransactionToUi(transaction: BackendTransaction): Transaction {
-  const category = backendCategoryMetadata[transaction.kategori] ?? {
-    icon: "other",
-    label: transaction.kategori,
-  };
+  const category = getMetadataForCategory(transaction.kategori);
 
   return {
     accountId: "backend",
@@ -116,6 +101,37 @@ function mapBackendTransactionToUi(transaction: BackendTransaction): Transaction
 
 function normalizeKey(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
+function getMetadataForCategory(name: string) {
+  const norm = name.trim().toLowerCase();
+
+  if (norm.includes("makan") || norm.includes("food")) {
+    return { icon: "food", label: "Makanan & Minuman" };
+  }
+  if (norm.includes("transport")) {
+    return { icon: "transport", label: name };
+  }
+  if (norm.includes("tagihan") || norm.includes("bill")) {
+    return { icon: "bills", label: name };
+  }
+  if (norm.includes("belanja") || norm.includes("shopping")) {
+    return { icon: "shopping", label: name };
+  }
+  if (
+    norm.includes("masuk") ||
+    norm.includes("gaji") ||
+    norm.includes("salary") ||
+    norm.includes("income") ||
+    norm.includes("allowance")
+  ) {
+    return { icon: "salary", label: name };
+  }
+  if (norm.includes("kontribusi") || norm.includes("target") || norm.includes("saving")) {
+    return { icon: "target", label: name };
+  }
+
+  return { icon: "other", label: name };
 }
 
 export async function getDashboardOverviewData(
