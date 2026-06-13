@@ -7,19 +7,21 @@ const weekDays = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 
 interface CalendarGridProps {
   days: CalendarDaySummary[];
+  monthLabel: string;
   selectedDate: string;
   onSelectDay: (day: CalendarDaySummary) => void;
 }
 
 export function CalendarGrid({
   days,
+  monthLabel,
   selectedDate,
   onSelectDay,
 }: CalendarGridProps) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>April 2026</CardTitle>
+        <CardTitle>{monthLabel}</CardTitle>
         <div className="flex gap-2">
           <Badge variant="secondary">Hijau surplus</Badge>
           <Badge variant="destructive">Merah defisit</Badge>

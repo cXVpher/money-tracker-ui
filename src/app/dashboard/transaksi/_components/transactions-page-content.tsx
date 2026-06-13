@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { TransactionForm } from "@/features/transactions/_components/transaction-form";
 import { TransactionTable } from "@/features/transactions/_components/transaction-table";
+import { EmptyState } from "@/shared/_components/ui/empty-state";
+import { TableSkeleton } from "@/shared/_components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/_components/ui/dialog";
 import { Badge } from "@/shared/_components/ui/badge";
 import { AppIcon } from "@/shared/_components/icons/app-icon";
@@ -159,15 +161,28 @@ export function TransactionsPageContent() {
         </div>
       ) : null}
       {transactionsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Memuat transaksi...</p>
-      ) : null}
-      <TransactionTable
-        accounts={accounts}
-        deletingTransactionId={deletingTransactionId}
-        onDeleteTransaction={handleDeleteTransaction}
-        onViewTransaction={handleViewTransaction}
-        transactions={transactions}
-      />
+        <TableSkeleton />
+      ) : transactions.length ? (
+        <TransactionTable
+          accounts={accounts}
+          deletingTransactionId={deletingTransactionId}
+          onDeleteTransaction={handleDeleteTransaction}
+          onViewTransaction={handleViewTransaction}
+          transactions={transactions}
+        />
+      ) : (
+        <EmptyState
+          description="Catat pemasukan atau pengeluaran pertama Anda agar ringkasan, budget, dan grafik mulai terisi."
+          title="Belum ada transaksi"
+          action={
+            <TransactionForm
+              categoryOptions={categoryOptions}
+              accounts={accounts}
+              onTransactionCreated={handleTransactionCreated}
+            />
+          }
+        />
+      )}
 
       <Dialog
         open={selectedTransaction !== null}

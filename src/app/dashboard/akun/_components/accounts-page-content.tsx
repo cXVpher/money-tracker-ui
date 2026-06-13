@@ -6,6 +6,8 @@ import { ArrowLeftRight } from "@/shared/_components/icons/phosphor";
 import { toast } from "sonner";
 import { APP_ICON_OPTIONS } from "@/shared/_components/icons/app-icon";
 import { Button } from "@/shared/_components/ui/button";
+import { EmptyState } from "@/shared/_components/ui/empty-state";
+import { CardGridSkeleton } from "@/shared/_components/ui/skeleton";
 import {
   Dialog,
   DialogClose,
@@ -153,9 +155,6 @@ export function AccountsPageContent() {
         </div>
       </div>
 
-      {accountsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Memuat akun...</p>
-      ) : null}
       {accountsQuery.isError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {accountsQuery.error instanceof Error
@@ -167,7 +166,9 @@ export function AccountsPageContent() {
       <AccountTotalCard accountCount={accounts.length} totalBalance={totalBalance} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {accounts.length ? accounts.map((account) => (
+        {accountsQuery.isLoading ? (
+          <CardGridSkeleton count={3} />
+        ) : accounts.length ? accounts.map((account) => (
           <AccountCard
             key={account.id}
             account={account}
@@ -175,9 +176,16 @@ export function AccountsPageContent() {
             onEdit={() => openEditDialog(account)}
           />
         )) : (
-          <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground md:col-span-2 xl:col-span-3">
-            Belum ada akun finansial.
-          </div>
+          <EmptyState
+            className="md:col-span-2 xl:col-span-3"
+            description="Tambahkan bank, e-wallet, tunai, atau kartu kredit agar saldo dan transaksi bisa dilacak per akun."
+            title="Belum ada akun finansial"
+            action={
+              <Button onClick={openCreateDialog}>
+                Tambah Akun
+              </Button>
+            }
+          />
         )}
       </div>
 

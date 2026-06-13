@@ -7,11 +7,23 @@ import { buildCalendarDaySummaries } from "../_utils/calendar-day-summaries";
 import type { CalendarDaySummary } from "../_types/calendar";
 
 export function CalendarPageContent() {
+  const today = useMemo(() => new Date(), []);
+  const currentMonth = useMemo(() => formatLocalMonth(today), [today]);
+  const todayDate = useMemo(() => formatLocalDate(today), [today]);
+  const monthLabel = useMemo(
+    () =>
+      today.toLocaleDateString("id-ID", {
+        month: "long",
+        year: "numeric",
+      }),
+    [today]
+  );
   const calendarDaySummaries = useMemo(
-    () => buildCalendarDaySummaries([]),
-    []
+    () => buildCalendarDaySummaries([], currentMonth),
+    [currentMonth]
   );
   const initialSelectedDay =
+    calendarDaySummaries.find((day) => day.date === todayDate) ??
     calendarDaySummaries.find((day) => day.transactions.length > 0) ??
     calendarDaySummaries[0];
   const [selectedDay, setSelectedDay] = useState<CalendarDaySummary>(
@@ -33,10 +45,19 @@ export function CalendarPageContent() {
 
       <CalendarGrid
         days={calendarDaySummaries}
+        monthLabel={monthLabel}
         selectedDate={selectedDay.date}
         onSelectDay={setSelectedDay}
       />
       <SelectedDayTransactions selectedDay={selectedDay} />
     </div>
   );
+}
+
+function formatLocalMonth(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function formatLocalDate(date: Date) {
+  return `${formatLocalMonth(date)}-${String(date.getDate()).padStart(2, "0")}`;
 }

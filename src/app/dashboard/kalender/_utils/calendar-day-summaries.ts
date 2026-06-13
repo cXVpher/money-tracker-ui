@@ -1,13 +1,19 @@
 import type { Transaction } from "@/shared/_types";
 import type { CalendarDaySummary } from "../_types/calendar";
 
-const calendarDayNumbers = Array.from({ length: 30 }, (_, index) => index + 1);
-
 export function buildCalendarDaySummaries(
-  transactions: Transaction[]
+  transactions: Transaction[],
+  month = formatLocalMonth(new Date())
 ): CalendarDaySummary[] {
+  const [year, monthNumber] = month.split("-").map(Number);
+  const daysInMonth = new Date(year, monthNumber, 0).getDate();
+  const calendarDayNumbers = Array.from(
+    { length: daysInMonth },
+    (_, index) => index + 1
+  );
+
   return calendarDayNumbers.map((day) => {
-    const date = `2026-04-${String(day).padStart(2, "0")}`;
+    const date = `${month}-${String(day).padStart(2, "0")}`;
     const dayTransactions = transactions.filter(
       (transaction) => transaction.date === date
     );
@@ -28,4 +34,8 @@ export function buildCalendarDaySummaries(
       transactions: dayTransactions,
     };
   });
+}
+
+function formatLocalMonth(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }

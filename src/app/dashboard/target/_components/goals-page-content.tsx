@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/shared/_components/ui/button";
+import { EmptyState } from "@/shared/_components/ui/empty-state";
+import { CardGridSkeleton } from "@/shared/_components/ui/skeleton";
 import type { Goal } from "@/shared/_types";
 import {
   contributeGoal,
@@ -220,9 +222,6 @@ export function GoalsPageContent() {
         </Button>
       </div>
 
-      {goalsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Memuat target...</p>
-      ) : null}
       {goalsQuery.isError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {goalsQuery.error instanceof Error
@@ -232,7 +231,9 @@ export function GoalsPageContent() {
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
-        {goals.length ? goals.map((goal) => (
+        {goalsQuery.isLoading ? (
+          <CardGridSkeleton count={4} />
+        ) : goals.length ? goals.map((goal) => (
           <GoalCard
             key={goal.id}
             goal={goal}
@@ -240,11 +241,18 @@ export function GoalsPageContent() {
             onDelete={() => handleDeleteGoal(goal)}
             onEdit={() => openEditDialog(goal)}
           />
-        )) : !goalsQuery.isLoading ? (
-          <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground md:col-span-2">
-            Belum ada target tabungan.
-          </div>
-        ) : null}
+        )) : (
+          <EmptyState
+            className="md:col-span-2"
+            description="Buat target tabungan dengan nominal dan deadline agar kontribusi bisa dipantau dari waktu ke waktu."
+            title="Belum ada target tabungan"
+            action={
+              <Button onClick={openCreateDialog}>
+                Target Baru
+              </Button>
+            }
+          />
+        )}
       </div>
 
       <GoalEditorDialog

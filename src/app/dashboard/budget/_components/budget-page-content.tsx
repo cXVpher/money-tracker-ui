@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { Budget } from "@/shared/_types";
 import { Button } from "@/shared/_components/ui/button";
+import { EmptyState } from "@/shared/_components/ui/empty-state";
+import { CardGridSkeleton, Skeleton } from "@/shared/_components/ui/skeleton";
 import {
   Dialog,
   DialogClose,
@@ -83,7 +85,7 @@ export function BudgetPageContent() {
     },
   });
 
-  const budgets = budgetsQuery.data ?? [];
+  const budgets = useMemo(() => budgetsQuery.data ?? [], [budgetsQuery.data]);
   const categories = categoriesQuery.data ?? [];
 
   const budgetSpendingSummary = useMemo(
@@ -157,24 +159,34 @@ export function BudgetPageContent() {
         </div>
       </div>
 
-      {categories.length === 0 && !categoriesQuery.isLoading ? (
-        <div className="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          Tambahkan kategori terlebih dahulu di halaman Pengaturan sebelum mengatur budget.
-        </div>
-      ) : null}
-
-      {budgetsQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">Memuat budget...</p>
-      ) : null}
-
       {budgetsQuery.isError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {budgetsQuery.error instanceof Error ? budgetsQuery.error.message : "Gagal memuat budget."}
         </div>
       ) : null}
 
-      {!budgetsQuery.isLoading && !budgetsQuery.isError ? (
+      {budgetsQuery.isLoading ? (
         <>
+          <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Skeleton className="h-20" />
+              <Skeleton className="h-20" />
+              <Skeleton className="h-20" />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <CardGridSkeleton count={3} />
+          </div>
+        </>
+      ) : !budgetsQuery.isError ? (
+        <>
+          {categories.length === 0 && !categoriesQuery.isLoading ? (
+            <EmptyState
+              description="Tambahkan kategori di Pengaturan terlebih dahulu, lalu kembali ke halaman ini untuk menentukan limit bulanan."
+              title="Kategori belum tersedia"
+            />
+          ) : null}
+
           <BudgetSpendingSummaryCard budgetSpendingSummary={budgetSpendingSummary} />
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -186,9 +198,19 @@ export function BudgetPageContent() {
                 onDelete={() => handleDeleteBudget(budget)}
               />
             )) : (
-              <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground md:col-span-2 xl:col-span-3">
-                Belum ada budget aktif untuk bulan ini.
-              </div>
+              <EmptyState
+                className="md:col-span-2 xl:col-span-3"
+                description="Buat limit pengeluaran untuk kategori yang paling sering dipakai agar progres bulanan lebih mudah dipantau."
+                title="Belum ada budget aktif untuk bulan ini"
+                action={
+                  <Button
+                    onClick={openCreateDialog}
+                    disabled={categories.length === 0}
+                  >
+                    Atur Budget
+                  </Button>
+                }
+              />
             )}
           </div>
 

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/_components/ui/tabs";
 import { Button } from "@/shared/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/_components/ui/card";
+import { Skeleton } from "@/shared/_components/ui/skeleton";
 import { Input } from "@/shared/_components/ui/input";
 import { Label } from "@/shared/_components/ui/label";
 import { Textarea } from "@/shared/_components/ui/textarea";
@@ -290,6 +291,9 @@ export function IntegrationsPageContent() {
         </div>
       ) : null}
 
+      {isLoading ? (
+        <IntegrationsPageSkeleton />
+      ) : (
       <Tabs defaultValue="payments">
         <TabsList variant="line">
           <TabsTrigger value="payments">
@@ -703,6 +707,43 @@ export function IntegrationsPageContent() {
           </div>
         </TabsContent>
       </Tabs>
+      )}
+    </div>
+  );
+}
+
+function IntegrationsPageSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-2 overflow-hidden">
+        <Skeleton className="h-9 w-28" />
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-9 w-28" />
+        <Skeleton className="h-9 w-28" />
+      </div>
+      <div className="grid gap-6 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-32" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-9 w-32" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-40" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
